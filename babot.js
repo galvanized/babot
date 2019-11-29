@@ -1,5 +1,7 @@
 var Discord = require('discord.js'); //discord stuff
 var auth = require('./bauth.json'); //auth for discord
+var authWR = require('./WRauth.json'); //auth for Wolfram
+var wolfram = require('wolfram').createClient(authWR.appid); //wolfram
 
 // Initialize Discord Bot
 var bot = new Discord.Client();
@@ -15,9 +17,22 @@ bot.on('ready', function (evt)
 //stuff when message is recived.
 bot.on('message', message => 
 {
-    if(message.content.includes('@560872746087743528')) 
+    if(message.content.includes('@560872746087743528')) //perfix check
     {
-      message.channel.send('BABA IS ADMIN');
+      message.channel.send('BABA IS ADMIN'); 
+      if(message.content.includes('wolfram')) //wolfram prefix
+      {
+            message.channel.send("BABA IS WOLFRAM");
+            var data = message.content.replace("<@560872746087743528>" , "").replace("wolfram","");
+            wolfram.query(data,function(err, result) //querys wolfram
+            {
+                  for( i = 0; i < result.length; i++) //loop cause array
+                  {
+                        message.channel.send(result[i].title + " " + result[i].subpods[0].image); //print to server
+                  }
+            message.channel.send("RAM IS WOLFED");
+            });
+      }
     }
 });
 
