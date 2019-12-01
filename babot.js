@@ -20,6 +20,10 @@ bot.on('message', message =>
     if(message.content.includes('@560872746087743528')) //perfix check
     {
       message.channel.send('BABA IS ADMIN'); 
+      if(message.content.includes('help'))
+            {
+                message.channel.send('@BABA to call comands \n help: you allready figured that one out \n wolfram: will do a search of wolfram \n');
+            }
       if(message.content.includes('wolfram')) //wolfram prefix
       {
             message.channel.send("BABA IS WOLFRAM");
