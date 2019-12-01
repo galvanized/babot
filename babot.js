@@ -1,6 +1,6 @@
 var Discord = require('discord.js'); //discord stuff
-var auth = require('./bauth.json'); //auth for discord
-var authWR = require('./WRauth.json'); //auth for Wolfram
+var auth = require('./bauth.json'); //auth for discord: file should look like: {"token":"token as string"}
+var authWR = require('./WRauth.json'); //auth for Wolfram : file should look like: {"appid":"wolfram app id as string"}
 var wolfram = require('wolfram').createClient(authWR.appid); //wolfram
 
 // Initialize Discord Bot
