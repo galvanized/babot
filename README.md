@@ -25,4 +25,5 @@ commands for admins:<br/>
 !setvote <msg ID> : creates a vote with reactions on the message<br/>
 !delete <msg ID> : sends message to the deleted channel and removes the original<br/>
 !banhammer <msg ID> : baba adds an emoji from the babotdata.json file<br/>
+!grole role_name <msg ID> : adds all people who reacted to game role. if role doesn't exist create it</br>
 to get user commands type !baba help (note only command  is !baba passwords at the moment)
