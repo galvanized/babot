@@ -3,9 +3,8 @@ const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js'
 const Discord = require('discord.js'); //discord module for interation with discord api
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
-var babadata = require('./babotdata.json'); //baba configuration file
+const babadata = require('./babotdata.json'); //baba configuration file
 const txtCommands = require('./textCommands.js');
-//const { setCommandRoles } = require('./helperFunc');
 
 const { cacheOpts, handleDisconnect, eventDB, voiceChannelChange, startUpChecker, logVCC } = require('./databaseandvoice');
 const { dailyCallStart } = require('./dailycall.js');
@@ -15,7 +14,6 @@ const { log } = require('console');
 global.dbAccess = [!process.argv.includes("-db"), process.argv.includes("-db") ? false : true];
 global.starttime = new Date();
 
-global.toke = babadata.token;
 global.interactions = {};
 
 global.loggedVCC = [];
@@ -54,7 +52,7 @@ const bot = new Client({ intents:
 		Partials.ThreadMember
 	]});
 
-bot.login(global.toke); //login
+bot.login(babadata.token);
 
 bot.on('ready', function (evt) 
 {

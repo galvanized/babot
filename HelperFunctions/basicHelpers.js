@@ -460,7 +460,7 @@ function maidenTime(u_id, bot, time, g)
 
 function cleanHead(head)
 {
-	head["Authorization"] += global.toke;
+	head["Authorization"] += babadata.token;
 	return head;
 }
 
