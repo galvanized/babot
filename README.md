@@ -11,7 +11,7 @@ JOKE IS OLD.
 # Setup
 
 ## Start
-- extract Data.zip (in place, creating `baba/Data/`)
+- get Data folder from Sami, creating `baba/Data/`
 - create babotdata.json (from template: `cp babotdata.template.json babotdata.json`)
     - see next section for configuration
 
@@ -44,17 +44,17 @@ JOKE IS OLD.
 ```
 
 ## Dependencies
-node version 16.9.0  
+node version 18.17.1
 dependencies included in package.json - just use
 `npm install`
 
 ## Installing from scratch
-A linux system is recommended.  Production uses WSL1 on Win10.  
+Linux recommended.  Production uses WSL1 on Win10.  
 This guide installs nvm (Node Version Manager), node, and forever.
 
 - `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash`
 - reload terminal or `source ~/.bashrc` (on bash)
-- `nvm install 16.9.0`
+- `nvm install 18.17.1`
 - `npm install forever -g`
 - `git clone https://github.com/Aconka/babot.git`
 - `cd babot`
@@ -63,7 +63,7 @@ This guide installs nvm (Node Version Manager), node, and forever.
 - `forever start babot.js`
 
 ## Running
-One time (or when changed) `node deployCommands.js`, you should see "Successfully registered application commands."
+One time (or when changed) `node deployCommands.js`, you should see "Successfully registered application commands." It should then exit.  
 
 `node babot.js`  
 or  
