@@ -82,3 +82,6 @@ or
 
 ## User Commands
 to get user commands type !baba help (note only command  is !baba passwords at the moment)
+
+## Babot Arguments
+`-nodb` : disables DB access

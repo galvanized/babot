@@ -412,14 +412,14 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		}
 		else if (msgContent.includes("refried beans")) //probably would break adams brain
 		{
-			if ((global.dbAccess[1] && global.dbAccess[0]))
+			if (global.dbEnabled)
 			{
 				cacheDOW();
 				message.author.send("DOW cache updated (hopefully)");
 			}
 			else
 			{
-				message.author.send("DOW cache not updated");
+				message.author.send("DOW cache not updated (no DB)");
 			}
 		}
 		else if (msgContent.includes("rbcontdow") || msgContent.includes("rbcontfrog")) //probably would break adams brain
@@ -435,14 +435,14 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			if (time < 0) time = 0;
 			if (time > 2) time = 2;
 
-			if ((global.dbAccess[1] && global.dbAccess[0]))
+			if (global.dbEnabled)
 			{
 				controlDOW(u_id, time, msgContent.includes("rbcontdow") ? "DOW" : "FROG");
 				message.author.send("DOW control for <@" + u_id + "> set to " + time);
 			}
 			else
 			{
-				message.author.send("DOW control not updated");
+				message.author.send("DOW control not updated (no DB)");
 			}
 		}
 		// change babas nickname

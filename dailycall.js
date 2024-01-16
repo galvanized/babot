@@ -23,7 +23,7 @@ function dailyCallStart(bot)
 
 function DisplayBirthdays(guild)
 {
-	if ((global.dbAccess[1] && global.dbAccess[0]))
+	if (global.dbEnabled)
 	{
 		ObtainDBHolidays(function(holidays)
 		{
@@ -206,7 +206,7 @@ function dailyCall(bot, guild)
 	holidayDaily(d1, g);
 	global.ResetDaily = true;
 
-	if ((global.dbAccess[1] && global.dbAccess[0]))
+	if (global.dbEnabled)
 	{
 		cacheDOW();
 	}

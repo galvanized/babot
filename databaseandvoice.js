@@ -15,7 +15,7 @@ function handleDisconnect(print)
 	if (timeoutCT == 0) 
 	{
 		console.log("Cleaning Timeouts in handleDisconnect");
-		global.dbAccess[0] = true;
+		global.dbEnabled = true;
 
 		if (timeoutDisconnect != null) clearTimeout(timeoutDisconnect);
 		if (timeoutClear != null) clearTimeout(timeoutClear);
@@ -23,7 +23,7 @@ function handleDisconnect(print)
 		timeoutDisconnect = null;
 		timeoutClear = null;
 		
-		if (global.dbAccess[1] && global.dbAccess[0])
+		if (global.dbEnabled)
 		{
 			clearVCCList();
 		}
@@ -50,15 +50,15 @@ function handleDisconnect(print)
 			{
 				if (timeoutClear != null) clearTimeout(timeoutClear);
 				console.log("Too many timeouts, entering minutely check mode");
-				global.dbAccess[0] = false;
+				global.dbEnabled = false;
 				timeoutDisconnect = setTimeout(handleDisconnect, 60000, err.code);
 				timeoutClear = setTimeout(function() 
 				{ 
 					timeoutCT = 0; 
-					global.dbAccess[0] = true; 
+					global.dbEnabled = true; 
 					console.log("Database Access Restored");
 
-					if (global.dbAccess[1] && global.dbAccess[0])
+					if (global.dbEnabled)
 					{
 						clearVCCList();
 					}
@@ -672,7 +672,7 @@ function GetParent(retme, id)
 
 var cleanupFn = function cleanup() 
 {
-	if ((global.dbAccess[1] && global.dbAccess[0]))
+	if (global.dbEnabled)
 	{
 		console.log("Ending SQL Connection");
 		con.end();
@@ -1550,6 +1550,7 @@ process.on('SIGTERM', cleanupFn);
 
 function voiceChannelChange(newMember, oldMember, overideTime = null)
 {
+	// Logs join/leave of voice channels to database
     let newUserID = newMember.id;
 	let oldUserID = oldMember.id;
     let newUserChannel = newMember.channelId;
@@ -1557,10 +1558,6 @@ function voiceChannelChange(newMember, oldMember, overideTime = null)
 
     var guild = newMember.guild;
 
-    //console.log(newUserID + " joined vc with id " + newUserChannel);
-    //console.log(newUserID + " left vc with id " + oldUserChannel);
-
-    
     if (newUserChannel != null && newUserChannel != oldUserChannel && userOptOut(guild, newUserID, "voice"))
     {
         userJoinedVoice(newUserID, newUserChannel, guild, overideTime);

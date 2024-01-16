@@ -183,7 +183,7 @@ function babaHaikuEmbed(purity, list, chans, mye, buy, msgContent, pagestuff, ca
                 msgContent[i] = normalizeMSG(msgContent[i]);
         }
     }
-    if (!(global.dbAccess[1] && global.dbAccess[0])) return callback([{content: "Database is not enabled so no haikus for you!"}]);
+    if (!global.dbEnabled) return callback([{content: "Database is not enabled so no haikus for you!"}]);
 
     if (purity)
     {
@@ -505,7 +505,7 @@ function babaWednesday(msgContent, author, callback)
     //let rawdata = fs.readFileSync(babadata.datalocation + "FrogHolidays/" + 'frogholidays.json'); //load file each time of calling wednesday
     //let holidays = JSON.parse(rawdata);
 
-    if (!(global.dbAccess[1] && global.dbAccess[0])) return callback([{content: funnyDOWText(3, author.id) }]);
+    if (!global.dbEnabled) return callback([{content: funnyDOWText(3, author.id) }]);
 
     ObtainDBHolidays(async function(holidays)
     {
@@ -788,7 +788,7 @@ function babaWednesday(msgContent, author, callback)
 
 function babaWhomst(user, callback)
 {
-    if (!(global.dbAccess[1] && global.dbAccess[0])) return callback({content: "Whomst mayhaps are they, BABA not know as BABA Databasen't" });
+    if (!global.dbEnabled) return callback({content: "Whomst mayhaps are they, BABA not know as BABA Databasen't" });
 
     NameFromUserID(
         function(result)

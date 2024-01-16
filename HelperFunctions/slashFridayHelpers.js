@@ -174,11 +174,7 @@ function funnyDOWText(dowNum, authorID)
 	
 	if (text.includes("[SENDER]"))
 	{
-		if (!(global.dbAccess[1] && global.dbAccess[0]))
-		{
-			text = text.replaceAll("[SENDER]", "BUDDY");
-		}
-		else
+		if(global.dbEnabled)
 		{
 			uname = NameFromUserIDID(
 			function(result)
@@ -194,6 +190,10 @@ function funnyDOWText(dowNum, authorID)
 				}
 			},
 			authorID);
+		}
+		else
+		{
+			text = text.replaceAll("[SENDER]", "BUDDY");
 		}
 	}
 

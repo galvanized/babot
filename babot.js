@@ -11,7 +11,7 @@ const { dailyCallStart } = require('./dailycall.js');
 const { contextInfo, modalInfo, buttonInfo, stringSelectInfo, userSelectInfo, channelSelectInfo } = require('./contextMenu');
 const { log } = require('console');
 
-global.dbAccess = [!process.argv.includes("-db"), process.argv.includes("-db") ? false : true];
+global.dbEnabled = !process.argv.includes("-nodb"); // note: also used to back off of db if it fails to connect
 global.starttime = new Date();
 
 global.interactions = {};
@@ -58,7 +58,7 @@ bot.on('ready', function (evt)
 {
 	console.log('Connected');
 
-	if (global.dbAccess[1])
+	if (global.dbEnabled)
 	{
 		handleDisconnect("Initializing");
 
@@ -90,11 +90,10 @@ bot.on('messageCreate', async message => {txtCommands.babaMessage(bot, message)}
 // v14 works
 bot.on('voiceStateUpdate', (oldMember, newMember) => 
 {
-	// if (babadata.testing === undefined && (global.dbAccess[1] && global.dbAccess[0]))
-	if (global.dbAccess[1] && global.dbAccess[0])
+	
+	if (global.dbEnabled)
 		voiceChannelChange(newMember, oldMember);
-
-	if (!global.dbAccess[1] && global.dbAccess[0])
+	else
 	{
 		var time = new Date();
 		logVCC(newMember, oldMember, time);	
