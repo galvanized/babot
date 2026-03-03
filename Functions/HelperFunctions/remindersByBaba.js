@@ -32,7 +32,13 @@ const { ModalBuilder, ActionRowBuilder, TextInputBuilder } = require('discord.js
 
 const { getD1 } = require('../../Tools/overrides');
 const { antiDelay } = require('./basicHelpers');
-const { DeleteReminderInDB, EditReminderInDB, AddReminderToDB, LoadReminderCache, DMMePlease } = require('../Database/databaseVoiceController');
+const {
+  DeleteReminderInDB,
+  EditReminderInDB,
+  AddReminderToDB,
+  LoadReminderCache,
+  DMMePlease,
+} = require('../Database/databaseVoiceController');
 
 var to = {};
 var toList = [];
@@ -47,14 +53,12 @@ global.ReminderMessageExists = {};
  *
  * @returns {Array<Object>} Parsed array of reminder objects stored on disk.
  */
-function getReminderJSON()
-{
-    
-    if (!fs.existsSync(babadata.datalocation + 'reminders.json'))
-        fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify([]));
+function getReminderJSON() {
+  if (!fs.existsSync(babadata.datalocation + 'reminders.json'))
+    fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify([]));
 
-    var data = fs.readFileSync(babadata.datalocation + 'reminders.json');
-    return JSON.parse(data);
+  var data = fs.readFileSync(babadata.datalocation + 'reminders.json');
+  return JSON.parse(data);
 }
 
 /**
@@ -64,17 +68,14 @@ function getReminderJSON()
  * @returns {Array<Object>} Array of reminder objects whose `UserID` matches
  *   `userID`.  Returns an empty array when the user has no reminders.
  */
-function viewReminders(userID)
-{
-    var reminderList = getReminderJSON();
-    var userReminders = [];
-    for (var i = 0; i < reminderList.length; i++)
-    {
-        if (reminderList[i].UserID == userID)
-            userReminders.push(reminderList[i]);
-    }
+function viewReminders(userID) {
+  var reminderList = getReminderJSON();
+  var userReminders = [];
+  for (var i = 0; i < reminderList.length; i++) {
+    if (reminderList[i].UserID == userID) userReminders.push(reminderList[i]);
+  }
 
-    return userReminders;
+  return userReminders;
 }
 
 /**
@@ -97,113 +98,101 @@ function viewReminders(userID)
  *   Used by `DailyReminderCall` to refresh states without re-arming timeouts.
  * @returns {void}
  */
-function RefreshReminders(dontRun = false)
-{
-    var reminderList = getReminderJSON();
-    for (var i = 0; i < reminderList.length; i++)
-    {
-        const remmy = reminderList[i];
+function RefreshReminders(dontRun = false) {
+  var reminderList = getReminderJSON();
+  for (var i = 0; i < reminderList.length; i++) {
+    const remmy = reminderList[i];
 
-        if (remmy.State == 'Added' || remmy.State == 'Edited' || remmy.State == 'Pending')
-        {
-            if (to[remmy.ID] != null)
-            {
-                clearTimeout(to[remmy.ID]);
-                delete to[remmy.ID];
-            }
+    if (remmy.State == 'Added' || remmy.State == 'Edited' || remmy.State == 'Pending') {
+      if (to[remmy.ID] != null) {
+        clearTimeout(to[remmy.ID]);
+        delete to[remmy.ID];
+      }
 
-            var stateChangedHere = false;
-            var beforeState = remmy.State;
-            
-            var dateOfRem = new Date(remmy.Date);
-            // if date is before midnight, we will set state to Running, else we will set it to Pending
-            var nextMidnight = getD1();
-            nextMidnight.setHours(23);
-            nextMidnight.setMinutes(59);
-            nextMidnight.setSeconds(59);
+      var stateChangedHere = false;
+      var beforeState = remmy.State;
 
-            if (dateOfRem < nextMidnight)
-                remmy.State = 'Running';
-            else
-                remmy.State = 'Pending';
+      var dateOfRem = new Date(remmy.Date);
+      // if date is before midnight, we will set state to Running, else we will set it to Pending
+      var nextMidnight = getD1();
+      nextMidnight.setHours(23);
+      nextMidnight.setMinutes(59);
+      nextMidnight.setSeconds(59);
 
-            stateChangedHere = beforeState != remmy.State;
+      if (dateOfRem < nextMidnight) remmy.State = 'Running';
+      else remmy.State = 'Pending';
 
-            if (stateChangedHere)
-            {
-                reminderList[i] = remmy;
-                fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
-            }
-        }
+      stateChangedHere = beforeState != remmy.State;
 
-        if (remmy.State == 'Running' && !dontRun)
-        {
-            var timeToRun = new Date(remmy.Date) - Date.now();
-            if (timeToRun <= 0)
-            {
-                reminderCompleted(remmy);
-                remmy.State = 'Deleted';
-                remmy.UpdateDB = 'Delete';
-
-                reminderList[i] = remmy;
-                fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
-            }
-            else
-            {
-                console.log('Reminder ' + remmy.ID + ' will run in ' + timeToRun + 'ms');
-                var timeout = setTimeout(function()
-                {
-                    reminderCompleted(remmy);
-                    remmy.State = 'Deleted';
-                    remmy.UpdateDB = 'Delete';
-
-                    fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
-
-                    RefreshReminders();
-                }, timeToRun);
-
-                to[remmy.ID] = timeout;
-                toList.push(timeout);
-
-                remmy.State = 'RunningNow';
-
-                reminderList[i] = remmy;
-                fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
-            }
-        }
+      if (stateChangedHere) {
+        reminderList[i] = remmy;
+        fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
+      }
     }
 
-    for (var i = 0; i < reminderList.length; i++)
-    {
-        if (reminderList[i].UpdateDB)
-        {
-            if (reminderList[i].UpdateDB == 'Delete')
-                DeleteReminderInDB(reminderList[i]).catch(function(err) { DMMePlease(err); });
-            else if (reminderList[i].UpdateDB == 'Edit')
-                EditReminderInDB(reminderList[i]).catch(function(err) { DMMePlease(err); });
-            else if (reminderList[i].UpdateDB == 'Add')
-                AddReminderToDB(reminderList[i]).catch(function(err) { DMMePlease(err); });
-            
-            if (reminderList[i].UpdateDB != 'Delete')
-            {
-                reminderList[i].UpdateDB = false;
-                fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
-            }
-            else
-            {
-                // remove the reminder from the timeout list if it exists
-                if (to[reminderList[i].ID] != null)
-                {
-                    clearTimeout(to[reminderList[i].ID]);
-                    delete to[reminderList[i].ID];
-                }
+    if (remmy.State == 'Running' && !dontRun) {
+      var timeToRun = new Date(remmy.Date) - Date.now();
+      if (timeToRun <= 0) {
+        reminderCompleted(remmy);
+        remmy.State = 'Deleted';
+        remmy.UpdateDB = 'Delete';
 
-                reminderList.splice(i, 1);
-                fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
-                i--;
-            }
-        }
+        reminderList[i] = remmy;
+        fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
+      } else {
+        console.log('Reminder ' + remmy.ID + ' will run in ' + timeToRun + 'ms');
+        var timeout = setTimeout(function () {
+          reminderCompleted(remmy);
+          remmy.State = 'Deleted';
+          remmy.UpdateDB = 'Delete';
+
+          fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
+
+          RefreshReminders();
+        }, timeToRun);
+
+        to[remmy.ID] = timeout;
+        toList.push(timeout);
+
+        remmy.State = 'RunningNow';
+
+        reminderList[i] = remmy;
+        fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
+      }
     }
+  }
+
+  for (var i = 0; i < reminderList.length; i++) {
+    if (reminderList[i].UpdateDB) {
+      if (reminderList[i].UpdateDB == 'Delete')
+        DeleteReminderInDB(reminderList[i]).catch(function (err) {
+          DMMePlease(err);
+        });
+      else if (reminderList[i].UpdateDB == 'Edit')
+        EditReminderInDB(reminderList[i]).catch(function (err) {
+          DMMePlease(err);
+        });
+      else if (reminderList[i].UpdateDB == 'Add')
+        AddReminderToDB(reminderList[i]).catch(function (err) {
+          DMMePlease(err);
+        });
+
+      if (reminderList[i].UpdateDB != 'Delete') {
+        reminderList[i].UpdateDB = false;
+        fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
+      } else {
+        // remove the reminder from the timeout list if it exists
+        if (to[reminderList[i].ID] != null) {
+          clearTimeout(to[reminderList[i].ID]);
+          delete to[reminderList[i].ID];
+        }
+
+        reminderList.splice(i, 1);
+        fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
+        i--;
+      }
+    }
+  }
 }
 
 /**
@@ -241,98 +230,95 @@ function RefreshReminders(dontRun = false)
  *   saved under `babadata.temp` to attach to the message.
  * @returns {void}
  */
-function reminderCompleted(reminderItem)
-{
-    console.log('Reminder ' + reminderItem.ID + ' completed');
-    var objectiveSender = {
-        content: reminderItem.EnableAtPerson ? '<@' + reminderItem.UserID + '> `Baba Reminds You:`\n' + reminderItem.Message : reminderItem.Message,
-    };
+function reminderCompleted(reminderItem) {
+  console.log('Reminder ' + reminderItem.ID + ' completed');
+  var objectiveSender = {
+    content: reminderItem.EnableAtPerson
+      ? '<@' + reminderItem.UserID + '> `Baba Reminds You:`\n' + reminderItem.Message
+      : reminderItem.Message,
+  };
 
-    console.log(objectiveSender);
+  console.log(objectiveSender);
 
-    var AdditionalMessagesToSend = [];
+  var AdditionalMessagesToSend = [];
 
-    if (reminderItem.Files != null && reminderItem.Files.length > 0)
-    {
-        objectiveSender.files = [];
-        var maxFilesPerMessage = 5;
-        var currentFiles = 0;
-        var currentFileList = objectiveSender.files;
-        for (var i = 0; i < reminderItem.Files.length; i++)
-        {
-            var extensi = reminderItem.Files[i].split('.').pop();
-            var discordFile = new Discord.AttachmentBuilder(babadata.temp + reminderItem.Files[i], { name: 'File' + i + '.' + extensi, description: 'Baba Makes Messages' });
+  if (reminderItem.Files != null && reminderItem.Files.length > 0) {
+    objectiveSender.files = [];
+    var maxFilesPerMessage = 5;
+    var currentFiles = 0;
+    var currentFileList = objectiveSender.files;
+    for (var i = 0; i < reminderItem.Files.length; i++) {
+      var extensi = reminderItem.Files[i].split('.').pop();
+      var discordFile = new Discord.AttachmentBuilder(babadata.temp + reminderItem.Files[i], {
+        name: 'File' + i + '.' + extensi,
+        description: 'Baba Makes Messages',
+      });
 
-            if (currentFiles < maxFilesPerMessage)
-            {
-                currentFileList.push(discordFile);
-                currentFiles++;
-            }
-            else
-            {
-                var newFileObject = {};
-                var newFileList = [];
-                newFileObject.files = newFileList;
-                newFileList.push(discordFile);
-                AdditionalMessagesToSend.push(newFileObject);
-                currentFiles = 1;
-                currentFileList = newFileList;
-            }
-        }
+      if (currentFiles < maxFilesPerMessage) {
+        currentFileList.push(discordFile);
+        currentFiles++;
+      } else {
+        var newFileObject = {};
+        var newFileList = [];
+        newFileObject.files = newFileList;
+        newFileList.push(discordFile);
+        AdditionalMessagesToSend.push(newFileObject);
+        currentFiles = 1;
+        currentFileList = newFileList;
+      }
     }
+  }
 
-    var guildID = babadata.testing === undefined ? '454457880825823252' : '522136584649310208';
-    global.Bot.guilds.fetch(guildID).then(guild => {
-        var channelID = reminderItem.ThreadParentID == null ? reminderItem.ChannelID : reminderItem.ThreadParentID;
-        guild.channels.fetch(channelID).then(async channel =>
-        {
-            if (reminderItem.ThreadParentID != null)
-            {
-                channel.threads.fetch(reminderItem.ChannelID).then(async thread =>
-                {
-                    console.log('Sending message to thread');
-                    var msg = await thread.send(objectiveSender);
-                    if (AdditionalMessagesToSend.length > 0)
-                    {
-                        for (var i = 0; i < AdditionalMessagesToSend.length; i++)
-                            var msg = await msg.reply(AdditionalMessagesToSend[i]);
-                    }
-
-                    // delete all the files that were saved to the local file system
-                    if (reminderItem.Files != null && reminderItem.Files.length > 0)
-                    {
-                        for (var i = 0; i < reminderItem.Files.length; i++)
-                            fs.unlinkSync(babadata.temp + reminderItem.Files[i]);
-                    }
-                }).catch((error) =>
-                {
-                    console.error(error);
-                });
-            }
-            else
-            {
-                console.log('Sending message to channel');
-                var msg = await channel.send(objectiveSender);
-                if (AdditionalMessagesToSend.length > 0)
-                {
-                    for (var i = 0; i < AdditionalMessagesToSend.length; i++)
-                        var msg = await msg.reply(AdditionalMessagesToSend[i]);
+  var guildID = babadata.testing === undefined ? '454457880825823252' : '522136584649310208';
+  global.Bot.guilds
+    .fetch(guildID)
+    .then((guild) => {
+      var channelID =
+        reminderItem.ThreadParentID == null ? reminderItem.ChannelID : reminderItem.ThreadParentID;
+      guild.channels
+        .fetch(channelID)
+        .then(async (channel) => {
+          if (reminderItem.ThreadParentID != null) {
+            channel.threads
+              .fetch(reminderItem.ChannelID)
+              .then(async (thread) => {
+                console.log('Sending message to thread');
+                var msg = await thread.send(objectiveSender);
+                if (AdditionalMessagesToSend.length > 0) {
+                  for (var i = 0; i < AdditionalMessagesToSend.length; i++)
+                    var msg = await msg.reply(AdditionalMessagesToSend[i]);
                 }
 
-                if (reminderItem.Files != null && reminderItem.Files.length > 0)
-                {
-                    // delete all the files that were saved to the local file system
-                    for (var i = 0; i < reminderItem.Files.length; i++)
-                        fs.unlinkSync(babadata.temp + reminderItem.Files[i]);
+                // delete all the files that were saved to the local file system
+                if (reminderItem.Files != null && reminderItem.Files.length > 0) {
+                  for (var i = 0; i < reminderItem.Files.length; i++)
+                    fs.unlinkSync(babadata.temp + reminderItem.Files[i]);
                 }
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          } else {
+            console.log('Sending message to channel');
+            var msg = await channel.send(objectiveSender);
+            if (AdditionalMessagesToSend.length > 0) {
+              for (var i = 0; i < AdditionalMessagesToSend.length; i++)
+                var msg = await msg.reply(AdditionalMessagesToSend[i]);
             }
-        }).catch((error) =>
-        {
-            console.error(error);
+
+            if (reminderItem.Files != null && reminderItem.Files.length > 0) {
+              // delete all the files that were saved to the local file system
+              for (var i = 0; i < reminderItem.Files.length; i++)
+                fs.unlinkSync(babadata.temp + reminderItem.Files[i]);
+            }
+          }
+        })
+        .catch((error) => {
+          console.error(error);
         });
-    }).catch((error) => 
-    {
-        console.error(error);
+    })
+    .catch((error) => {
+      console.error(error);
     });
 }
 
@@ -352,34 +338,30 @@ function reminderCompleted(reminderItem)
  * @returns {Promise<Array<string>>} Resolves with an array of the saved file
  *   names (basename only, relative to `babadata.temp`).
  */
-async function getAttachments(message, IDID)
-{
-    const files = message.attachments;
-    const fileNames = [];
+async function getAttachments(message, IDID) {
+  const files = message.attachments;
+  const fileNames = [];
 
-    const promises = files.map((attachment, index) =>
-    {
-        const fileName = attachment.name;
-        const fileExtension = fileName.split('.').pop();
-        const newFileName = `file${index}_${IDID}.${fileExtension}`;
+  const promises = files.map((attachment, index) => {
+    const fileName = attachment.name;
+    const fileExtension = fileName.split('.').pop();
+    const newFileName = `file${index}_${IDID}.${fileExtension}`;
 
-        return fetch(attachment.url)
-            .then(res => res.arrayBuffer())
-            .then(data =>
-            {
-                const nodeBuffer = Buffer.from(data);
-                fs.writeFileSync(babadata.temp + newFileName, nodeBuffer);
-                fileNames.push(newFileName);
-            })
-            .catch(err =>
-            {
-                console.error(`Failed to process ${attachment.url}:`, err);
-            });
-    });
+    return fetch(attachment.url)
+      .then((res) => res.arrayBuffer())
+      .then((data) => {
+        const nodeBuffer = Buffer.from(data);
+        fs.writeFileSync(babadata.temp + newFileName, nodeBuffer);
+        fileNames.push(newFileName);
+      })
+      .catch((err) => {
+        console.error(`Failed to process ${attachment.url}:`, err);
+      });
+  });
 
-    await Promise.all(promises);
+  await Promise.all(promises);
 
-    return fileNames;
+  return fileNames;
 }
 
 /**
@@ -415,40 +397,44 @@ async function getAttachments(message, IDID)
  *   the reminder.
  * @returns {Promise<void>}
  */
-async function addReminder(DiscordMessage, UID, ChannelSendTo, MessageToSend, DelayinMS, IncludeAtUser)
-{
-    var IDIDIDID = Date.now();
-    var Files = null;
-    if (DiscordMessage != null && DelayinMS >= 0)
-    {
-        Files = await getAttachments(DiscordMessage, IDIDIDID);
-    }
+async function addReminder(
+  DiscordMessage,
+  UID,
+  ChannelSendTo,
+  MessageToSend,
+  DelayinMS,
+  IncludeAtUser
+) {
+  var IDIDIDID = Date.now();
+  var Files = null;
+  if (DiscordMessage != null && DelayinMS >= 0) {
+    Files = await getAttachments(DiscordMessage, IDIDIDID);
+  }
 
-	if (DelayinMS < 0)
-		antiDelay(DiscordMessage);
-	else
-	{
-        var dateOfReminder = new Date(Date.now() + DelayinMS);
-        var reminderObject = {
-            'Source': DiscordMessage == null ? 'Reminder' : 'DM Message',
-            'Message': MessageToSend,
-            'Files': Files,
-            'Date': dateOfReminder,
-            'ChannelID': ChannelSendTo.id,
-            'UserID': UID,
-            'ThreadParentID': (ChannelSendTo.type == 11 || ChannelSendTo.type == 12) ? ChannelSendTo.parentId : null,
-            'EnableAtPerson': IncludeAtUser,
-            'State': 'Added',
-            'ID': IDIDIDID,
-            'UpdateDB': 'Add'
-        };
+  if (DelayinMS < 0) antiDelay(DiscordMessage);
+  else {
+    var dateOfReminder = new Date(Date.now() + DelayinMS);
+    var reminderObject = {
+      Source: DiscordMessage == null ? 'Reminder' : 'DM Message',
+      Message: MessageToSend,
+      Files: Files,
+      Date: dateOfReminder,
+      ChannelID: ChannelSendTo.id,
+      UserID: UID,
+      ThreadParentID:
+        ChannelSendTo.type == 11 || ChannelSendTo.type == 12 ? ChannelSendTo.parentId : null,
+      EnableAtPerson: IncludeAtUser,
+      State: 'Added',
+      ID: IDIDIDID,
+      UpdateDB: 'Add',
+    };
 
-        var reminders = getReminderJSON();
-        reminders.push(reminderObject);
-        fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminders));
+    var reminders = getReminderJSON();
+    reminders.push(reminderObject);
+    fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminders));
 
-        RefreshReminders();
-	}
+    RefreshReminders();
+  }
 }
 
 /**
@@ -462,22 +448,19 @@ async function addReminder(DiscordMessage, UID, ChannelSendTo, MessageToSend, De
  * @param {number|string} reminderID - The unique ID of the reminder to remove.
  * @returns {void}
  */
-function removeReminder(reminderID)
-{
-    var reminderList = getReminderJSON();
-    for (var i = 0; i < reminderList.length; i++)
-    {
-        if (reminderList[i].ID == reminderID)
-        {
-            reminderList[i].State = 'Deleted';
-            reminderList[i].UpdateDB = 'Delete';
-            break;
-        }
+function removeReminder(reminderID) {
+  var reminderList = getReminderJSON();
+  for (var i = 0; i < reminderList.length; i++) {
+    if (reminderList[i].ID == reminderID) {
+      reminderList[i].State = 'Deleted';
+      reminderList[i].UpdateDB = 'Delete';
+      break;
     }
+  }
 
-    fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
+  fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
 
-    RefreshReminders();
+  RefreshReminders();
 }
 
 /**
@@ -486,16 +469,13 @@ function removeReminder(reminderID)
  * @param {number|string} reminderID - The unique ID of the reminder to fetch.
  * @returns {Object|null} The matching reminder object, or `null` if not found.
  */
-function getReminder(reminderID)
-{
-    var reminderList = getReminderJSON();
-    for (var i = 0; i < reminderList.length; i++)
-    {
-        if (reminderList[i].ID == reminderID)
-            return reminderList[i];
-    }
+function getReminder(reminderID) {
+  var reminderList = getReminderJSON();
+  for (var i = 0; i < reminderList.length; i++) {
+    if (reminderList[i].ID == reminderID) return reminderList[i];
+  }
 
-    return null;
+  return null;
 }
 
 /**
@@ -513,25 +493,21 @@ function getReminder(reminderID)
  *   keep the existing date unchanged.
  * @returns {void}
  */
-function editReminder(reminderID, newMessage, newDate)
-{
-    var reminderList = getReminderJSON();
-    for (var i = 0; i < reminderList.length; i++)
-    {
-        if (reminderList[i].ID == reminderID)
-        {
-            reminderList[i].Message = newMessage;
-            if (newDate != null)
-                reminderList[i].Date = newDate;
-            reminderList[i].State = 'Edited';
-            reminderList[i].UpdateDB = 'Edit';
-            break;
-        }
+function editReminder(reminderID, newMessage, newDate) {
+  var reminderList = getReminderJSON();
+  for (var i = 0; i < reminderList.length; i++) {
+    if (reminderList[i].ID == reminderID) {
+      reminderList[i].Message = newMessage;
+      if (newDate != null) reminderList[i].Date = newDate;
+      reminderList[i].State = 'Edited';
+      reminderList[i].UpdateDB = 'Edit';
+      break;
     }
+  }
 
-    fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
+  fs.writeFileSync(babadata.datalocation + 'reminders.json', JSON.stringify(reminderList));
 
-    RefreshReminders();
+  RefreshReminders();
 }
 
 /**
@@ -544,9 +520,8 @@ function editReminder(reminderID, newMessage, newDate)
  *
  * @returns {void}
  */
-function DailyReminderCall()
-{
-    RefreshReminders(true);
+function DailyReminderCall() {
+  RefreshReminders(true);
 }
 
 /**
@@ -561,33 +536,29 @@ function DailyReminderCall()
  *   successfully, or rejects with `"AllCache"` if the cache load failed (the
  *   reminders are still started in either case).
  */
-function StartTheReminders()
-{    
-    const CachceAsync = async function() 
-    {
-        // Reminder Values - reminders.json - `Select * from reminders`
-        const ReminderResult = await LoadReminderCache();
-        console.log('Reminder Cache: ' + ReminderResult, false, true);
-    };
+function StartTheReminders() {
+  const CachceAsync = async function () {
+    // Reminder Values - reminders.json - `Select * from reminders`
+    const ReminderResult = await LoadReminderCache();
+    console.log('Reminder Cache: ' + ReminderResult, false, true);
+  };
 
-    var PromisedStartReminders = new Promise((resolve, reject) =>
-    {
-        CachceAsync().then(() => 
-        {
-            RefreshReminders();
-            console.log('Reminders Loaded and Started');
-            resolve('SuccCess');
-        }).catch((err) => 
-        {
-            RefreshReminders();
-            console.log('Reminders Started');
-            reject('AllCache');
-        });
-    });
+  var PromisedStartReminders = new Promise((resolve, reject) => {
+    CachceAsync()
+      .then(() => {
+        RefreshReminders();
+        console.log('Reminders Loaded and Started');
+        resolve('SuccCess');
+      })
+      .catch((err) => {
+        RefreshReminders();
+        console.log('Reminders Started');
+        reject('AllCache');
+      });
+  });
 
-    return PromisedStartReminders;
+  return PromisedStartReminders;
 }
-
 
 /////// Embed Stuff ///////
 
@@ -599,13 +570,10 @@ function StartTheReminders()
  * @returns {number} The clamped index: `0` if `index < 0`, the last valid
  *   index if `index >= reminderList.length`, otherwise `index` unchanged.
  */
-function checkUntilGood(reminderList, index)
-{
-    if (index < 0)
-        return 0;
-    if (index >= reminderList.length)
-        return reminderList.length - 1;
-    return index;
+function checkUntilGood(reminderList, index) {
+  if (index < 0) return 0;
+  if (index >= reminderList.length) return reminderList.length - 1;
+  return index;
 }
 
 /**
@@ -622,16 +590,13 @@ function checkUntilGood(reminderList, index)
  *   `getUserReminder`, or `null` if the reminder ID is not found in the user's
  *   list.
  */
-function getUserReminderbyID(reminderID, userID)
-{
-    var reminderList = viewReminders(userID);
-    for (var i = 0; i < reminderList.length; i++)
-    {
-        if (reminderList[i].ID == reminderID)
-            return getUserReminder(userID, i);
-    }
+function getUserReminderbyID(reminderID, userID) {
+  var reminderList = viewReminders(userID);
+  for (var i = 0; i < reminderList.length; i++) {
+    if (reminderList[i].ID == reminderID) return getUserReminder(userID, i);
+  }
 
-    return null;
+  return null;
 }
 
 /**
@@ -647,17 +612,18 @@ function getUserReminderbyID(reminderID, userID)
  *   the Discord user ID of the owner.  Returns `null` when no matching
  *   reminder is found.
  */
-function getUserReminderAndIDFromID(id)
-{
-    var reminderList = getReminderJSON();
+function getUserReminderAndIDFromID(id) {
+  var reminderList = getReminderJSON();
 
-    for (var i = 0; i < reminderList.length; i++)
-    {
-        if (reminderList[i].ID == id)
-            return [getUserReminderbyID(reminderList[i].ID , reminderList[i].UserID), reminderList[i].UserID];
-    }
+  for (var i = 0; i < reminderList.length; i++) {
+    if (reminderList[i].ID == id)
+      return [
+        getUserReminderbyID(reminderList[i].ID, reminderList[i].UserID),
+        reminderList[i].UserID,
+      ];
+  }
 
-    return null;
+  return null;
 }
 
 /**
@@ -667,17 +633,14 @@ function getUserReminderAndIDFromID(id)
  * @returns {string|null} The `UserID` of the reminder owner, or `null` if no
  *   reminder with that ID exists in `reminders.json`.
  */
-function getUserIDFromID(id)
-{
-    var reminderList = getReminderJSON();
+function getUserIDFromID(id) {
+  var reminderList = getReminderJSON();
 
-    for (var i = 0; i < reminderList.length; i++)
-    {
-        if (reminderList[i].ID == id)
-            return reminderList[i].UserID;
-    }
+  for (var i = 0; i < reminderList.length; i++) {
+    if (reminderList[i].ID == id) return reminderList[i].UserID;
+  }
 
-    return null;
+  return null;
 }
 
 /**
@@ -697,89 +660,109 @@ function getUserIDFromID(id)
  *   collector expires) properties.  If the user has no reminders, returns
  *   `{ content: "No Reminders Found", embeds: [] }`.
  */
-function getUserReminder(userID, i)
-{
-    var reminderList = viewReminders(userID);
+function getUserReminder(userID, i) {
+  var reminderList = viewReminders(userID);
 
-    var pagetotal = reminderList.length;
-    
-    var obj = {
-        content: 'Your Reminders',
-        embeds: []
-    };
+  var pagetotal = reminderList.length;
 
-    var finalComponents = [];
+  var obj = {
+    content: 'Your Reminders',
+    embeds: [],
+  };
 
-    var reminder = reminderList[i];
+  var finalComponents = [];
 
-    if (reminder == null)
-    {
-        obj.content = 'No Reminders Found';
-        return obj;
+  var reminder = reminderList[i];
+
+  if (reminder == null) {
+    obj.content = 'No Reminders Found';
+    return obj;
+  }
+
+  var editButton = new Discord.ButtonBuilder()
+    .setCustomId('editrem-' + reminder.ID + '-' + i + '-' + userID)
+    .setLabel('Edit')
+    .setStyle(2);
+  var deleteButton = new Discord.ButtonBuilder()
+    .setCustomId('deleterem-' + reminder.ID + '-' + i + '-' + userID)
+    .setLabel('Delete')
+    .setStyle(4);
+  var dismissButton = new Discord.ButtonBuilder()
+    .setCustomId('dismissrem-' + reminder.ID + '-' + i + '-' + userID)
+    .setLabel('Dismiss Message')
+    .setStyle(3);
+
+  var footer = 'Baba Works in Reminders and in Mysterious Ways';
+  if (pagetotal > 1) {
+    footer += ' - Page ' + (1 + i) + ' of ' + pagetotal;
+    var row = new Discord.ActionRowBuilder();
+
+    var pButton = new Discord.ButtonBuilder()
+      .setCustomId('page' + (i - 1))
+      .setLabel('Previous')
+      .setStyle(1);
+    var jumpButton = new Discord.ButtonBuilder()
+      .setCustomId('jumpToReminder')
+      .setLabel('Jump to ...')
+      .setStyle(3);
+    var nButton = new Discord.ButtonBuilder()
+      .setCustomId('page' + (1 + i))
+      .setLabel('Next')
+      .setStyle(1);
+    if (i == 0) {
+      pButton.setDisabled(true);
+    }
+    if (i == pagetotal - 1) {
+      nButton.setDisabled(true);
     }
 
-    var editButton = new Discord.ButtonBuilder().setCustomId('editrem-' + reminder.ID + '-' + i + '-' + userID).setLabel('Edit').setStyle(2);
-    var deleteButton = new Discord.ButtonBuilder().setCustomId('deleterem-' + reminder.ID + '-' + i+ '-' + userID).setLabel('Delete').setStyle(4);
-    var dismissButton = new Discord.ButtonBuilder().setCustomId('dismissrem-' + reminder.ID + '-' + i + '-' + userID).setLabel('Dismiss Message').setStyle(3);
+    row.addComponents(pButton, jumpButton, nButton, editButton, deleteButton);
+    obj.components = [row];
 
-    var footer = 'Baba Works in Reminders and in Mysterious Ways';
-    if (pagetotal > 1) 
-    {
-        footer += ' - Page ' + (1 + i) + ' of ' + pagetotal;
-        var row = new Discord.ActionRowBuilder();
-        
-        var pButton = new Discord.ButtonBuilder().setCustomId('page'+(i - 1)).setLabel('Previous').setStyle(1);
-        var jumpButton = new Discord.ButtonBuilder().setCustomId('jumpToReminder').setLabel('Jump to ...').setStyle(3);
-        var nButton = new Discord.ButtonBuilder().setCustomId('page'+(1 + i)).setLabel('Next').setStyle(1);
-        if (i == 0)
-        {
-            pButton.setDisabled(true);
-        }
-        if (i == pagetotal - 1)
-        {
-            nButton.setDisabled(true);
-        }
+    var row = new Discord.ActionRowBuilder();
+    row.addComponents(editButton, deleteButton, dismissButton);
+    finalComponents = [row];
+  } else {
+    var row = new Discord.ActionRowBuilder();
+    row.addComponents(editButton, deleteButton, dismissButton);
+    obj.components = [row];
+  }
 
-        row.addComponents(pButton, jumpButton, nButton, editButton, deleteButton);
-        obj.components = [row];
+  var desco = '**Message:** \n' + reminder.Message + '\n\n';
+  var dateString =
+    '<t:' +
+    Math.floor(new Date(reminder.Date).getTime() / 1000) +
+    ':F> which is <t:' +
+    Math.floor(new Date(reminder.Date).getTime() / 1000) +
+    ':R>';
+  desco += '**Date:** ' + dateString + '\n';
+  desco += '**Channel:** <#' + reminder.ChannelID + '>\n';
 
-        var row = new Discord.ActionRowBuilder();
-        row.addComponents(editButton, deleteButton, dismissButton);
-        finalComponents = [row];
-    }
-    else
-    {
-        var row = new Discord.ActionRowBuilder();
-        row.addComponents(editButton, deleteButton, dismissButton);
-        obj.components = [row];
-    }
+  var footobj = {
+    text: footer,
+    iconURL:
+      'https://media.discordapp.net/attachments/574840583563116566/949515044746559568/JSO3bX0V.png',
+  };
 
-    var desco = '**Message:** \n' + reminder.Message + '\n\n';
-    var dateString = '<t:' + Math.floor(new Date(reminder.Date).getTime() / 1000) + ':F> which is <t:' + Math.floor(new Date(reminder.Date).getTime() / 1000) + ':R>';
-    desco += '**Date:** ' + dateString + '\n';
-    desco += '**Channel:** <#' + reminder.ChannelID + '>\n';
+  var colorString = getReminderColor(
+    new Date(parseInt(reminder.ID)),
+    new Date(reminder.Date),
+    getD1(true)
+  );
 
-    var footobj = {
-        text : footer,
-        iconURL : 'https://media.discordapp.net/attachments/574840583563116566/949515044746559568/JSO3bX0V.png'
-    };
+  // if color strong is not a valid hex color, set it to white
+  if (!/^#[0-9A-F]{6}$/i.test(colorString)) colorString = '#FFFFFF';
 
-    var colorString = getReminderColor(new Date(parseInt(reminder.ID)), new Date(reminder.Date), getD1(true));
-
-    // if color strong is not a valid hex color, set it to white
-    if (!/^#[0-9A-F]{6}$/i.test(colorString))
-        colorString = '#FFFFFF';
-
-    var exampleEmbed = new Discord.EmbedBuilder() // embed for the haiku
+  var exampleEmbed = new Discord.EmbedBuilder() // embed for the haiku
     .setColor(colorString)
     .setTitle(reminder.Source + ' Information')
     .setDescription(desco)
     .setFooter(footobj);
 
-    obj.embeds = [exampleEmbed];
-    obj.finalComponents = finalComponents;
+  obj.embeds = [exampleEmbed];
+  obj.finalComponents = finalComponents;
 
-    return obj;
+  return obj;
 }
 
 /**
@@ -802,35 +785,31 @@ function getUserReminder(userID, i)
  * @returns {string} A CSS hex colour string (e.g. `"#FF8000"`). Cannot return
  *   `"#FFFFFF"` despite the dead-code fallback at the end of the function.
  */
-function getReminderColor(started, end, now) 
-{
-    const startTime = started.getTime();
-    const endTime = end.getTime();
-    const nowTime = now.getTime();
-    const midTime = startTime + (endTime - startTime) / 2;
-  
-    if (nowTime <= midTime) 
-    {
-        // Phase 1: Green (0,255,0) → Yellow (255,255,0)
-        const progress = (nowTime - startTime) / (midTime - startTime);
-        const g = Math.round(255 * progress);
-        const r = 255;
-        const b = 0;
-        return rgbToHex(r, g, b);
-    } 
-    else 
-    {
-        // Phase 2: Yellow (255,255,0) → Red (255,0,0)
-        const progress = (nowTime - midTime) / (endTime - midTime);
-        const g = 255;
-        const r = Math.round(255 * (1 - progress));
-        const b = 0;
-        return rgbToHex(r, g, b);
-    }
+function getReminderColor(started, end, now) {
+  const startTime = started.getTime();
+  const endTime = end.getTime();
+  const nowTime = now.getTime();
+  const midTime = startTime + (endTime - startTime) / 2;
 
-    return '#FFFFFF'; // Default to white if something goes wrong
+  if (nowTime <= midTime) {
+    // Phase 1: Green (0,255,0) → Yellow (255,255,0)
+    const progress = (nowTime - startTime) / (midTime - startTime);
+    const g = Math.round(255 * progress);
+    const r = 255;
+    const b = 0;
+    return rgbToHex(r, g, b);
+  } else {
+    // Phase 2: Yellow (255,255,0) → Red (255,0,0)
+    const progress = (nowTime - midTime) / (endTime - midTime);
+    const g = 255;
+    const r = Math.round(255 * (1 - progress));
+    const b = 0;
+    return rgbToHex(r, g, b);
+  }
+
+  return '#FFFFFF'; // Default to white if something goes wrong
 }
-  
+
 /**
  * Converts individual red, green, and blue channel values to an uppercase CSS
  * hex colour string.
@@ -841,14 +820,12 @@ function getReminderColor(started, end, now)
  * @returns {string} Uppercase hex colour string including the `#` prefix
  *   (e.g. `"#FF8C00"`).
  */
-function rgbToHex(r, g, b) 
-{
-    return `#${[r, g, b]
-        .map(x => x.toString(16).padStart(2, '0'))
-        .join('')
-        .toUpperCase()}`;
+function rgbToHex(r, g, b) {
+  return `#${[r, g, b]
+    .map((x) => x.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()}`;
 }
-
 
 /**
  * Attaches a pagination collector to a reminder embed message and handles
@@ -872,51 +849,43 @@ function rgbToHex(r, g, b)
  *   components to restore on the message once the collector ends.
  * @returns {void}
  */
-function handleButtonsEmbedReminders(channel, message, userid, finalComps)
-{
-    global.paged[message.id] = 0;
-    global.ReminderMessageExists[message.id] = true;
-    console.log('Handling buttons embed reminders');
-    const filter = i => (i.customId.includes('page')) 
-                        && i.message.id === message.id && i.user.id === userid;
+function handleButtonsEmbedReminders(channel, message, userid, finalComps) {
+  global.paged[message.id] = 0;
+  global.ReminderMessageExists[message.id] = true;
+  console.log('Handling buttons embed reminders');
+  const filter = (i) =>
+    i.customId.includes('page') && i.message.id === message.id && i.user.id === userid;
 
-    
-    const collector = channel.createMessageComponentCollector({ filter, time: 30000 });
-    collector.on('collect', async i => {
-        if (i.customId.includes('page')) 
-        {
-            //i.deferUpdate();
-            var page = parseInt(i.customId.replace('page', ''));
-            
-            global.paged[message.id] = page;
+  const collector = channel.createMessageComponentCollector({ filter, time: 30000 });
+  collector.on('collect', async (i) => {
+    if (i.customId.includes('page')) {
+      //i.deferUpdate();
+      var page = parseInt(i.customId.replace('page', ''));
 
-            var newd = getUserReminder(userid, page);
+      global.paged[message.id] = page;
 
-            if (newd.content != 'No Reminders Found')
-            {
-                delete newd.finalComponents;
-                i.update(newd);
-            }
+      var newd = getUserReminder(userid, page);
 
-            collector.resetTimer();
+      if (newd.content != 'No Reminders Found') {
+        delete newd.finalComponents;
+        i.update(newd);
+      }
 
-            //await i.update({ content: 'A button was clicked!', components: [] });
-        }
-    });
+      collector.resetTimer();
 
-	buttonsAwaitMessageComponentReminder(message, userid, collector);
- 
-    collector.on('end', collected => {
-        try 
-        {
-            if (global.ReminderMessageExists[message.id])
-                message.edit({components: finalComps});
-        }
-        catch (error) 
-        {
-            console.error(error, false);
-        }
-    });
+      //await i.update({ content: 'A button was clicked!', components: [] });
+    }
+  });
+
+  buttonsAwaitMessageComponentReminder(message, userid, collector);
+
+  collector.on('end', (collected) => {
+    try {
+      if (global.ReminderMessageExists[message.id]) message.edit({ components: finalComps });
+    } catch (error) {
+      console.error(error, false);
+    }
+  });
 }
 
 /**
@@ -938,71 +907,71 @@ function handleButtonsEmbedReminders(channel, message, userid, finalComps)
  *   pagination collector so its timer can be reset after a jump.
  * @returns {void}
  */
-function buttonsAwaitMessageComponentReminder(message, userid, collector)
-{
-    const collectorFilter = i => {
-        return i.user.id === userid && i.message.id === message.id && i.customId.includes('jumpToReminder');
-    };
+function buttonsAwaitMessageComponentReminder(message, userid, collector) {
+  const collectorFilter = (i) => {
+    return (
+      i.user.id === userid && i.message.id === message.id && i.customId.includes('jumpToReminder')
+    );
+  };
 
-    message.awaitMessageComponent({ filter: collectorFilter, componentType: ComponentType.Button, time: 100000 })
-    .then(async initialInteraction => 
-        {
-            // open a modal with a text input for the user to enter the haiku number
-            const modal = new ModalBuilder()
-                .setCustomId('jumpToNumberRemind')
-                .setTitle('Jump to Custom Reminder Page');
+  message
+    .awaitMessageComponent({
+      filter: collectorFilter,
+      componentType: ComponentType.Button,
+      time: 100000,
+    })
+    .then(async (initialInteraction) => {
+      // open a modal with a text input for the user to enter the haiku number
+      const modal = new ModalBuilder()
+        .setCustomId('jumpToNumberRemind')
+        .setTitle('Jump to Custom Reminder Page');
 
-            const input = new TextInputBuilder()
-                .setCustomId('remNum')
-                .setLabel('The page of the reminder to jump too')
-                .setStyle(1)
-                .setRequired(true)
-                .setPlaceholder('Reminder Number');
+      const input = new TextInputBuilder()
+        .setCustomId('remNum')
+        .setLabel('The page of the reminder to jump too')
+        .setStyle(1)
+        .setRequired(true)
+        .setPlaceholder('Reminder Number');
 
-            const firstActionRow = new ActionRowBuilder().addComponents(input);
-            modal.addComponents(firstActionRow);
+      const firstActionRow = new ActionRowBuilder().addComponents(input);
+      modal.addComponents(firstActionRow);
 
-            initialInteraction.showModal(modal);
+      initialInteraction.showModal(modal);
 
-            await initialInteraction.awaitModalSubmit({
-                filter: (i) =>
-                      i.customId === 'jumpToNumberRemind' &&
-                      i.user.id === userid,
-                time: 60000,
-            }).then(async (modalInteraction) => {
-                modalInteraction.deferUpdate();
-                var chansend = modalInteraction.fields.getTextInputValue('remNum');
-                var num = parseInt(chansend);
-                if (num != null && num > 0)
-                {
-                    global.paged[message.id] = num - 1;
-                    // update the message to show the haiku at the given number
-                    
-                    var newd = getUserReminder(userid, global.paged[message.id]);
+      await initialInteraction
+        .awaitModalSubmit({
+          filter: (i) => i.customId === 'jumpToNumberRemind' && i.user.id === userid,
+          time: 60000,
+        })
+        .then(async (modalInteraction) => {
+          modalInteraction.deferUpdate();
+          var chansend = modalInteraction.fields.getTextInputValue('remNum');
+          var num = parseInt(chansend);
+          if (num != null && num > 0) {
+            global.paged[message.id] = num - 1;
+            // update the message to show the haiku at the given number
 
-                    if (newd.content != 'No Reminders Found')
-                    {
-                        delete newd.finalComponents;
-                        message.edit(newd);
-                    }
+            var newd = getUserReminder(userid, global.paged[message.id]);
 
-                    collector.resetTimer();
-                    buttonsAwaitMessageComponentReminder(message, userid, collector);
-                }
-            });
-        }
-    )
-    .catch(err => console.error(err, true));
+            if (newd.content != 'No Reminders Found') {
+              delete newd.finalComponents;
+              message.edit(newd);
+            }
+
+            collector.resetTimer();
+            buttonsAwaitMessageComponentReminder(message, userid, collector);
+          }
+        });
+    })
+    .catch((err) => console.error(err, true));
 }
 
-var cleanupFn = function cleanup() 
-{
-	console.log('Ending Reminder Messages');
-	if (toList != null)
-        toList.forEach(clearTimeout);
+var cleanupFn = function cleanup() {
+  console.log('Ending Reminder Messages');
+  if (toList != null) toList.forEach(clearTimeout);
 
-    to = {};
-    toList = [];
+  to = {};
+  toList = [];
 };
 
 global.CommandHelperCleanup = cleanupFn;
@@ -1010,17 +979,16 @@ global.CommandHelperCleanup = cleanupFn;
 process.on('SIGINT', cleanupFn);
 process.on('SIGTERM', cleanupFn);
 
-module.exports = 
-{ 
-    reverseDelay: addReminder,
-    DailyReminderCall,
-    StartTheReminders,
-    viewReminders,
-    getUserReminder,
-    getUserReminderAndIDFromID,
-    getUserIDFromID,
-    handleButtonsEmbedReminders,
-    getReminder,
-    removeReminder,
-    editReminder
+module.exports = {
+  reverseDelay: addReminder,
+  DailyReminderCall,
+  StartTheReminders,
+  viewReminders,
+  getUserReminder,
+  getUserReminderAndIDFromID,
+  getUserIDFromID,
+  handleButtonsEmbedReminders,
+  getReminder,
+  removeReminder,
+  editReminder,
 };

@@ -58,7 +58,7 @@
 // 	var timestamp = stampString.match(/\d+/g);
 // 	// make a date with the timestamp and offset by current timezone
 // 	var date = new Date(parseInt(timestamp[0]) * 1000);
-	
+
 // 	// change the string based on the type of timestamp (:t, :T, :f, :F, :d, :D, :R)
 // 	switch (stampString[stampString.length - 2])
 // 	{
@@ -120,7 +120,7 @@
 // 		default:
 // 			return "Invalid timestamp type!";
 // 	}
-	
+
 // }
 
 // const text = "<t:1742856016:t> <t:1742856022:T> <t:1742856027:d> <t:1742856031:D> <t:1742856039:f> <t:1742856043:F> <t:1742956047:R>";
@@ -137,8 +137,6 @@
 // }
 
 // console.log(chunks);
-
-
 
 // var started = new Date(parseInt("1742869086840"));
 // console.log(started);
@@ -158,7 +156,6 @@
 
 // var colorString = "#" + redHex + greenHex + "00";
 // console.log(colorString);
-
 
 // var userNamedList = ["Isaac", "Baba", "Baba"];
 
