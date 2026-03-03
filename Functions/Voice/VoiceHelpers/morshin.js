@@ -1,3 +1,16 @@
+/**
+ * @file morshin.js
+ * @description Text preprocessing utilities for the Morshu text-to-speech feature.
+ *   Handles sanitising and transforming raw Discord message text before it is sent
+ *   to the Morshu TTS API, including:
+ *   - Replacing special Unicode characters with readable words
+ *   - Converting Discord timestamp tags (`<t:...>`) to human-readable strings
+ *   - Resolving Discord mentions, custom emojis, and channel references to names
+ *   - Splitting long numeric strings into individual digits for better speech output
+ *   - Replacing Unicode emoji with their textual names
+ * @module morshin
+ */
+
 var babadata = require('../../../babotdata.json'); //baba configuration file
 
 const fs = require('fs');
@@ -10,6 +23,26 @@ const { PickThePerfectUsername } = require('../../Database/databaseVoiceControll
 var rawdata = fs.readFileSync(babadata.datalocation + "emojiJSONCache.json");
 var emojis = JSON.parse(rawdata).emojis;
 
+/**
+ * Preprocesses a message and sends it to the Morshu TTS API, returning the
+ * resulting audio or video file as a Discord attachment.
+ *
+ * Processing steps applied to `text` before the API call:
+ * 1. Replaces `...` with a newline-padded pause character.
+ * 2. Substitutes known Unicode symbols (e.g. ඞ, 𓀒) with readable words.
+ * 3. Converts Discord timestamp tags to human-readable date/time strings.
+ * 4. Resolves Discord mentions, custom emojis, and channel references.
+ * 5. Splits numeric strings longer than 6 digits into space-separated digits.
+ * 6. Replaces Unicode emoji characters with their textual names.
+ *
+ * @async
+ * @param {string} mode  - Response format requested from the API: `"audio"` (mp3)
+ *                         or `"video"` (mp4).
+ * @param {string} text  - The raw message text to convert to speech.
+ * @param {number} index - Positional index of this request (reserved for future use).
+ * @returns {Promise<{file: Discord.AttachmentBuilder|null}>} Resolves with an object
+ *   containing the generated attachment, or `{ file: null }` on API error.
+ */
 async function babaMorshu(mode, text, index)
 {
     // for pauses
@@ -100,6 +133,15 @@ async function babaMorshu(mode, text, index)
     return morshuPromise;
 }
 
+/**
+ * Splits a string into an array of chunks where each Discord timestamp tag
+ * (`<t:UNIX[:style]>`) is its own element and all surrounding text is merged
+ * into contiguous plain-text chunks.
+ *
+ * @param {string} text - The input string that may contain Discord timestamp tags.
+ * @returns {string[]} Array of chunks alternating between plain-text segments
+ *   and individual Discord timestamp tag strings.
+ */
 function smartSplitTimeTags(text) 
 {
 	const regex = /<t:\d+(?::[tTfFdDrR])?>|[\s\S]/g;  // Match either a full time tag or any single character
@@ -128,6 +170,26 @@ function smartSplitTimeTags(text)
 	return chunks;
 }
 
+/**
+ * Converts a single Discord timestamp tag (e.g. `<t:1700000000:R>`) into a
+ * human-readable date/time string according to its format specifier.
+ *
+ * Supported format specifiers (second-to-last character of the tag):
+ * - `t` – Short time (e.g. "3:30 PM")
+ * - `T` – Long time  (e.g. "3:30:00 PM")
+ * - `f` – Short date/time (e.g. "November 14, 2023, 3:30 PM")
+ * - `F` – Long date/time  (e.g. "Tuesday, November 14, 2023, 3:30:00 PM")
+ * - `d` – Short date (locale default, e.g. "11/14/2023")
+ * - `D` – Long date  (e.g. "November 14, 2023")
+ * - `R` – Relative time (e.g. "3 minutes ago" / "In 2 days" / "Just now")
+ *
+ * If no specifier is present (`<t:UNIX>`), `:f` is assumed.
+ *
+ * @param {string} stampString - A Discord timestamp tag string such as
+ *   `<t:1700000000:R>` or `<t:1700000000>`.
+ * @returns {string} A human-readable representation of the timestamp, or the
+ *   original `stampString` if the format specifier is unrecognised.
+ */
 function readableTimeStamp(stampString)
 {
 	var timestamp = stampString.match(/\d+/g);
@@ -200,6 +262,18 @@ function readableTimeStamp(stampString)
 	}
 }
 
+/**
+ * Fetches the display name of a Discord guild member by their user ID.
+ * Uses `PickThePerfectUsername` to select the most appropriate name variant.
+ *
+ * The target guild is determined by whether the bot is running in testing mode
+ * (`babadata.testing`).
+ *
+ * @async
+ * @param {string} userID - The Discord snowflake ID of the user.
+ * @returns {Promise<string>} Resolves with the member's display name, or
+ *   `"User not found"` / `"Guild not found"` on lookup failure.
+ */
 async function getAUserName(userID)
 {
 	var userGetPromise = new Promise((resolve, reject) => {
@@ -220,6 +294,17 @@ async function getAUserName(userID)
 	return userGetPromise;
 }
 
+/**
+ * Fetches the name of a Discord guild channel by its channel ID.
+ *
+ * The target guild is determined by whether the bot is running in testing mode
+ * (`babadata.testing`).
+ *
+ * @async
+ * @param {string} channelID - The Discord snowflake ID of the channel.
+ * @returns {Promise<string>} Resolves with the channel's name, or
+ *   `"Channel not found"` / `"Guild not found"` on lookup failure.
+ */
 async function getAChannelName(channelID)
 {
     var channelGetPromise = new Promise((resolve, reject) => {
@@ -239,6 +324,17 @@ async function getAChannelName(channelID)
     return channelGetPromise;
 }
 
+/**
+ * Fetches the name of a Discord guild role by its role ID.
+ *
+ * The target guild is determined by whether the bot is running in testing mode
+ * (`babadata.testing`).
+ *
+ * @async
+ * @param {string} roleID - The Discord snowflake ID of the role.
+ * @returns {Promise<string>} Resolves with the role's name, or
+ *   `"Role not found"` / `"Guild not found"` on lookup failure.
+ */
 async function getARoleName(roleID)
 {
     var roleGetPromise = new Promise((resolve, reject) => {
@@ -258,6 +354,21 @@ async function getARoleName(roleID)
     return roleGetPromise;
 }
 
+/**
+ * Resolves all Discord special tokens in a string — user mentions (`<@ID>`),
+ * channel mentions (`<#ID>`), role mentions (`<@&ID>`), and custom/animated
+ * emojis (`<a:name:ID>` / `<:name:ID>`) — into their human-readable equivalents
+ * by making async lookups where necessary.
+ *
+ * Relies on {@link parseDiscordSpecial} to tokenise the input, then resolves
+ * each token using {@link getAUserName}, {@link getAChannelName}, or
+ * {@link getARoleName} as appropriate.
+ *
+ * @async
+ * @param {string} text - Raw message text that may contain Discord mention/emoji syntax.
+ * @returns {Promise<string>} The processed string with all Discord tokens replaced
+ *   by their resolved text equivalents.
+ */
 async function parseDiscordStuff(text)
 {
 	var listOfItems = parseDiscordSpecial(text);
@@ -296,6 +407,23 @@ async function parseDiscordStuff(text)
 	return newText;
 }
 
+/**
+ * Tokenises a string containing Discord mention/emoji syntax into a flat array
+ * of typed token objects. Recognised token types are:
+ *
+ * - `"channel"`        – `<#channelId>`   → `{ type, text, id }`
+ * - `"role"`           – `<@&roleId>`     → `{ type, text, id }`
+ * - `"user"`           – `<@userId>`      → `{ type, text, id }`
+ * - `"emoji"`          – `<:name:id>`     → `{ type, text, name, id }`
+ * - `"animated_emoji"` – `<a:name:id>`    → `{ type, text, name, id }`
+ * - `"text"`           – plain text runs  → `{ type, text }`
+ *
+ * Null results (unmatched groups) are filtered out before returning.
+ *
+ * @param {string} text - The input string to tokenise.
+ * @returns {Array<{type: string, text: string, id?: string, name?: string}>}
+ *   Ordered array of token objects representing each segment of the input.
+ */
 function parseDiscordSpecial(text) 
 {
 	const regex = /(<#(\d+)>|<@&(\d+)>|<@(\d+)>|<(a?):(\w+):(\d+)>|([^<]+))/g;
