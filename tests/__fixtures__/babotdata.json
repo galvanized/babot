@@ -1,0 +1,24 @@
+{
+  "token": "TEST_TOKEN",
+  "pass": "test_pass",
+  "datalocation": "./tests/__fixtures__/Data/",
+  "adminId": "000000000000000001",
+  "logchan": "000000000000000002",
+  "politicschan": "000000000000000003",
+  "botchan": "000000000000000004",
+  "generalchan": "000000000000000005",
+  "holidaychan": "0",
+  "holidayval": "null",
+  "temp": "/tmp/",
+  "emoji": "",
+  "clientId": "000000000000000006",
+  "guildId": "000000000000000007",
+  "database": {
+    "host": "localhost",
+    "port": 3306,
+    "user": "test",
+    "password": "test",
+    "database": "test"
+  },
+  "countrole": ""
+}
