@@ -24,5 +24,8 @@
     "mysql2": "^2.3.3",
     "node-fetch": "^2.6.9",
     "public-google-calendar": "^0.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.46.0"
   }
 }

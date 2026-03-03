@@ -1,3 +1,12 @@
+/**
+ * TextExtra
+ * Extra text-only admin/debug handlers and object-diff helpers used by Babot.
+ *
+ * The main exported function `TextCommandBackup` performs many side-effecting
+ * admin/debug actions based on substring checks of `msgContent`. Helper
+ * utilities below generate human-readable representations and diffs of
+ * objects for audit-log output.
+ */
 var babadata = require('../babotdata.json'); //baba configuration file
 
 const fs = require('fs');
@@ -8,8 +17,14 @@ const { SetHolidayChan, dailyRandom, fronge, Seperated, enumConverter, channelSt
 const { reverseDelay } = require('../Functions/HelperFunctions/remindersByBaba.js');
 const { controlDOW, LoadAllTheCache, SaveSlashFridayJson, clearVCCList, DMMePlease } = require("../Functions/Database/databaseVoiceController.js");
 
+// Mapping digits -> letters used by `transpose` command.
 const validLetters = "bikusfrday";
 
+/**
+ * Return a string of `num` tab characters used for indentation in human-readable output.
+ * @param {number} num - Number of tabs to generate.
+ * @returns {string}
+ */
 function generateTabs(num)
 {
 	var strg = "";
@@ -18,8 +33,17 @@ function generateTabs(num)
 	return strg;
 }
 
+/**
+ * Convert a nested object or array into an indented, human-readable string.
+ * Numeric keys (array indices) are printed without a `key:` label to keep array
+ * output compact. Non-numeric keys increase the indentation level for children.
+ *
+ * @param {Object|Array} obj - Value to stringify.
+ * @param {number} ind - Current indentation depth (tabs).
+ * @returns {string}
+ */
 function objectParse(obj, ind)
-{	
+{    
 	var obje = [];
 	for (var key in obj)
 	{
@@ -58,26 +82,32 @@ function twoObjectParseCompare(old, neww, ind, arraymode = false)
 {
 	var objs = [];
 
+	// Choose which object to iterate. Prefer the object with more keys/elements so
+	// newly-added keys show up in the diff. This is a heuristic to keep diffs
+	// human-readable rather than attempting a full three-way merge.
 	var oCt = (old === undefined || old == "undefined") ? 0 : Object.keys(old).length;
 	var nCt = (neww === undefined || neww == "undefined") ? 0 : Object.keys(neww).length;
 
 	var picked = old;
-
 	if (oCt < nCt)
 		picked = neww;
 
 	if (arraymode)
 	{
+		// For arrays prefer the longer array for iteration so added elements are visible.
 		if (old.length < neww.length)
 			picked = neww;
 	}
 
 	for (var key in picked)
 	{
+		// Include entry if new value is undefined, values differ, or when caller
+		// specifically requested array-mode behavior.
 		if ((neww === undefined) || old[key] != neww[key] || arraymode)
 		{
 			if (typeof old[key] === 'object' && old[key] !== null)
 			{
+				// Skip trivial case: both sides have empty arrays of same length.
 				if (Array.isArray(old[key]) && Array.isArray(neww[key]))
 				{
 					if (old[key].length == neww[key].length && old[key].length == 0)
@@ -91,9 +121,10 @@ function twoObjectParseCompare(old, neww, ind, arraymode = false)
 					strg += key + ": \n"
 					nind++;
 				}
-				
+                
 				var nkey = neww !== undefined ? neww[key] : "undefined";
 
+				// Recurse; detect nested arrays to keep arraymode semantics at deeper levels.
 				strg += twoObjectParseCompare(old[key], nkey, nind, Array.isArray(old[key]));
 
 				objs.push(strg);
@@ -134,10 +165,14 @@ function parseItems(old, neww)
 	}
 	else
 	{
+		// Scalar -> Scalar: simple arrow. If the original value is an object or
+		// array produce a structured diff so multi-line changes are readable.
 		strg = old + " -> " + neww
 		if (typeof old === 'object' && old !== null)
 		{
 			var am = Array.isArray(old);
+			// The indentation calculation is tuned to ensure top-level arrays vs
+			// objects render with appropriate initial indentation in the diff.
 			strg = twoObjectParseCompare(old, neww, 1 - (am ? (neww !== null ? (old.length > 1 || neww.length > 1 ? 0 : 1) : 0) : 0), am);
 		}
 	}
@@ -148,9 +183,22 @@ function parseItems(old, neww)
 
 function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 {
+	// Main collection of ad-hoc, substring-triggered admin/debug commands.
+	// This function performs many side effects (file I/O, network calls,
+	// message sends, Discord object mutation). It is intentionally permissive
+	// and swallows many errors because it is used as a manual debugging tool.
 	if (sentvalid) // put in own file or something eventually
 	{
 		message.channel.sendTyping();
+		// Handler: "🐸 debug"
+		// - Controls holiday/channel modes used by the bot.
+		// - Special forms:
+		//   * If message contains '---' the remainder is passed to SetHolidayChan
+		//     to re-enable an "old" channel and the author is notified.
+		//   * Passing digits 0-4 selects pre-defined holiday modes; '-n' appends a
+		//     rename flag to the mode name. '5' calls SetHolidayChan(...,0) and
+		//     sends a reset notification.
+		// - Side effects: updates babotdata.json indirectly (read back after 1s).
 		if (msgContent.includes("🐸 debug")) //0 null, 1 spook, 2 thanks, 3 crimbo, 4 defeat
 		{
 			if (msgContent.includes("---"))
@@ -190,6 +238,11 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			}, 1000);
 		}
 		// froggifys the message with all frogs and replys with a frog reaction
+		// Handler: "fronge"
+		// - Purpose: find a message by numeric ID across all text channels and threads
+		//   and apply the `fronge` transformation + react to indicate success.
+		// - Behavior: best-effort search; fetch errors are swallowed so the command
+		//   never throws for missing messages. This is a manual debug helper.
 		else if (msgContent.includes("fronge"))
 		{
 			var fnd = false;
@@ -221,6 +274,10 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			});
 		}
 		// moves a message to the banished lands
+		// Handler: "funny silence"
+		// - Purpose: locate a message by numeric ID and delete it (moves message
+		//   to the "banished lands"). Works across channels and threads.
+		// - Behavior: best-effort; swallow fetch errors. Not permission-checked here.
 		else if (msgContent.includes("funny silence"))
 		{
 			var fnd = false;
@@ -252,6 +309,16 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			});
 		}
 		// send a message to a channel
+		// Handler: "cmes" (send message via bot to a channel)
+		// - Usage variants supported by string checks:
+		//   * default: send the provided content to the target channel id.
+		//   * "i-u": impersonate a user by creating a temporary webhook using
+		//     the fetched user's display name and avatar; deletes webhook after use.
+		//   * "d-lay": schedule a delayed send using `reverseDelay` (parses delay).
+		//   * "tnt": sendTyping to the channel.
+		//   * flags: "s-d" deletes the sent message after 8s; "🐸" reacts with frog.
+		// - Note: permission checks attempt to fetch the guild member's state but
+		//   the code currently allows sending regardless (permissive behavior).
 		else if (msgContent.includes("cmes"))
 		{
 			var message_id = message.content.split(' ')[1];
@@ -349,6 +416,10 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			}
 		}
 		//sends a message at a delayed time to a random channel (same as daily call list)
+		// Handler: "rng"
+		// - Schedules a daily/random delayed message using `dailyRandom`.
+		// - Parses a numeric minute value from the message content and converts
+		//   it into milliseconds for the counter parameter.
 		else if (msgContent.includes("rng"))
 		{
 			var u_id = message.content.split(' ').slice(1, 2).join(' ').replace(' ',''); //get the name for the role
@@ -360,6 +431,9 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			dailyRandom(u_id, bot, counter, g);
 			message.author.send("SUCC cess");
 		}
+		// Handler: "getthefries"
+		// - Lists files inside the configured `FridayCache` directory and DMs them
+		//   to the command author. Uses `babadata.datalocation` for the path.
 		else if (msgContent.includes("getthefries"))
 		{
 			// list all items in the directory of babadata.datalocation + "FridayCache"
@@ -371,6 +445,11 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 				message.author.send("Files in the directory are:\n```" + files.join("\n") + "```");
 			});
 		}
+		// Handler: "cachethefries"
+		// - Expects an attachment on the incoming message. Fetches the attachment
+		//   and saves it into `babadata.datalocation + 'FridayCache/'` keeping the
+		//   original filename. Not safe for large files/no validation — intended
+		//   for admin usage only.
 		else if (msgContent.includes("cachethefries"))
 		{
 			var file = message.attachments.first();
@@ -394,6 +473,13 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			})
 		}
 		// react to a message with a custom emoji
+		// Handler: "reee"
+		// - Adds one or more reactions (custom or unicode) to a target message.
+		// - The second token is the target message id; following tokens are emoji
+		//   identifiers. Custom emoji syntax with angle brackets is supported by
+		//   extracting the numeric id.
+		// - Searches channels and threads similar to `fronge` and swallows fetch
+		//   errors when messages are not found.
 		else if (msgContent.includes("reee"))
 		{
 			var fnd = false;
@@ -446,6 +532,9 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 				});
 			});
 		}
+		// Handler: "refried beans"
+		// - Triggers a load of internal DOW cache via `LoadAllTheCache` when DB
+		//   access is enabled. Sends result or an error message to the author.
 		else if (msgContent.includes("refried beans")) //probably would break adams brain
 		{
 			if ((global.dbAccess[1] && global.dbAccess[0]))
@@ -465,16 +554,25 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 				message.author.send("DOW cache not updated");
 			}
 		}
+		// Handler: "showthefridaydebug"
+		// - Toggles a global debug flag `global.DebugFriday` and notifies the author.
 		else if (msgContent.includes("showthefridaydebug"))
 		{
 			global.DebugFriday = !global.DebugFriday;
 
 			message.author.send("Debug Friday set to " + global.DebugFriday);
 		}
+		// Handler: "testthedmming"
+		// - Sends a test DM via the `DMMePlease` helper (used for verifying DM
+		//   delivery functionality).
 		else if (msgContent.includes("testthedmming"))
 		{
 			DMMePlease("Test DM");
 		}
+		// Handler: "babapleaseitistimetosleepforalittlebit"
+		// - Triggers `global.CleanupEverything()` and then re-initializes the
+		//   bot by calling `global.MakeBot()` and `global.BotOn`. Used as a
+		//   manual restart mechanism; not safe to call without care.
 		else if (msgContent.includes("babapleaseitistimetosleepforalittlebit"))
 		{
 			DMMePlease("Baba is going to sleep for a little bit");
@@ -491,6 +589,9 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 				}, 2000);
 			}, 2000);
 		}
+		// Handler: "rbcontdow" / "rbcontfrog"
+		// - Controls DOW/FROG behavior for a user by calling `controlDOW` with
+		//   parsed time value (0-2). Bounds the value and checks DB access.
 		else if (msgContent.includes("rbcontdow") || msgContent.includes("rbcontfrog")) //probably would break adams brain
 		{
 			var u_id = message.content.split(' ').slice(1, 2).join(' ').replace(' ',''); //get the name for the role
@@ -515,6 +616,8 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			}
 		}
 		// change babas nickname
+		// Handler: "saintnick"
+		// - Changes the bot's nickname in the guild to the provided name.
 		else if (msgContent.includes("saintnick"))
 		{
 			var name = message.content.split(' ').slice(1, ).join(' '); //get the name for the role
@@ -524,6 +627,9 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			});
 		}
 		// manuela save the fridaycounts
+		// Handler: "manuela"
+		// - Saves the Friday counts via `SaveSlashFridayJson`. The 'overide'
+		//   flag toggles override behavior. Replies to the author with result.
 		else if (msgContent.includes("manuela"))
 		{
 			var toveride = msgContent.includes("overide");
@@ -536,6 +642,9 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			});
 		}
 		// dm a user via baba
+		// Handler: "amhours"
+		// - Directly DMs a user with the provided message using `bot.users.fetch`.
+		// - Expects the first token after the command to be a user id.
 		else if (msgContent.includes("amhours"))
 		{
 			var u_id = message.content.split(' ').slice(1, 2).join(' ').replace(' ',''); //get the name for the role
@@ -544,6 +653,8 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			var mess = message.content.split(' ').slice(2, ).join(' '); //get the name for the role
 			bot.users.fetch(u_id).then(user => user.send(mess)).catch(console.error);
 		}
+		// Handler: "cvcc"
+		// - Clears the VCC list by calling `clearVCCList` when DB access is enabled.
 		else if (msgContent.includes("cvcc"))
 		{
 			if (global.dbAccess[1] && global.dbAccess[0])
@@ -557,6 +668,11 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 				message.author.send("VCC List Not Cleared, DB Disabled");
 			}
 		}
+		// Handler: "dbdownadam"
+		// - Reads a CSV (`loggedUsersVCC.csv`) and sends a summary of each line
+		//   to the author. The '-force' flag disables filtering identical
+		//   channel joins/leaves. Output is human-friendly text using Discord
+		//   timestamp formatting. Assumes CSV format of specific columns.
 		else if (msgContent.includes("dbdownadam"))
 		{
 			var forceall = msgContent.includes("-force");
@@ -602,6 +718,9 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			if ((lines.length == 1 && lines[0].trim() == "") || lines.length == 0)
 				message.author.send("No VCC List to Display");
 		}
+		// Handler: "transpose"
+		// - Converts digits in a token into letters using the `validLetters`
+		//   mapping. Non-digit characters are removed before translation.
 		else if (msgContent.includes("transpose"))
 		{
 			// get message
@@ -625,6 +744,8 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			if (strg != "")
 				message.author.send(strg);
 		}
+		// Handler: "dbdownbytheriver"
+		// - Sends the raw `loggedUsersVCC.csv` file back to the author as an attachment.
 		else if (msgContent.includes("dbdownbytheriver"))
 		{
 			var csv = fs.readFileSync(babadata.datalocation + "loggedUsersVCC.csv");
@@ -632,6 +753,8 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			// send attachment
 			message.author.send({ files: [{ attachment: Buffer.from(csv), name: 'loggedUsersVCC.csv' }] });
 		}
+		// Handler: "trees"
+		// - Reads and sends the debug log file (`debug.log`) from `babadata.temp`.
 		else if (msgContent.includes("trees"))
 		{
 			var logFile = fs.readFileSync(babadata.temp + "debug.log");
@@ -639,6 +762,8 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			// send attachment
 			message.author.send({ files: [{ attachment: Buffer.from(logFile), name: 'debug.log' }] });
 		}
+		// Handler: "dabees"
+		// - Reads and sends the DB debug log file (`DBdebug.log`) from `babadata.temp`.
 		else if (msgContent.includes("dabees"))
 		{
 			var logFile = fs.readFileSync(babadata.temp + "DBdebug.log");
@@ -646,6 +771,8 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			// send attachment
 			message.author.send({ files: [{ attachment: Buffer.from(logFile), name: 'DBdebug.log' }] });
 		}
+		// Handler: "getthemfries"
+		// - Sends both `fridayCounter.json` and `fridaymessages.json` as attachments.
 		else if (msgContent.includes("getthemfries"))
 		{
 			var fridayFile = fs.readFileSync(babadata.datalocation + "fridayCounter.json");
@@ -655,24 +782,35 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			// send attachment
 			message.author.send({ files: [{ attachment: Buffer.from(fridayMessagesFile), name: 'fridaymessages.json' }] });
 		}
+		// Handler: "emptythefriesbasket"
+		// - Resets the Friday tracking files to empty JSON defaults. Destructive
+		//   admin action; no confirmation prompt.
 		else if (msgContent.includes("emptythefriesbasket"))
 		{
 			// reset the fridaycounter.json and fridaymessages.json to empty
 			fs.writeFileSync(babadata.datalocation + "fridayCounter.json", "{}");
 			fs.writeFileSync(babadata.datalocation + "fridaymessages.json", "[]");
 		}
+		// Handler: "treecapitator"
+		// - Clears the main debug log file. Sends a confirmation message.
 		else if (msgContent.includes("treecapitator"))
 		{
 			// reset the debug log to empty
 			fs.writeFileSync(babadata.temp + "debug.log", "");
 			message.author.send("Debug Log Cleared");
 		}
+		// Handler: "dabeecapitator"
+		// - Clears the DB debug log file. Sends a confirmation message.
 		else if (msgContent.includes("dabeecapitator"))
 		{
 			// reset the debug log to empty
 			fs.writeFileSync(babadata.temp + "DBdebug.log", "");
 			message.author.send("DB Debug Log Cleared");
 		}
+		// Handler: "statefarm"
+		// - Sets a channel's status using `channelStatusChange`. Expects two
+		//   parameters: channel id and a free-form status string. Validates
+		//   that the channel exists before calling the helper.
 		else if (msgContent.includes("statefarm"))
 		{
 			// 3 values: statefarm, channelid, status
@@ -694,6 +832,9 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		}
 		// add new one to download a csv of all the vcc logs and one to upload a csv of all the vcc logs
 		// add a thing to convert a datetime to utc
+		// Handler: "dontbuy"
+		// - Dumps recent database errors stored in `global.lastDBErrors` to the
+		//   author. Optionally accepts a numeric count (bounded to 50).
 		else if (msgContent.includes("dontbuy"))
 		{
 			var name = message.content.split(' ').slice(1, ).join(' '); //get the name for the role
@@ -722,6 +863,18 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			}
 		}
 		// read the audit log
+		// Handler: "odd" (audit log reader)
+		// - Fetches audit log entries from the guild, formats each entry into
+		//   a human-readable block and sends paginated messages to the author.
+		// - For each audit entry the code:
+		//   1) Converts `action` to text via `enumConverter`.
+		//   2) Resolves target types to readable mentions/ids.
+		//   3) Formats a timestamp and skips noisy music ChannelUpdate events
+		//      from a particular user id unless `--music` is present.
+		//   4) For `changes`, calls `parseItems` to produce inline diffs or
+		//      structured multi-line diffs and then wraps those in quoted lines.
+		// - Uses `Seperated` to split long output into messages that fit Discord
+		//   and sends them to the author. Errors and stacks are DM'd on failure.
 		else if (msgContent.includes("odd"))
 		{
 			var showmusic = msgContent.includes("--music");
@@ -868,6 +1021,12 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 				message.author.send("Stack:\n```" + error.stack + "```");
 			});
 		}
+		// Handler: "am" (auto-moderation rules)
+		// - If used with the token "list" this issues an HTTP GET to the
+		//   Discord API to fetch auto-moderation rules for the configured
+		//   guild id and returns either a compact list or full objects.
+		// - Requires the bot token and performs a raw HTTPS request instead of
+		//   using a higher-level library — intended for quick admin use.
 		else if (msgContent.includes("am") && !msgContent.includes("hours"))
 		{
 			if (msgContent.includes("list"))

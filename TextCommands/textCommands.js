@@ -1,4 +1,21 @@
-
+/**
+ * @module TextCommands
+ * @description
+ * Handlers for text-based commands received by the bot. This module exposes
+ * `babaMessage(bot, message)` which inspects incoming messages, normalizes
+ * content, and performs many ad-hoc, substring-driven commands and admin
+ * operations. The file performs side-effects: reading/writing local JSON files,
+ * calling helper modules, sending and deleting Discord messages, and invoking
+ * other bot utilities. Many branches use best-effort fetches and intentionally
+ * swallow errors for robustness in an admin/debug context.
+ *
+ * Notes & caveats:
+ * - This is not a formal command parser; most handlers use `msgContent.includes(...)`.
+ * - Several actions are destructive (log resets, file writes, deletes) and
+ *   are intended for admin use only; callers are responsible for permissions.
+ * - The code relies on global state (e.g., `babadata`, `global.*`) and helper
+ *   functions from other modules in `Functions/`.
+ */
 var babadata = require('../babotdata.json'); //baba configuration file
 
 const fs = require('fs'); //file stream used for del fuction
@@ -48,7 +65,27 @@ const { babaFriday,  babaHelp, babaPlease, babaPizza, babaVibeFlag, babaYugo, ba
 //});
 
 
-//stuff when message is recived.
+/**
+ * Main message handler invoked for each received message.
+ *
+ * Behavior summary:
+ * - Loads frog/holiday configuration on each call (synchronous read).
+ * - Normalizes incoming content and runs a set of substring-driven handlers
+ *   (both lightweight user commands and privileged admin commands).
+ * - Calls `TextCommandBackup` early to let it handle out-of-guild DMs and
+ *   other admin/debug triggers.
+ *
+ * Important side-effects:
+ * - Reads `frogholidays.json` and `babotdata.json` from the configured
+ *   data location on each invocation.
+ * - May mutate bot/guild state via helpers such as `SetHolidayChan` and
+ *   `movetoChannel` and will write to `babotdata.json` when holiday defaults
+ *   need to be initialized.
+ *
+ * @param {Discord.Client} bot - The running Discord bot client instance.
+ * @param {Discord.Message} message - The received message object to handle.
+ */
+// stuff when message is recived.
 async function babaMessage(bot, message)
 {
 	let rawdata = fs.readFileSync(babadata.datalocation + "FrogHolidays/" + 'frogholidays.json'); //load file each time of calling wednesday
@@ -154,6 +191,11 @@ async function babaMessage(bot, message)
 
 	if(msgContent.includes('!baba')) //if message contains baba and is not from bot
 	{
+		// Public command namespace: '!baba' prefix
+		// Many lightweight user-facing commands live here; these are intended
+		// for general use (not admin-only). Each branch below checks for a
+		// keyword and sends a response or triggers a helper. Handlers should
+		// generally be fast and non-blocking; heavy operations use callbacks.
 		message.channel.sendTyping();
 		if (msgContent.includes("baba is help") && message.author.bot)
 			return
@@ -168,6 +210,10 @@ async function babaMessage(bot, message)
 
 		message.channel.send({ content: text });
 
+		// Branch: friday
+		// - If today is not Friday, call `functionPostFunnyDOW` to post a DOW
+		//   (day-of-week) message; otherwise call `babaFriday()` to return the
+		//   regular Friday response.
 		if (msgContent.includes("friday"))
 		{
 			message.channel.sendTyping();
@@ -182,6 +228,8 @@ async function babaMessage(bot, message)
 			}
 		}
 
+		// Branch: please
+		// - Minimal polite helper: returns `babaPlease()` content when present.
 		if (msgContent.includes("please")) //this could do something better but its ok for now
 		{
 			message.channel.sendTyping();
@@ -192,6 +240,8 @@ async function babaMessage(bot, message)
 			}
 		}
 
+		// Branch: progress
+		// - Return a short progress/status string using `babaProgress`.
 		if (msgContent.includes("progress"))
 		{
 			message.channel.sendTyping();
@@ -199,6 +249,9 @@ async function babaMessage(bot, message)
 			message.channel.send(progress);
 		}
 
+		// Branch: goodberries / goodberry
+		// - Fetches calendar events via `babaGoodberrys` and formats them into
+		//   a human-readable list. The callback receives an object with `events`.
 		if (msgContent.includes("goodberries") || msgContent.includes("goodberry"))
 		{
 			message.channel.sendTyping();
@@ -227,6 +280,8 @@ async function babaMessage(bot, message)
 			});
 		}
 
+		// Branch: uppus
+		// - Returns uptime since `global.starttime` formatted in days/hours/etc.
 		if (msgContent.includes("uppus"))
 		{
 			message.channel.sendTyping();
@@ -242,6 +297,9 @@ async function babaMessage(bot, message)
 			message.channel.send("`" + diffString + "`");
 		}
 
+		// Branch: aurora
+		// - Calls `babaAurora` which uses a callback; replies with the returned
+		//   text when the callback fires.
 		if (msgContent.includes("aurora"))
 		{
 			message.channel.sendTyping();
@@ -252,12 +310,16 @@ async function babaMessage(bot, message)
 			});
 		}
 
+		// Branch: order pizza
+		// - Returns a short pizza-ordering string from `babaPizza`.
 		if (msgContent.includes("order pizza"))
 		{
 			message.channel.sendTyping();
 			message.channel.send(babaPizza());
 		}
 
+		// Branch: hurricane
+		// - Calls `babaHurricane` with a callback and forwards the output.
 		if (msgContent.includes("hurricane"))
 		{
 			message.channel.sendTyping();
@@ -267,12 +329,16 @@ async function babaMessage(bot, message)
 			});
 		}
 
+		// Branch: repost
+		// - Returns the output of `babaRepost()` directly to the channel.
 		if (msgContent.includes("repost"))
 		{
 			message.channel.sendTyping();
 			message.channel.send(babaRepost());
 		}
 
+		// Branch: jeremy
+		// - Synchronous helper returning a string from `babaJeremy()`.
 		if (msgContent.includes("jeremy"))
 		{
 			message.channel.send(babaJeremy());
@@ -283,6 +349,10 @@ async function babaMessage(bot, message)
 		// 	message.channel.send(babaCat());
 		// }
 
+		// Branch: weather
+		// - Calls `babaWeather` with a callback and forwards the result. This
+		//   branch currently hardcodes the location parameter; consider
+		//   externalizing if multi-location support is required.
 		if (msgContent.includes("weather"))
 		{
 			message.channel.sendTyping();
@@ -292,12 +362,18 @@ async function babaMessage(bot, message)
 			});
 		}
 
+		// Branch: help
+		// - Prints the general help text returned by `babaHelp()`.
 		if(msgContent.includes('help')) //reply with help text is baba help
 		{
 			message.channel.sendTyping();
 			message.channel.send(babaHelp());
 		}
 
+		// Branch: flag (night shift / vibe time)
+		// - Returns an image/flag for the vibe-time feature. If sending the
+		//   image directly fails, a fallback attachment using `getErrorFlag()` is
+		//   created and sent to ensure the user receives a response.
 		if (msgContent.includes('flag') && (msgContent.includes('night shift') || msgContent.includes('vibe time')))
 		{
 			message.channel.sendTyping();
@@ -319,12 +395,18 @@ async function babaMessage(bot, message)
 				message.channel.send("!shuffle");
 		}
 */
+		// Branch: make yugo
+		// - Returns content created by `babaYugo()`. Lightweight and synchronous.
 		if(msgContent.includes('make yugo'))
 		{
 			message.channel.sendTyping();
 			message.channel.send(babaYugo());
 		}
 
+		// Branch: haiku
+		// - Produces one or more embedded haiku messages. If multiple pages are
+		//   returned, `handleButtonsEmbed` is used to add interactive navigation
+		//   buttons. `purity` and `by` modifiers are parsed from the message.
 		if (msgContent.includes('haiku')) // add custom haiku search term?
 		{
 			message.channel.sendTyping();
@@ -345,6 +427,10 @@ async function babaMessage(bot, message)
 			.catch(console.error);;
 		}
 
+		// Branch: wednesday / days-until / when-is / day-of-week
+		// - Returns holiday/wednesday related text and optionally posts
+		//   an image by calling `babaUntilHolidays`. Uses `timedOutFrog` to
+		//   push generated images into a channel when a file is present.
 		if (msgContent.includes('wednesday') || msgContent.includes('days until') || msgContent.includes('when is') || msgContent.includes('day of week'))
 		{
 			message.channel.sendTyping();
@@ -373,6 +459,12 @@ async function babaMessage(bot, message)
 	}
 	if(msgContent.includes('!bdelete')) //code to del and move to log
 	{
+		// Admin branch: !bdelete
+		// - Privileged command: requires the caller to have the configured
+		//   admin role (`babadata.adminId`). Searches channels and threads for
+		//   the target message id and calls `movetoChannel` to move it to the
+		//   configured log channel. Best-effort fetches are used and fetch
+		//   errors are swallowed to avoid throwing on not-found.
 		message.channel.sendTyping();
 		if(message.channel.type != 1 && message.member.roles.cache.has(babadata.adminId)) //check if admin
 		{
@@ -407,6 +499,8 @@ async function babaMessage(bot, message)
 	// move messsage to politics channel
 	if(msgContent.includes('!political'))
 	{
+		// Admin branch: !political
+		// - Same pattern as !bdelete but moves the message to the `politicschan`.
 		message.channel.sendTyping();
 		if(message.channel.type != 1 && message.member.roles.cache.has(babadata.adminId)) //check if admin
 		{
@@ -440,6 +534,9 @@ async function babaMessage(bot, message)
 	}
 	if(msgContent.includes('!setvote')) //code to set vote
 	{
+		// Admin branch: !setvote
+		// - Finds a message by id and calls `setVote` on it to initialize a
+		//   voting widget. Requires admin role.
 		message.channel.sendTyping();
 		if(message.channel.type != 1 && message.member.roles.cache.has(babadata.adminId)) //check if admin
 		{
@@ -473,6 +570,10 @@ async function babaMessage(bot, message)
 	}
 	if(msgContent.includes('!bsetstatus')) //code to set game
 	{
+		// Admin branch: !bsetstatus
+		// - Sets the bot's presence status (online/idle/dnd/invisible) determined
+		//   by keywords in the admin message. Falls back to 'online' for unknown
+		//   types. This controls `bot.user.setStatus`.
 		message.channel.sendTyping();
 		if(message.channel.type != 1 && message.member.roles.cache.has(babadata.adminId)) //check if admin
 		{
@@ -503,6 +604,10 @@ async function babaMessage(bot, message)
 	}
 	if(msgContent.includes('!bsetgame')) //code to set game
 	{
+		// Admin branch: !bsetgame
+		// - Sets the bot's activity via `bot.user.setActivity`. Supports types
+		//   such as watching, playing, listening, streaming and includes a
+		//   fallback default when no type keyword is matched.
 		message.channel.sendTyping();
 		if(message.channel.type != 1 && message.member.roles.cache.has(babadata.adminId)) //check if admin
 		{
@@ -537,6 +642,9 @@ async function babaMessage(bot, message)
 	}
 	if(msgContent.includes('!banhammer')) //code to set ban hammer
 	{
+		// Admin branch: !banhammer
+		// - Finds a message and calls `setVBH` which appears to configure a
+		//   'very big hammer' moderation action on the message. Requires admin.
 		message.channel.sendTyping();
 		if(message.channel.type != 1 && message.member.roles.cache.has(babadata.adminId)) //check if admin
 		{
@@ -570,6 +678,10 @@ async function babaMessage(bot, message)
 	}
 	if(msgContent.includes('!grole')) //code to set game role
 	{
+		// Admin branch: !grole
+		// - Parses a role name and a message id from the command tokens and then
+		//   calls `setGrole` to attach the role to reactions or otherwise tie the
+		//   role to the target message. This is a moderation/utility helper.
 		message.channel.sendTyping();
 		if(message.channel.type != 1 && message.member.roles.cache.has(babadata.adminId)) //check if admin
 		{
@@ -604,6 +716,9 @@ async function babaMessage(bot, message)
 		}
 	}
 
+	// Small utility branch: reset a daily flag when 'robot' is mentioned.
+	// This toggles `global.ResetDaily` off when present; used by internal
+	// automation to avoid repeated daily resets.
 	if (msgContent.includes("robot") && global.ResetDaily)
 	{
 		message.channel.sendTyping();
