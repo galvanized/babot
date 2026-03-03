@@ -16,6 +16,43 @@ const { normalizeMSG } = require("./HelperFunctions/dbHelpers.js");
 
 const options = { year: 'numeric', month: 'long', day: 'numeric' }; // for date parsing to string
 
+/**
+ * Module: Functions/commandFunctions
+ *
+ * Collection of command helper functions that build message payloads or
+ * perform small side-effecting tasks used by the bot's command handlers.
+ *
+ * Design notes & behaviors:
+ * - Most functions return an object shaped for Discord message sending,
+ *   e.g. `{ content: string, files?: [AttachmentBuilder], embeds?: [...] }`.
+ * - Several functions are asynchronous (return Promises) and must be awaited
+ *   by callers before sending the resulting payload.
+ * - This module extensively uses other helpers and DB functions, notably:
+ *   - `Functions/HelperFunctions/*` for date, image, and message utilities
+ *   - `Functions/Database/*` for haiku/holiday data and caches
+ *   - `Tools/overrides.js` for date overrides via `getD1()`
+ * - The codebase relies on several globals (e.g. `global.BirthdayToday`,
+ *   `global.userCache`, `global.channelCache`, `global.dbAccess`) which are
+ *   mutated/read across modules; callers should be mindful of these shared
+ *   side effects.
+ * - Some on-disk JSON keys are misspelled (`Probaility`) and the code depends
+ *   on those exact keys; be careful when editing data files.
+ */
+
+/**
+ * Build the Friday image payload. If `global.BirthdayToday` contains a list
+ * of names this function will overlay them onto the Friday image.
+ *
+ * Returns an object suitable for sending via a Discord message: `{ content, files }`.
+ *
+ * Interactions:
+ * - Reads `babadata.datalocation` to find image templates.
+ * - Reads `global.BirthdayToday` (set by `Functions/dailycall.js`).
+ * - Uses `Jimp` to compose an image when birthdays are present.
+ *
+ * @param {boolean} [isFake=false] - If true, do not overlay birthday text.
+ * @returns {Promise<{content:string, files:Array}>}
+ */
 async function babaFriday(isFake = false)
 {
     alttext = isFake ? "YOU THINK IT IS FRIDAY??" : "Baba Friday Image, As it is ALWAYS Friday!"
@@ -51,12 +88,28 @@ async function babaFriday(isFake = false)
     return { content: "FRIDAY!", files: [newFile] };
 }
 
+/**
+ * Simple RNG command helper. Produces a single random integer in [min,max]
+ * and formats it for presentation. If `spoiler` is true the number is wrapped
+ * in Discord spoiler markers `||`.
+ *
+ * @param {number} min
+ * @param {number} max
+ * @param {boolean} spoiler
+ * @returns {{content: string}}
+ */
 function babaRNG(min, max, spoiler)
 {
     var num = Math.floor(Math.random() * (max - min + 1)) + min;
     return { content: "Your Random Number is: " + (spoiler ? "||" : "")  + num + (spoiler ? "||" : "") };
 }
 
+/**
+ * `!baba please` response generator. Picks a canned response with a
+ * probability distribution. Returns `{ content }` or `undefined` in rare cases.
+ *
+ * @returns {{content:string}|undefined}
+ */
 function babaPlease()
 {
     var num = Math.floor(Math.random() * 100); //pick a random one
@@ -72,11 +125,24 @@ function babaPlease()
         return { content: "Nice!" };
 }
 
+/**
+ * Placeholder for pizza ordering functionality. Currently returns a stub
+ * message payload.
+ *
+ * @returns {{content:string}}
+ */
 function babaPizza()
 {
     return { content: "Baba Pizza Ordering Service™ coming soon!" };
 }
 
+/**
+ * Render a simple progress bar using the helper `progressSimple`.
+ * Returns a message object containing the rendered progress string.
+ *
+ * @param {number} [n=20]
+ * @returns {{content:string}}
+ */
 function babaProgress(n = 20)
 {
     var pb = progressSimple(n);
@@ -84,6 +150,12 @@ function babaProgress(n = 20)
     return { content: pb };
 }
 
+/**
+ * Returns a help text payload listing available commands and brief
+ * descriptions. This string is intended for display in chat.
+ *
+ * @returns {{content:string}}
+ */
 function babaHelp()
 {
     var helptext = "BABA IS HELP"
@@ -114,6 +186,17 @@ function babaHelp()
     return { content: helptext };
 }
 
+/**
+ * Compute the current 'vibe time' flag image payload.
+ *
+ * Behavior and interactions:
+ * - Uses `getD1()` from `Tools/overrides.js` to get the reference date.
+ * - Computes a pseudo-random index `sood` based on date-derived seeds.
+ * - Loads a corresponding PNG from `babadata.datalocation + 'Flags/'` and
+ *   returns it as an attachment in `{ content, files }`.
+ *
+ * @returns {{content:string, files:Array}}
+ */
 function babaVibeFlag()
 {
     var d1 = getD1();
@@ -147,6 +230,13 @@ function babaVibeFlag()
 
 function babaYugo()
 {
+/**
+ * Return a random 'Yugo' image payload from the Yugo assets directory.
+ *
+ * @returns {{content:string, files:Array}}
+ */
+function babaYugo()
+{
     var yugotext = "Here Yugo!";
     var num = Math.floor(Math.random() * 11); //pick a random one
     var yugo = new Discord.AttachmentBuilder(babadata.datalocation + "Yugo/" + num.toString() + ".jpg", 
@@ -157,6 +247,13 @@ function babaYugo()
 
 function babaRepost()
 {
+/**
+ * Return a random repost image payload. Used by the `repost` command.
+ *
+ * @returns {{files:Array}}
+ */
+function babaRepost()
+{
     var num = Math.floor(Math.random() * 5); //pick a random one
     var reppy = new Discord.AttachmentBuilder(babadata.datalocation + "Repost/" + num.toString() + ".png", 
         { name: 'Repost.png', description : "This is repost number " + num + "!\nWhen will jeremy finish his report detector?"});
@@ -165,6 +262,19 @@ function babaRepost()
 
 function babaHaikuLinks(cont)
 {
+/**
+ * Convert an array of component descriptors into ActionRowBuilders that
+ * contain URL buttons for haiku sources. The input `cont` is expected to be
+ * the `components` array from previously built message components.
+ *
+ * Interaction:
+ * - Used by higher-level haiku commands to append a "View Source" button
+ *   when the source URL is available.
+ *
+ * @param {Array} cont - Array of component blocks to inspect.
+ * @returns {Array} Array of ActionRow arrays suitable for attaching to messages.
+ */
+
     var deadData = [];
     for (var i = 0; i < cont.length; i++)
     {
@@ -186,6 +296,26 @@ function babaHaikuLinks(cont)
 
 function babaHaikuEmbed(purity, mode, msgContent, pagestuff)
 {
+/**
+ * Build an embed or embeds for haiku queries.
+ *
+ * Modes/behavior:
+ * - When `purity` is true, the function returns a paginated "purity list"
+ *   (using `FormatPurityList`) and calls `EmbedPurityGen` to render pages.
+ * - When `purity` is false, a single haiku is selected via `HaikuSelection`
+ *   and formatted with `EmbedHaikuGen`.
+ *
+ * Dependencies:
+ * - `HaikuSelection`, `FormatPurityList` and `EmbedHaikuGen` from
+ *   `Functions/Database/databaseandvoice.js` and `HelperFunctions/commandHelpers.js`.
+ * - Relies on `normalizeMSG` to normalize query strings in non-mode-4 cases.
+ *
+ * @param {boolean} purity - Whether to return purity lists instead of haiku.
+ * @param {number} mode - Mode indicator used by `HaikuSelection`.
+ * @param {Array|string} msgContent - Query arguments used by selection routines.
+ * @param {Object} pagestuff - Pagination settings (e.g., `ipp` = items per page).
+ * @returns {Array|Object} Embed objects or message payloads ready to send.
+ */
     if (mode != 4)
         msgContent = normalizeMSG(msgContent);
     else
@@ -239,6 +369,39 @@ function babaHaikuEmbed(purity, mode, msgContent, pagestuff)
     }
 }
 
+/**
+ * Render paginated "haiku purity" message payloads from a purity list.
+ *
+ * Detailed behavior:
+ * - `hpl` is expected to have the shape produced by `FormatPurityList`,
+ *   e.g. `{ retstring: Array<string>, total: number }` where `retstring`
+ *   contains formatted page bodies.
+ * - `pagestuff` should include an `ipp` (items per page) integer used to
+ *   compute `pagetotal`.
+ * - If `msgContent` is provided the function builds a human-readable
+ *   summary block describing filters (users, channels, keywords, date range)
+ *   which is included as the message content for each page.
+ * - For multi-page results the function constructs `Previous/Next` buttons
+ *   (Discord `ActionRowBuilder` with `ButtonBuilder`) and attaches them to
+ *   the message `components` so that a higher-level interaction handler can
+ *   respond to pagination events.
+ * - Each page returns an object shaped for sending: either `{ content }`
+ *   or `{ content, embeds, components }` containing a `Discord.EmbedBuilder`.
+ *
+ * Edge-cases and notes:
+ * - The function assumes `global.userCache` and `global.channelCache` map ids
+ *   to human-readable names when rendering the filter summary.
+ * - The formatted page bodies are taken from `hpl.retstring[e]` and used as
+ *   the embed description; callers should ensure `hpl.retstring` length
+ *   matches `hpl.total` or `pagestuff.ipp` boundaries.
+ *
+ * @param {Object} hpl - Purity list object with `retstring` and `total`.
+ * @param {string} bonust - Title prefix text (e.g., ' List for ').
+ * @param {string} bonupr - Title suffix text.
+ * @param {Object} pagestuff - Pagination options (expects `.ipp`).
+ * @param {Array} [msgContent] - Optional query parameters used to build a summary.
+ * @returns {Array<Object>} Array of message payload objects (one per page).
+ */
 function EmbedPurityGen(hpl, bonust, bonupr, pagestuff, msgContent)
 {
     var objs = [];
@@ -384,6 +547,17 @@ function EmbedPurityGen(hpl, bonust, bonupr, pagestuff, msgContent)
 
 function babaDayNextWed(since = 1)
 {
+/**
+ * Return a small message telling how many days until (or since) the
+ * next/last Wednesday, used by the `wednesday`-related commands.
+ *
+ * Uses `getD1()` (which may be overridden by `Tools/overrides.js`) so tests
+ * can simulate different dates.
+ *
+ * @param {number} [since=1] - If 1 computes until next Wednesday; if >1, computes multiples.
+ * @returns {{content:string}}
+ */
+
     var seven  = 7 * since;
     let d1 = getD1(); //get today
     var dow_d1 = (d1.getDay() + 4) % 7;//get day of week (making wed = 0)
@@ -402,6 +576,12 @@ function babaDayNextWed(since = 1)
 
 function babaJeremy()
 {
+/**
+ * Return a random adjective+animal 'jeremy' string from disk `data.json`.
+ * This is a small utility used by the `jeremy` command.
+ *
+ * @returns {{content:string}}
+ */
     var data = JSON.parse(fs.readFileSync(babadata.datalocation + "data.json", {encoding:'utf8', flag:'r'}));
     var adjective = data.adjectives[Math.floor(Math.random() * data.adjectives.length)];
     var animal = data.animals[Math.floor(Math.random() * data.animals.length)].replaceAll(' ', '');
@@ -409,6 +589,29 @@ function babaJeremy()
     return { content: "```" + adjective + animal + "```" };
 }
 
+/**
+ * Handle queries about holidays/dates and build one or more message payloads.
+ *
+ * Behavior and interactions:
+ * - Normalizes the query via `normalizeMSG`.
+ * - Loads holidays via `ObtainDBHolidays()` and resolves requested holiday
+ *   names with `CheckHoliday()` and `FindDate()`.
+ * - Supports several query styles: `when is`, `days until`, `days since`,
+ *   `day of week`, `eves`, `next event`, and `next birthday`.
+ * - For 'wednesday' style responses the function may call `MakeImage` to
+ *   generate frog images (which writes files to `babadata.datalocation`).
+ * - Returns an array of message payloads (`{ content, files? }`).
+ *
+ * Side effects:
+ * - Reads/writes image files in the `FrogHolidays` directory and may log
+ *   errors to the console. Does not mutate global state directly but relies
+ *   on helper modules that may.
+ *
+ * @param {string} msgContent - Normalized message text of the query.
+ * @param {Object} author - Author object (used for attribution in some flows).
+ * @param {string} DOWChosen - Day-of-week preference code (e.g., '04' for wed).
+ * @returns {Promise<Array>} Array of message payload objects.
+ */
 async function babaUntilHolidays(msgContent, author, DOWChosen)
 {
     msgContent = normalizeMSG(msgContent);
@@ -746,6 +949,13 @@ async function babaUntilHolidays(msgContent, author, DOWChosen)
     return outs;
 }
 
+/**
+ * Lookup a user's display name or other derived identity via the DB helper
+ * `NameFromUser` and return a human-readable string.
+ *
+ * @param {Object} user - Discord user object or identifier used by `NameFromUser`.
+ * @returns {Promise<string>} Readable description or an error message.
+ */
 async function babaWhomst(user)
 {
     var result = await NameFromUser(user);
@@ -765,6 +975,20 @@ async function babaWhomst(user)
     }
 }
 
+/**
+ * Fetch hurricane image data and return a payload via callback.
+ *
+ * Behavior:
+ * - Uses `checkHurricaneStuff` (from helper `commandHelpers`) to search for
+ *   the best matching hurricane info; that routine may inspect an internal
+ *   hurricane database and return an `ImageURL`.
+ * - Downloads an image from the resolved URL, writes it to `babadata.temp`
+ *   and returns an attachment payload via the provided callback.
+ *
+ * @param {string} hurricanename - Query string describing desired hurricane.
+ * @param {Function} callback - Callback invoked with the message payload.
+ * @returns {Promise<void>}
+ */
 async function babaHurricane(hurricanename, callback)
 {
     var tempFilePath = babadata.temp + "hurricane.png";
@@ -833,6 +1057,13 @@ async function babaHurricane(hurricanename, callback)
     });
 }
 
+/**
+ * Fetch a random cat image from `thiscatdoesnotexist.com`, save to temp,
+ * and invoke the callback with a payload containing the file.
+ *
+ * @param {Function} callback - Callback invoked with `{ content, files }`.
+ * @returns {void}
+ */
 function babaCat(callback)
 {
     var tempFilePath = babadata.temp + "hurricane.png";
@@ -854,6 +1085,15 @@ function babaCat(callback)
     });
 }
 
+/**
+ * Download weather image from `wttr.in` for the provided city and return an
+ * attachment payload via the callback. `mode` selects URL variant.
+ *
+ * @param {string} mode - One of 'four', 'deets', or other modes controlling URL.
+ * @param {string} city - City name to query.
+ * @param {Function} callback - Callback invoked with `{ content, files }`.
+ * @returns {void}
+ */
 function babaWeather(mode, city, callback)
 {
     //TODO: add check if site down
@@ -887,6 +1127,25 @@ function babaWeather(mode, city, callback)
     });
 }
 
+/**
+ * Schedule a reminder for the user. This function resolves to the scheduled
+ * Date object and uses `reverseDelay` from `remindersByBaba` to register the
+ * reminder in the system (which performs persistence and delayed delivery).
+ *
+ * Behavior:
+ * - Parses `time` into a Date-like object using `getTimeFromString`.
+ * - If `date` is provided it parses it with `FindDate` and sets the time
+ *   component; otherwise it schedules for today or tomorrow depending on
+ *   whether the time has already passed.
+ * - Looks up the current channel via `interaction.guild.channels.fetch`
+ *   and passes the channel to `reverseDelay` to actually register the reminder.
+ *
+ * @param {string} message - Reminder text.
+ * @param {string} time - Time string to parse (e.g., '14:30').
+ * @param {string|null} date - Optional date string to parse. If null, use today/tomorrow.
+ * @param {Object} interaction - Discord interaction object used to find guild/channel.
+ * @returns {Promise<Date>} The Date scheduled for the reminder.
+ */
 async function babaRemind(message, time, date, interaction)
 {
     var theTime = getTimeFromString(time); // returns Date object for today at that time
@@ -922,6 +1181,14 @@ async function babaRemind(message, time, date, interaction)
     return theDate;
 }
 
+/**
+ * Download aurora forecast image for a given time from NOAA services and
+ * invoke `callback` with a message payload containing the file.
+ *
+ * @param {string} time - Time identifier used to pick the aurora image.
+ * @param {Function} callback - Callback invoked with payload `{ content, files }`.
+ * @returns {void}
+ */
 function babaAurora(time, callback)
 {
     var url = "https://services.swpc.noaa.gov/experimental/images/aurora_dashboard/" + time + "_static_viewline_forecast.png"
@@ -946,6 +1213,13 @@ function babaAurora(time, callback)
      });
 }
 
+/**
+ * Query a public Google Calendar for 'goodberry' events and return via
+ * callback. Uses `public-google-calendar` package.
+ *
+ * @param {Function} callback - Callback invoked with `{ events }`.
+ * @returns {void}
+ */
 function babaGoodberrys(callback)
 {
     publicGoogleCalendar = new PublicGoogleCalendar({ calendarId: '24gbb7942jsn557e7l93in7itjmo5lqj@import.calendar.google.com' });
