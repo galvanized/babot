@@ -8,11 +8,42 @@ const { getD1 } = require('../../Tools/overrides.js');
 
 var theRNG = new RNG();
 
+/**
+ * Reset the internal RNG instance used by this module.
+ *
+ * This creates a fresh RNG with no seed so subsequent calls
+ * will behave as if starting from a new pseudo-random sequence.
+ * Useful for isolating RNG-dependent behavior during testing
+ * or after saving/restoring seeds elsewhere.
+ *
+ * Branches / Notes:
+ * - Deterministic behavior can be achieved by calling `theRNG.setSeed(...)`
+ *   before performing RNG operations instead of relying on this reset.
+ */
 function resetRNG()
 {
-	theRNG = new RNG();
+    theRNG = new RNG();
 }
 
+/**
+ * Split a string into chunks no larger than ~2000 characters, preferring
+ * to split on newline boundaries.
+ *
+ * Behavior:
+ * - The input string is split on "\n" into lines; lines are appended to
+ *   the current chunk until adding another line would exceed 2000 characters,
+ *   at which point the current chunk is pushed and a new chunk is started.
+ * - Each returned chunk ends with a newline (because lines are appended
+ *   with "\n"). The final chunk is pushed even if empty.
+ *
+ * Use-case / Branches:
+ * - This function is used to prepare long messages for Discord (2000 char limit).
+ * - It does not attempt to split lines, so a single line longer than 2000
+ *   characters will become a chunk exceeding the limit.
+ *
+ * @param {string} str - The input string to chunk.
+ * @returns {string[]} Array of chunk strings (each may include trailing newline).
+ */
 function splitStringInto2000CharChunksonNewLine(str)
 {
 	var chunks = [];
@@ -31,6 +62,27 @@ function splitStringInto2000CharChunksonNewLine(str)
 	return chunks;
 }
 
+/**
+ * Split a string into chunks no larger than ~900 characters, preferring
+ * to split on spaces so words are preserved.
+ *
+ * Behavior:
+ * - The input string is split on spaces; words are appended to the current
+ *   chunk until adding one would exceed 900 characters, then a new chunk
+ *   is started.
+ * - Returned chunks include a trailing space after each word (the last
+ *   chunk may end with a space).
+ *
+ * Branch notes:
+ * - This function is useful for preparing text to be sent alongside
+ *   generated audio/video files where smaller segments are required.
+ * - Like the 2000-char splitter, a single word longer than 900 characters
+ *   will produce an oversized chunk; the function intentionally does not
+ *   hyphenate or split words.
+ *
+ * @param {string} str - The input string to chunk on spaces.
+ * @returns {string[]} Array of chunk strings.
+ */
 function splitStringInto900CharChunksonSpace(str)
 {
 	var chunks = [];
@@ -49,6 +101,25 @@ function splitStringInto900CharChunksonSpace(str)
 	return chunks;
 }
 
+/**
+ * Compose and post the generated DOW (day-of-week) text and any
+ * associated media files to Discord.
+ *
+ * Parameters:
+ * - `mode`: either "message" or "interaction"; determines how to send/edit
+ *   the message (channel.send vs interaction.editReply + fetchReply).
+ * - `message`: the Discord message or interaction object to edit/send.
+ * - `dowNum`: numeric day-of-week (0=Sunday..6=Saturday) to generate for.
+ * - `seedSet`: optional seed state or custom string passed to `funnyDOWTextSaved`.
+ * - `dontSave`: if true, prevent saving generated output to persistent storage.
+ *
+ * Behavior:
+ * - Calls `funnyDOWTextSaved` to generate a list where the first item contains
+ *   the main text and any top-level files, and subsequent items may be
+ *   additional message chunks or files. It chunks the main text for Discord's
+ *   message length limits and attaches files across messages (max 5 per
+ *   message as a safety measure).
+ */
 async function functionPostFunnyDOW(mode, message, dowNum, seedSet = -1, dontSave = false)
 {
 	var id = mode == "interaction" ? message.user.id : message.author.id;
@@ -107,6 +178,29 @@ async function functionPostFunnyDOW(mode, message, dowNum, seedSet = -1, dontSav
 	}
 }
 
+/**
+ * Generate DOW text and optionally save it to persistent storage.
+ *
+ * Returns an array of message-like objects where the first element contains
+ * the main text in `.content` and may include a `.files` array, and later
+ * elements may represent additional message segments or file-only items.
+ *
+ * Parameters:
+ * - `dowNum`: numeric target day-of-week to generate for.
+ * - `authorID`: the invoking user's id (used for attribution and saving).
+ * - `seedSet`: optional control parameter. If provided as an array of length 6,
+ *    the function will restore internal state from it. If provided as a single
+ *    element array, it's treated as a `customString` override.
+ * - `dontSave`: when true, skip persisting the generated text to
+ *    `fridaymessages.json` and avoid updating caches.
+ *
+ * Notes / branches:
+ * - If saving is enabled, function will append an entry into
+ *   `fridaymessages.json` and may interact with the Friday cache directory.
+ * - On permission or environment differences, this function performs
+ *   synchronous file I/O (read/parse/write). It assumes `babadata.datalocation`
+ *   points to a writable location.
+ */
 async function funnyDOWTextSaved(dowNum, authorID, seedSet = -1, dontSave = false)
 {
 	var cacheVersion = -1;
@@ -195,6 +289,27 @@ async function funnyDOWTextSaved(dowNum, authorID, seedSet = -1, dontSave = fals
 	return textList;
 }
 
+/**
+ * Convert marked segments of `text` into Morshu-generated audio/video files.
+ *
+ * The text may include markers indicating Morshu audio or video insertion:
+ * - `{MORSHUIFY_AUDIO}` / `{MORSHUIFY_AUDIO_HIDDEN}` for audio
+ * - `{MORSHUIFY_VIDEO}` / `{MORSHUIFY_VIDEO_HIDDEN}` for video
+ * - Reversed markers (eg `}OIDUA_YFIUHSROM{`) are also supported and indicate
+ *   the following marked section is reversed in the source text.
+ *
+ * Behavior:
+ * - The function extracts the marked portion, preserves the preceding text
+ *   (if any) as a `.content` entry and then splits the morshu text into ~900
+ *   char chunks to send to `babaMorshu` which returns file metadata.
+ * - If `{..._HIDDEN}` variants are used, the visible text chunk may be
+ *   suppressed and only files returned.
+ *
+ * @param {string} text - The source text containing morshu markers.
+ * @param {string} mode - Either "audio" or "video" to select generation.
+ * @returns {Promise<Array<{content?:string,files?:Array}>}>} Array of objects
+ *   suitable for sending as message content and/or attachments.
+ */
 async function morshin(text, mode)
 {
 	var files = [];
@@ -261,6 +376,18 @@ async function morshin(text, mode)
 	return files;
 }
 
+/**
+ * Detect morshu markers in `text` and return an array of message/file
+ * objects where morshu content has been replaced by generated files.
+ *
+ * This function inspects the text for video markers first then audio
+ * markers, calling `morshin` with the appropriate mode. After processing,
+ * it strips the markers from `text` and includes any generated files in the
+ * returned array. If no morshu markers are present, returns [{content: text}].
+ *
+ * @param {string} text - Source text to inspect.
+ * @returns {Promise<Array<{content?:string,files?:Array}>>}
+ */
 async function checkForMorshus(text)
 {
 	var files = [];
@@ -317,6 +444,29 @@ async function checkForMorshus(text)
 	return files;
 }
 
+/**
+ * Core generator for DOW (day-of-week) text.
+ *
+ * This is a recursive text template engine supporting custom tags and
+ * constructs (e.g. `{RECURSIVE}`, `{REVERSE}`, repeat blocks, and
+ * nested replacements). It resolves templates from `DOWcache.json` or
+ * cached versions in `FridayCache` and performs multiple passes to
+ * expand replacements, nested repeats, and time-based substitutions.
+ *
+ * Returns an array: [text, condensedNotation, condensedNotationYung]
+ * - `text`: the final rendered string
+ * - `condensedNotation`: a condensed string describing applied transforms
+ * - `cnYung`: auxiliary metadata used when saving condensed notation
+ *
+ * Important behavior notes / branches:
+ * - `cacheVersion` chooses a cache file; if not found it falls back to
+ *   `DOWcache.json`.
+ * - `saveToFile` controls whether ToBeCounted is persisted to
+ *   `fridayCounter.json` at recursion level 0.
+ * - `DateOveride` optionally adjusts internal date calculations.
+ *
+ * @returns {Promise<[string,string,Array]>} The rendered text and metadata.
+ */
 async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, authorID, recrused = 0, ToBeCounted = [], headLevel = 0, customString = null)
 {
 	let path = babadata.datalocation + "DOWcache.json";
@@ -749,6 +899,21 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 	return [text, condensedNotation, cnYung];
 }
 
+/**
+ * Build a condensed-notation string describing repeat/transform operations.
+ *
+ * The function expects `listOfCDs` to contain compact tokens describing
+ * transformations; it scans the list in reverse and merges items that
+ * reference an index (e.g. "0-6s" causes the referenced index 0 to append
+ * "*6s"), then joins tokens with "+" and prepends `prefix` when items exist.
+ *
+ * This condensed notation is used for saving compact metadata about how
+ * the final text was constructed.
+ *
+ * @param {string[]} listOfCDs - Array of condensed tokens.
+ * @param {string} prefix - String prefix to insert at start (e.g. ">").
+ * @returns {string} The condensed notation string (possibly empty).
+ */
 function condensedNotationCreator(listOfCDs, prefix)
 {
 	var condensedNotation = "";
@@ -768,13 +933,31 @@ function condensedNotationCreator(listOfCDs, prefix)
 				listOfCDs[index] += "*" + item;
 			}
 		}
-		
+        
 		condensedNotation += prefix + listOfCDs.join("+");
 	}
-
+    
 	return condensedNotation;
 }
 
+/**
+ * Perform bracketed replacements in `text` using entries from
+ * `FridayLoops.json` (or a cached version).
+ *
+ * Behavior:
+ * - Replacements are looked up by key name (e.g. "[SOME_KEY]") and each
+ *   key may have multiple candidate texts; a candidate is selected using
+ *   `theRNG` and substituted. Substitutions continue until no bracketed
+ *   key instances remain.
+ * - When `ToBeCounted` is provided, each substitution pushes metadata into
+ *   that array for later counting/statistics.
+ *
+ * Notes:
+ * - If `cacheVersion` points to a non-existent cache file, the function
+ *   falls back to the normal `FridayLoops.json`.
+ *
+ * @returns {string} The text after all nested bracketed replacements.
+ */
 function replaceNested(cacheVersion, text, ToBeCounted = null, recrused = 0, headLevel = 0, authorID = 0)
 {
 	var replaced = true;
@@ -835,6 +1018,21 @@ function replaceNested(cacheVersion, text, ToBeCounted = null, recrused = 0, hea
 	return text;
 }
 
+/**
+ * Find and expand repeat blocks in `text`.
+ *
+ * Supported patterns include `{repeat:NUM:VALUE}` and variants with
+ * prefixes (e.g. `b` prefix used by other code paths). This function
+ * replaces matched repeat blocks with the expanded text and returns an
+ * array `[expandedText, condensedRepeatDescriptors]` where the second
+ * element is used to record how many repeats were expanded.
+ *
+ * @param {number} cacheVersion - Cache version passed through to nested replacements.
+ * @param {string} text - Input text possibly containing repeat blocks.
+ * @param {string} prefix - Optional prefix to support specialized repeat
+ *   syntaxes (e.g. "b").
+ * @returns {[string,string[]]} The expanded text and a list of condensed descriptors.
+ */
 function repeatCheck(cacheVersion, text, prefix = "")
 {
 	if (text.includes("{RECURSIVE}"))
@@ -873,6 +1071,17 @@ function repeatCheck(cacheVersion, text, prefix = "")
 	return [text, cd];
 }
 
+/**
+ * Internal helper used by `repeatCheck` to process individual repeat blocks.
+ *
+ * This function supports nested repeat constructs and returns `[newText, counto]`
+ * where `counto` is used to build condensed notation for repeated segments.
+ *
+ * @param {number} cacheVersion
+ * @param {string} text
+ * @param {string} prefix
+ * @returns {[string,string[]]}
+ */
 function repeatCheckInner(cacheVersion, text, prefix = "")
 {
 	// new /friday option tag items go here:
@@ -1016,6 +1225,15 @@ function repeatCheckInner(cacheVersion, text, prefix = "")
 	return [text, counto];
 }
 
+/**
+ * Strip all non-alphanumeric characters from `text`.
+ *
+ * If the result is empty, generate a short pseudo-random alphanumeric
+ * string using the module RNG so callers always get a non-empty identifier.
+ *
+ * @param {string} text
+ * @returns {string}
+ */
 function onlyLettersNumbers(text)
 {
 	// remove all non-alphanumeric characters
@@ -1028,6 +1246,16 @@ function onlyLettersNumbers(text)
 	return text;
 }
 
+/**
+ * Perform a conservative URL-encoding of commonly problematic characters.
+ *
+ * This is a simple replacement approach (not `encodeURIComponent`) and is
+ * intended for small uses inside templates where a few characters need
+ * to be converted into percent-encoded equivalents.
+ *
+ * @param {string} text
+ * @returns {string} The URL-safe string.
+ */
 function URLSafe(text)
 {
 	text = text.replaceAll(" ", "%20");
@@ -1062,6 +1290,16 @@ function URLSafe(text)
 	return text;
 }
 
+/**
+ * Return a randomized frog-related text from the FROG cache.
+ *
+ * If the cache file does not exist this function will create a minimal
+ * fallback `FROGcache.json` file in `babadata.datalocation` so callers
+ * can continue to operate.
+ *
+ * @param {number} authorID - ID used to generate context-sensitive options.
+ * @returns {string} A selected frog text or URL.
+ */
 function funnyFrogText(authorID)
 {
 	let path = babadata.datalocation + "FROGcache.json";
@@ -1092,6 +1330,17 @@ function funnyFrogText(authorID)
 	return text;
 }
 
+/**
+ * Filter frog options based on control list and the caller's ID.
+ *
+ * `FROGcontrol.json` contains control levels per user; this function
+ * filters `opsArray` to include only the options the `authorID` is
+ * allowed to see.
+ *
+ * @param {Array} opsArray
+ * @param {number} authorID
+ * @returns {Array} Filtered options.
+ */
 function generateFrogOps(opsArray, authorID)
 {
     let rawdata = fs.readFileSync(babadata.datalocation + "FROGcontrol.json");
@@ -1129,6 +1378,21 @@ function generateFrogOps(opsArray, authorID)
 	return ops;
 }
 
+/**
+ * Generate Friday/DOW options filtered by time gates, occurrence chance,
+ * and user control levels.
+ *
+ * This reads `TimeGates.json` to optionally select a different base date
+ * when `prefix` identifies a cached snapshot. It then filters `opsArray`
+ * according to start/end time windows, day-of-week constraints, and
+ * `OccuranceChance` percent roll.
+ *
+ * @param {Array} opsArray - Candidate options read from DOW cache.
+ * @param {number} authorID - ID used to check permission/control level.
+ * @param {number} prefix - Cache version prefix; -1 = normal current data.
+ * @param {Array} DateOveride - Date override array used elsewhere.
+ * @returns {Array} Filtered ops ready for random selection.
+ */
 function generateFridayOps(opsArray, authorID, prefix, DateOveride)
 {
 	// get TimeGates.json
@@ -1258,6 +1522,15 @@ function generateFridayOps(opsArray, authorID, prefix, DateOveride)
 	return ops;
 }
 
+/**
+ * Remove the counting role from a user in a guild.
+ *
+ * This is a tiny helper to async-fetch a member and remove a configured
+ * role id defined in `babadata.countrole` with a human-readable reason.
+ *
+ * @param {string} uid - User id to operate on.
+ * @param {object} g - Guild object (expects `g.members.fetch`).
+ */
 function removeCountRuin(uid, g)
 {
 	g.members.fetch(uid).then(member => {
