@@ -69,11 +69,29 @@ const { babaFriday,  babaHelp, babaPlease, babaPizza, babaVibeFlag, babaYugo, ba
  * Main message handler invoked for each received message.
  *
  * Behavior summary:
- * - Loads frog/holiday configuration on each call (synchronous read).
- * - Normalizes incoming content and runs a set of substring-driven handlers
- *   (both lightweight user commands and privileged admin commands).
- * - Calls `TextCommandBackup` early to let it handle out-of-guild DMs and
- *   other admin/debug triggers.
+ * - Loads `frogholidays.json` (synchronously) on every call to read the current
+ *   privileged user list and frog config.
+ * - Normalizes incoming content via `normalizeMSG` and sets `sentvalid` if the
+ *   message is a DM from a user in `frogdata.froghelp.ifrog`.
+ * - Delegates to `TextCommandBackup` for the privileged admin DM command set.
+ * - Calls `preformEasterEggs` and then branches on the `!baba` prefix for
+ *   public commands.
+ *
+ * Hidden single-user backdoor (line ~123):
+ *   If the normalized message content contains BOTH of the two hardcoded channel
+ *   IDs `560231259842805770` and `563063109422415872`, AND the string representation
+ *   of (currentYear - 1), AND the message is NOT from a bot, AND the author's ID
+ *   is the hardcoded value `360228104997961740`, the bot reloads babotdata.json
+ *   and — if `holidayval` is currently `"defeat"` — resets the holiday channel
+ *   to its default state. This is a secret emergency one-user reset mechanism.
+ *
+ * Note on slash-command double-processing:
+ *   In `babot.js`, after each slash command executes the bot fetches the reply
+ *   message and passes it back through `babaMessage`. This means bot-generated
+ *   slash command replies also run through all the easter egg handlers, the
+ *   `PersonalReact` emoji reactions, and the public `!baba` command checks.
+ *   Most of these checks filter out bot authors, but the interaction creates
+ *   potential for bot-message reaction loops.
  *
  * Important side-effects:
  * - Reads `frogholidays.json` and `babotdata.json` from the configured

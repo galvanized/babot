@@ -550,8 +550,21 @@ function SetHolidayChan(guild, name, resetid = -1)
  * the current calendar year we are.
  *
  * Each character is one of `░`, `▒`, `▓`, or `█` depending on how close the
- * current day is to that segment's boundary.  The bar is followed by the
+ * current day is to that segment's boundary. The bar is followed by the
  * percentage of the year elapsed, rounded to two decimal places.
+ *
+ * Quirks and unintended behavior:
+ * - The call `getD1(getHours=true)` uses JS assignment-as-expression syntax.
+ *   It sets a module-level (effectively global) variable `getHours = true` as
+ *   a side-effect and passes `true` as the `getHours` argument. This happens to
+ *   call `getD1` correctly but leaks the `getHours` variable into outer scope.
+ * - `v1plus` on line 582 (`v1plus = endoyear * ((i+1) / n)`) is assigned
+ *   without `var`/`let`/`const`, making it an implicit global variable too.
+ * - The last-segment logic (after the loop) uses different fill rules than the
+ *   in-loop logic: the loop fills segments where `Difference_In_Days < valcount`
+ *   whereas the final segment fill is `>` the near-end threshold. When the
+ *   total year progress exceeds `endoyear - 1/12` the last character is forced
+ *   to `█` regardless of the standard gradient rules.
  *
  * @param {number} n - Total number of characters in the progress bar.
  * @returns {string} The progress bar string followed by a space and the
@@ -672,7 +685,13 @@ async function RoleAdd(msg, users, role) //dumb user thing because it is needed 
 }
 
 /**
- * Delegates to {@link maidenTime} to apply a timeout to a user.
+ * Thin wrapper around {@link maidenTime} that applies a timeout to a user.
+ *
+ * Despite the name, this function has nothing to do with daily scheduling
+ * or randomness. It is a delegating shim that exists so the `rng` admin
+ * command in `TextCommandBackup` has a named entry point. The `time` value
+ * is derived from a minute count supplied by the admin user (converted to ms
+ * at the call site, not inside this function).
  *
  * @param {string} u_id - Discord user ID of the user to time out.
  * @param {import('discord.js').Client} bot - The active Discord client.
@@ -766,12 +785,23 @@ function channelStatusChange(channelID, status)
  * Recursively splits a string into chunks of at most 2 000 characters,
  * breaking on the last newline within each chunk where possible.
  *
- * If no newline is found within the first 2 000 characters, a hard split is
- * made at character 1 990 to leave room for message formatting.
+ * If no newline is found within the first 2 000 characters, falls back to a
+ * hard split at character 1 990.
+ *
+ * Execution path when `lindex == -1` (no newline in first 2 000 chars):
+ *   1. `vle` is reassigned to `vleNew.substring(0) + vle.substring(2000)`,
+ *      which reconstructs the full original string (a no-op assignment).
+ *   2. `vleNew` is set to `vleNew.substring(0, -1)` which JavaScript evaluates
+ *      as `""` (empty string).
+ *   3. The `if (lindex == -1)` branch then overwrites both `vleNew` and `vle`
+ *      with the correct 1990-char split values.
+ *   The intermediate empty `vleNew` is never used; the fallback overwrites it
+ *   before it is pushed to `sgtuff`. The function ultimately produces correct
+ *   output despite the confusing intermediate state.
  *
  * @param {string} vle - The string to split.
  * @returns {string[]} An array of string segments each no longer than
- *   2 000 characters.
+ *   2 000 characters (or 1 990 in the no-newline fallback case).
  */
 function Seperated(vle)
 {
@@ -797,23 +827,37 @@ function Seperated(vle)
 }
 
 /**
- * Downloads an HTTP response body to a local file, then uses the file's
- * contents to construct and fire a follow-up API request.
+ * Arbitrary HTTP API proxy driven by a JSON payload file.
  *
- * The local file is expected to be a JSON object with keys:
- * - `"U"` – Base URL (the provided `id` is appended).
- * - `"M"` – HTTP method string.
- * - `"H"` – Headers object (passed through {@link cleanHead}).
- * - `"B"` – Optional request body.
+ * The function pipes `res.body` to a local temp file (`local`), then parses
+ * that file as JSON and uses its fields to construct and fire an arbitrary
+ * HTTP request. The bot's own API token is injected into the request headers
+ * via {@link cleanHead} before the call is made.
  *
- * The HTTP status code and response text are sent back to the message author
- * as DMs, split into ≤ 2 000-character chunks via {@link Seperated}.
+ * JSON payload shape (the file must conform to this schema):
+ * ```json
+ * {
+ *   "U": "<base URL — the `id` parameter is appended as a suffix>",
+ *   "M": "<HTTP method, e.g. \"PUT\">",
+ *   "H": { "<headers object — Authorization will be completed with bot token>" },
+ *   "B": <optional request body, JSON-serialized before sending>
+ * }
+ * ```
+ *
+ * ⚠️ Security note: This function can target ANY URL (not only Discord) and
+ * will inject `global.toke` (the bot token) into the Authorization header of
+ * the outgoing request. It is invoked only by privileged frog-users via the
+ * `anti delay` text command in `TextCommandBackup`.
+ *
+ * The HTTP status code and full response body are sent back to
+ * `message.author` as DMs, split into ≤ 2 000-character chunks via
+ * {@link Seperated}.
  *
  * @param {import('discord.js').Message} message - Discord message whose author
- *   receives the API response.
- * @param {string} id - ID string appended to the API base URL from the file.
- * @param {string} local - Local filesystem path where the response body is
- *   written before parsing.
+ *   receives the API response output.
+ * @param {string} id - Suffix appended to the base URL from the file.
+ * @param {string} local - Filesystem path where the response body is written
+ *   before parsing.
  * @param {import('node-fetch').Response} res - The `node-fetch` response whose
  *   body is piped to `local`.
  * @returns {void}
@@ -864,8 +908,14 @@ function fetchMeAPirate(message, id, local, res)
 /**
  * Returns the index of a user ID within the `frogdata.froghelp.ifrog` array.
  *
+ * The `ifrog` array is the **privileged frog-user whitelist**. Its index is
+ * used to look up the corresponding role ID from `frogdata.froghelp.rfrog`
+ * and to set `sentvalid = true` in `babaMessage`, which gates the entire
+ * admin DM command set in `TextCommandBackup`. A return value of `-1` means
+ * the user has no admin DM privileges.
+ *
  * @param {Object} frogdata - The frog data object loaded from persistent
- *   storage.
+ *   storage (typically `frogholidays.json`).
  * @param {string} id - The Discord user ID to search for.
  * @returns {number} The zero-based index of `id` in `ifrog`, or `-1` if not
  *   found.
@@ -938,10 +988,15 @@ function fronge(message)
 
 /**
  * Extracts the first attachment from the message and passes it to
- * {@link fetchMeAPirate} for processing.
+ * {@link fetchMeAPirate} for processing as an arbitrary HTTP API call.
+ *
+ * The attachment is expected to be a JSON file whose `"U"`, `"M"`, `"H"`, and
+ * `"B"` fields describe the target URL, method, headers, and body. The bot
+ * token is injected into the headers automatically.
  *
  * Parses the target API ID from the fourth whitespace-delimited token of the
- * message content and writes the downloaded file to `babadata.temp + "local.txt"`.
+ * message content (`message.content.split(' ')[3]`) and writes the downloaded
+ * file to `babadata.temp + "local.txt"` as a scratch path.
  *
  * @param {import('discord.js').Message} message - The Discord message
  *   containing an attachment and the target ID in its content.
@@ -961,10 +1016,12 @@ function dealWithFile(message)
 }
 
 /**
- * Thin wrapper that immediately delegates to {@link dealWithFile}.
+ * Thin synchronous wrapper that immediately delegates to {@link dealWithFile}.
  *
- * Exists to allow an extra async layer or future delay to be inserted without
- * altering call sites.
+ * The name `antiDelay` is misleading — the function introduces no delay; it
+ * exists solely so that the `"anti delay"` text command in
+ * {@link TextCommandBackup} has a single named entry point, making it possible
+ * to wrap it with a `setTimeout` in the future without modifying the call site.
  *
  * @param {import('discord.js').Message} message - The Discord message to
  *   process.
@@ -978,17 +1035,28 @@ function antiDelay(message)
 /**
  * Scans message content for various Easter egg triggers and responds in-channel.
  *
- * Checked triggers include (non-exhaustively):
- * - Random 1-in-333 333 chance blood-sacrifice message.
- * - "perchance" reply.
- * - "france is better than america" → 1-minute timeout.
- * - "wake up babe" → correction reply.
- * - "christmas" + "bad" → defence reply.
- * - {@link PersonalReact} and {@link pleaseChecker} hooks.
- * - April Fools' Day window → {@link extremeEmoji}.
- * - Oven request → random oven image reply.
- * - `archive-` / `setstring-"..."` admin commands via {@link functionPostFunnyDOW}.
- * - {@link checkForFish} fish-image hook.
+ * Checked triggers (all branches checked on every call):
+ * - 1-in-333 333 chance blood-sacrifice message (no author-bot guard — fires
+ *   for bot messages too).
+ * - `"perchance"` (whitespace-stripped) → reply (guarded by `!message.author.bot`).
+ * - `"france is better than america"` → 1-minute timeout on the message author
+ *   via `maidenTime`. No bot guard — a bot repeating this phrase will be timed
+ *   out too (if the bot has the required role). Runs on slash command replies
+ *   processed by `babaMessage`.
+ * - `"wake up babe"` → correction reply.
+ * - `"christmas"` + `"bad"` → defence reply.
+ * - {@link PersonalReact} emoji reaction hook (loads `REACTOcache.json` on every call).
+ * - {@link pleaseChecker} "Indeed, X Please!" hook (loads `Pleasedcache.json`
+ *   on every call). The bot-message suppression only applies to the exact phrase
+ *   `"indeed, X please!"`, so a bot reply containing "X please" in other
+ *   phrasing can trigger a feedback loop.
+ * - April Fools' window (March 31 13:00+ or April 1) → {@link extremeEmoji}.
+ * - `"i request an oven at this moment"` → random oven URL reply.
+ * - If message names a weekday AND includes `archive-` or `setstring-"..."` →
+ *   calls {@link functionPostFunnyDOW} for privileged DOW archiving. This is an
+ *   **in-channel** (not DM-gated) admin path that any user who knows the syntax
+ *   can trigger; it is not gated by `sentvalid`.
+ * - {@link checkForFish} fish-image hook (loads `FISHcache.json` on every call).
  *
  * @async
  * @param {import('discord.js').Message} message - The triggering Discord

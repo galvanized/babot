@@ -159,6 +159,16 @@ function makeBot()
  * - Registers `interactionCreate` which dispatches to context-menu, modal,
  *   button, string-select, user-select, channel-select, and slash-command handlers.
  *
+ * Bot-message re-processing:
+ *   After each slash command's `execute()` resolves, the handler fetches the
+ *   resulting reply message and passes it back through `txtCommands.babaMessage`.
+ *   This means every bot-generated slash command reply also runs through all
+ *   Easter egg handlers, emoji reaction checks, and the public `!baba` command
+ *   parser. Most branches filter `message.author.bot`, but the double-processing
+ *   means that if a slash command response contains a person's name plus "please",
+ *   the `pleaseChecker` will fire again unless the specific suppression string
+ *   `"indeed, <name> please!"` is present.
+ *
  * @param {Discord.Client} bot - A client instance created by `makeBot()`.
  */
 function botOn(bot)
