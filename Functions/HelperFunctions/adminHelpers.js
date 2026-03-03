@@ -241,6 +241,18 @@ async function DelayedDeletion(hiddenChan, img) //download function used when th
 	setTimeout(function(){ fs.unlinkSync(tempFilePath); }, 3000); //deletes file from local system (delayed by 3 sec to allow for download and upload)
 }
 
+/**
+ * Send a single entry from `texts` to the message's channel after a short
+ * delay, falling back to a local error image if the send fails.
+ *
+ * @async
+ * @param {number} i - Index into the `texts` array to send.
+ * @param {Array} texts - Array of content objects/strings to send.
+ * @param {import('discord.js').Message} message - The originating Discord message,
+ *   used to obtain the target channel.
+ * @param {string} templocal - Path to the local temp directory containing
+ *   `error.png`, used as a fallback image when sending fails.
+ */
 function timedOutFrog(i, texts, message, templocal)
 {
 	// Delay sending a single item from `texts` by 1s. Used by the callers that
