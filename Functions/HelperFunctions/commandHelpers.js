@@ -1,3 +1,12 @@
+/**
+ * @module commandHelpers
+ * @description Helper utilities for Discord bot commands. Provides image composition
+ * using Jimp for frog/holiday week-count images (including multi-hundred-week "bonus"
+ * stacking), holiday date look-up and next-holiday finding, hurricane information
+ * fetching and caching (NHC XML), haiku Discord embed generation, and miscellaneous
+ * Discord message-building utilities such as month-name conversion.
+ */
+
 var babadata = require('../../babotdata.json'); //baba configuration file
 
 const fs = require('fs');
@@ -12,11 +21,48 @@ const { getD1 } = require('../../Tools/overrides.js');
 
 const options = { year: 'numeric', month: 'long', day: 'numeric' }; // for date parsing to string
 
+/**
+ * Returns the absolute file-system path to the error flag image used when an
+ * image asset cannot be located or loaded.
+ *
+ * @returns {string} Full path to `error.png` inside the configured Flags directory.
+ */
 function getErrorFlag()
 {
 	return babadata.datalocation + "Flags/" + "error.png";
 }
 
+/**
+ * Composes and writes a frog/holiday week-count image by layering multiple PNG
+ * assets with Jimp.  Handles week counts over 100 via {@link BonusGenerator} and
+ * optionally prints text overlays for holiday names or years.
+ *
+ * @async
+ * @param {string}  templocal        - Directory path (with trailing separator) that
+ *                                     contains all image assets.
+ * @param {string}  base             - Filename of the base background image.  Falls
+ *                                     back to `"date_base.png"` if the file cannot be
+ *                                     read, which also forces `textoverlay = true`.
+ * @param {string}  wednesdayoverlay - Filename of the "Wednesday" label overlay, or
+ *                                     `"since"` / `"sinces"` to print a text label
+ *                                     instead of an image.
+ * @param {number}  weeks            - Week count to display.  Values above 999 999 are
+ *                                     capped and a "+" suffix is rendered.
+ * @param {string}  outputname       - Filename to write the finished image to inside
+ *                                     `templocal`.
+ * @param {Object}  holidayinfo      - Holiday metadata object.
+ * @param {string}  holidayinfo.name - Internal holiday key; `"date"` triggers text
+ *                                     rendering of `holidayinfo.safename`.
+ * @param {string}  holidayinfo.safename - Human-readable holiday name used as a text
+ *                                        overlay when `textoverlay` is true or name is
+ *                                        `"date"`.
+ * @param {number}  [holidayinfo.year]   - Optional year printed above the image when
+ *                                        present and name is not `"date"`.
+ * @param {boolean} textoverlay      - When `true`, renders the holiday safe-name (or
+ *                                     year) as a text overlay instead of relying solely
+ *                                     on image assets.
+ * @returns {Promise<void>}
+ */
 async function MakeImage(templocal, base, wednesdayoverlay, weeks, outputname, holidayinfo, textoverlay) //Image Creation is now function
 {
 	var plu = false;
@@ -85,6 +131,17 @@ async function MakeImage(templocal, base, wednesdayoverlay, weeks, outputname, h
 	baseImg.write(templocal + outputname);
 }
 
+/**
+ * Look-up table ("Retarded Lookup Table" — Hank, 2021) that maps a week-count value
+ * to the correct white-overlay image suffix used when the week count exceeds 100.
+ * The suffix corresponds to how much of the previous digit row needs to be masked.
+ *
+ * @param {number} weekct - The week count (or sub-count) for which to retrieve the
+ *                          white-overlay identifier.
+ * @returns {string} A single-character string (`"1"` – `"9"`) identifying which
+ *                   `White<n>.png` overlay asset to use.  Returns `"8"` as the
+ *                   default fallback when no entry matches.
+ */
 function GetWhite(weekct) //For frogs more than 100 weeks; "Retarded Lookup Table" - Hank 2021
 {
 	var wites = [
@@ -117,6 +174,25 @@ function GetWhite(weekct) //For frogs more than 100 weeks; "Retarded Lookup Tabl
 	return "8";
 }
 
+/**
+ * Recursively builds the stacked digit rows for week counts greater than 100.
+ * Each recursive call adds one additional row (hundreds, thousands, etc.) to the
+ * Jimp image and adjusts the vertical text position accordingly.
+ *
+ * @async
+ * @param {number}       bonus     - The carry-over multiplier for the current digit
+ *                                   tier (e.g. how many hundreds/thousands to show).
+ * @param {Jimp}         im        - The current Jimp image being composed.
+ * @param {string}       templocal - Directory path containing image assets.
+ * @param {number}       weeks     - The base week-count digit for the current tier.
+ * @param {number}       ct        - Recursion depth / tier counter (starts at 1).
+ * @param {number}       ln        - Line count — tracks how many extra rows have been
+ *                                   added so the canvas can be extended correctly.
+ * @param {boolean}      moere     - When `true` the highest renderable value gets a
+ *                                   `"+"` suffix to indicate the count was capped.
+ * @returns {Promise<[Jimp, number]>} A two-element array containing the updated Jimp
+ *                                    image and the vertical text-position offset.
+ */
 async function BonusGenerator(bonus, im, templocal, weeks, ct, ln, moere) //for more than 100 weeks
 {
 	var mult = (40 * ln); //for text output
@@ -200,6 +276,19 @@ async function BonusGenerator(bonus, im, templocal, weeks, ct, ln, moere) //for 
 	else return [im, textlocal]; //return textlocal for text spot and image
 }
 
+/**
+ * Finds the holiday(s) from `simpleholidays` that are closest (fewest days away)
+ * to the given date.  If multiple holidays share the same minimum day-difference
+ * they are all returned.
+ *
+ * @param {Date}   d1              - The reference date to measure from.
+ * @param {number} yr              - The year used when resolving holiday dates via
+ *                                   {@link GetDate}.
+ * @param {Array}  simpleholidays  - Array of holiday definition objects compatible
+ *                                   with {@link GetDate} and {@link dateDiffInDays}.
+ * @returns {Array} Array of holiday definition objects that are nearest to `d1`.
+ *                  May contain more than one entry when holidays fall on the same day.
+ */
 function FindNextHoliday(d1, yr, simpleholidays)
 {
 	let diff = 100000;
@@ -223,6 +312,33 @@ function FindNextHoliday(d1, yr, simpleholidays)
 	return retme;
 }
 
+/**
+ * Builds a single Discord message object containing an embed for one haiku entry.
+ * When `simnames` is provided the author name, channel name, and date are each
+ * randomised — giving anonymous, Discord-name, person-name, or a similar-sounding
+ * name with configurable probabilities.  When `simnames` is `null` all three fields
+ * are shown as-is (used for direct/admin lookups).
+ *
+ * @param {Object}      haiku             - The haiku database record.
+ * @param {string}      haiku.HaikuFormatted - Pre-formatted haiku text for the embed
+ *                                            description.
+ * @param {string}      haiku.DiscordName  - Author's Discord display name.
+ * @param {string}      haiku.PersonName   - Author's real/person name.
+ * @param {string}      haiku.ChannelName  - Discord channel where the haiku was said.
+ * @param {string|number} haiku.Date       - Date the haiku was recorded (parseable by
+ *                                           `new Date()`).
+ * @param {boolean}     haiku.Accidental   - `true` if the haiku was accidental;
+ *                                           affects the footer label.
+ * @param {Array|null}  simnames           - Array of similar names for randomised
+ *                                           attribution, or `null` to show the exact
+ *                                           name.
+ * @param {number|null} page               - Zero-based page index, or `null` if this
+ *                                           is a standalone (non-paginated) embed.
+ * @param {number|null} pagetotal          - Total number of pages, or `null` if not
+ *                                           paginated.
+ * @returns {{ content: string, embeds: Discord.EmbedBuilder[] }} Discord message
+ *          payload object ready to be sent or stored.
+ */
 function SingleHaiku(haiku, simnames, page, pagetotal)
 {
 	var obj = {content: "BABA MAKE HAIKU"};
@@ -275,6 +391,23 @@ function SingleHaiku(haiku, simnames, page, pagetotal)
 	return obj;
 }
 
+/**
+ * Generates an array of Discord message payload objects — one per haiku — each
+ * containing an embed and an action-row with navigation buttons.  When `haiku` is
+ * `null` a single "No Haikus Found!" embed is returned.  When multiple haikus are
+ * provided, Previous/Next/Jump pagination buttons are attached; the first page's
+ * Previous button and the last page's Next button are disabled.  A "View Source"
+ * URL button is always included.
+ *
+ * @param {Array|null}  haiku    - Array of haiku database records (see
+ *                                 {@link SingleHaiku} for record shape), or `null`
+ *                                 when no haikus were found.
+ * @param {Array|null}  simnames - Array of similar names passed through to
+ *                                 {@link SingleHaiku} for randomised attribution,
+ *                                 or `null` to display exact names.
+ * @returns {Array<{ content: string, embeds: Discord.EmbedBuilder[], components: Discord.ActionRowBuilder[] }>}
+ *          Array of Discord message payload objects, one per haiku page.
+ */
 function EmbedHaikuGen(haiku, simnames)
 {
     var objs = [];
@@ -335,6 +468,26 @@ function EmbedHaikuGen(haiku, simnames)
 	return objs;
 }
 
+/**
+ * Scans `holdaylist` and returns metadata for every holiday whose name appears in
+ * `msg`.  Supports the special values `"BIRTHDAY"` (matches only Birthday entries),
+ * `"ALL"` (matches every non-help entry), and arbitrary text searches.  Handles
+ * nested holiday groups (mode `-1`) by recursing into sub-lists and prefixing the
+ * parent name to the picture-lookup key.  Also extracts an optional year from the
+ * message text and attaches it to the returned item.
+ *
+ * @param {string} msg         - The user-supplied message string to search within.
+ *                               Case-insensitive.  May contain a year integer which
+ *                               will be captured into the returned item.
+ * @param {Object} holdaylist  - Keyed object of holiday definitions as stored in the
+ *                               bot configuration.  Each entry has at minimum:
+ *                               `name` (string[]), `mode` (number), `safename`
+ *                               (string), and `ignoredays`.
+ * @returns {Array<Object>} Array of matched holiday item objects.  Each object
+ *          contains at least `{ name, mode, safename, ignoredays }` plus mode-
+ *          specific fields such as `day`, `month`, `week`, `dayofweek`, and
+ *          optionally `year`.
+ */
 function CheckHoliday(msg, holdaylist) //checks if any of the holiday list is said in the message
 {
 	var retme = [];
@@ -420,6 +573,16 @@ function CheckHoliday(msg, holdaylist) //checks if any of the holiday list is sa
 	return retme; //returns list of holidays asked for
 }
 
+/**
+ * Loads the hurricane tracking data from the configured data source.  If database
+ * access is available (`global.dbAccess`) the latest records are first pulled from
+ * the database via {@link getHurricaneInfo}.  The function then reads (and, if
+ * absent, initialises) the local `hurricanes.json` cache file.
+ *
+ * @async
+ * @returns {Promise<Array<Object>>} Parsed array of hurricane record objects from
+ *                                   `hurricanes.json`.
+ */
 async function loadHurricaneHelpers()
 {
 	if (global.dbAccess[1] && global.dbAccess[0])
@@ -436,6 +599,24 @@ async function loadHurricaneHelpers()
 	return baadata;
 }
 
+/**
+ * Determines whether a user-supplied hurricane name or number matches a single
+ * hurricane record from the JSON store.  Matching is attempted in this order:
+ * 1. Exact name match (case-insensitive).
+ * 2. First-letter match — only for named storms (not potential tropical cyclones or
+ *    tropical depressions).
+ * 3. Exact storm-number match.
+ *
+ * @param {string}        hurricaneName   - The name, first letter, or number string
+ *                                          provided by the user.
+ * @param {Object}        hurricaneJsonI  - A single hurricane record from the JSON
+ *                                          cache.
+ * @param {string}        hurricaneJsonI.Name       - Full storm name.
+ * @param {string}        hurricaneJsonI.systemType - NHC system-type string (e.g.
+ *                                                    `"TROPICAL STORM"`).
+ * @param {string|number} hurricaneJsonI.Number     - NHC sequential storm number.
+ * @returns {boolean} `true` if the record is considered a match for `hurricaneName`.
+ */
 function checkHurricane(hurricaneName, hurricaneJsonI)
 {
 	var huricaneNameLetter = hurricaneName.charAt(0).toUpperCase();
@@ -446,6 +627,17 @@ function checkHurricane(hurricaneName, hurricaneJsonI)
 	return match;
 }
 
+/**
+ * Parses an NHC `messageDateTimeUTC` date string into a Unix-epoch millisecond
+ * timestamp.
+ *
+ * Expected input format: `"YYYYMMDD HH:MM:SS AM/PM UTC"`
+ * (e.g. `"20240926 09:00:00 PM UTC"`).
+ *
+ * @param {string} date - NHC-formatted date/time string.
+ * @returns {number} Milliseconds since the Unix epoch representing the parsed date,
+ *                   as returned by `Date.parse()`.
+ */
 function parseHurricaneDate(date)
 {
 	// format example 20240926 09:00:00 PM UTC
@@ -459,6 +651,26 @@ function parseHurricaneDate(date)
 	return ddd;
 }
 
+/**
+ * Looks up, fetches, and (if necessary) discovers hurricane information for the
+ * given name or number.  The function:
+ * 1. Loads the local hurricane cache via {@link loadHurricaneHelpers}.
+ * 2. Searches the cache for a matching entry using {@link checkHurricane}.
+ * 3. If a match is found, fetches the NHC XML feed to check for updates and
+ *    refreshes `Type`, `Category`, `Name`, and `LastUpdated` when the remote data
+ *    is newer.
+ * 4. If no match is found, sequentially probes NHC XML URLs (incrementing storm
+ *    numbers) until the named storm is located or no more XML files exist, appending
+ *    any newly discovered storms to the cache.
+ * 5. Persists the updated cache to `hurricanes.json` and, if database access is
+ *    available, syncs via {@link saveUpdatedHurrInfo}.
+ *
+ * @async
+ * @param {string} hurricanename - Storm name, first letter of the storm name, or
+ *                                 storm number to search for.
+ * @returns {Promise<Object|undefined>} The hurricane record object for the matched
+ *                                      storm, or `undefined` if no match was found.
+ */
 async function checkHurricaneStuff(hurricanename)
 {
     var hurricaneJson = await loadHurricaneHelpers();
@@ -583,6 +795,13 @@ async function checkHurricaneStuff(hurricanename)
 	return pickedItem;
 }
 
+/**
+ * Converts a numeric month (1–12) to its full English name.
+ * Any value outside the range 1–11 returns `"December"`.
+ *
+ * @param {number} mint - Integer month number (1 = January … 12 = December).
+ * @returns {string} Full English month name (e.g. `"January"`, `"February"`, …).
+ */
 function monthFromInt(mint)
 {
 	switch(mint)
