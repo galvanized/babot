@@ -1,3 +1,11 @@
+/**
+ * @file eve.js
+ * @description Slash command that displays how many "eves" (days before) until or since
+ * a specified holiday or event. If multiple results are returned they are presented with
+ * navigation buttons via FrogButtons. If the result is "FUNNYDOW" a day-of-week fun
+ * message is posted instead.
+ */
+
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { babaUntilHolidays } = require('../Functions/commandFunctions.js');
 const { FrogButtons } = require("../Functions/HelperFunctions/basicHelpers.js");
@@ -11,6 +19,16 @@ module.exports = {
 			opt.setName("event")
 			.setDescription("The event that will get used.")
 			.setRequired(true)),
+	/**
+	 * Fetches holiday/event data for the given event string as "eves" (days before the
+	 * event), then posts the result with optional FrogButtons pagination or falls back
+	 * to a funny day-of-week message when signalled.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) {
 		await interaction.deferReply();
         var event = interaction.options.getString("event");

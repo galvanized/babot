@@ -1,3 +1,10 @@
+/**
+ * @file banHammer.js
+ * @description Slash command that appends a ban-hammer reaction to a specified message.
+ * Requires the `messageid` option. Default permissions are disabled; intended for admin
+ * use only. Searches all text channels and threads in the guild for the target message.
+ */
+
 const { setVBH } = require('../Functions/HelperFunctions/adminHelpers.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
@@ -7,6 +14,15 @@ module.exports = {
 		.setDescription('Adds a banhammer reaction to a message')
         .setDefaultPermission(false)
         .addStringOption(option => option.setName('messageid').setDescription('the message id to append the banhammer to').setRequired(true)),
+	/**
+	 * Searches all text channels and threads in the guild for the given message ID,
+	 * then adds a ban-hammer reaction to it. Replies ephemerally with the operation status.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) 
     {
         await interaction.deferReply({ ephemeral: true });

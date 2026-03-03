@@ -1,3 +1,11 @@
+/**
+ * @file gRole.js
+ * @description Slash command that creates a new role with the specified name and assigns
+ * it to all users who reacted to a given message. Requires `messageid` and `rolename`
+ * options. Default permissions are disabled; intended for admin use only. Searches all
+ * text channels and threads in the guild for the target message.
+ */
+
 const { setGrole } = require('../Functions/HelperFunctions/adminHelpers.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
@@ -8,6 +16,16 @@ module.exports = {
         .setDefaultPermission(false)
         .addStringOption(option => option.setName('messageid').setDescription('the message id to pull reactions from').setRequired(true))
         .addStringOption(option => option.setName('rolename').setDescription('the name of the role').setRequired(true)),
+	/**
+	 * Searches all text channels and threads in the guild for the given message ID,
+	 * then creates a new role with the specified name and assigns it to all users who
+	 * reacted to that message. Replies ephemerally with the operation status.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) 
     {
 		await interaction.deferReply({ ephemeral: true });

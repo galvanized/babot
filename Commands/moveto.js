@@ -1,3 +1,11 @@
+/**
+ * @file moveto.js
+ * @description Slash command that moves a specified message to a target channel. Requires
+ * `messageid` and `channel` options. Default permissions are disabled; intended for admin
+ * use only. Searches all text channels and threads in the guild for the target message
+ * before moving it.
+ */
+
 const { movetoChannel } = require('../Functions/HelperFunctions/adminHelpers.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 var babadata = require('../babotdata.json'); //baba configuration file
@@ -9,6 +17,16 @@ module.exports = {
         .setDefaultPermission(false)
         .addStringOption(option => option.setName('messageid').setDescription('the message id to move').setRequired(true))
         .addChannelOption(option => option.setName('channel').setDescription('the channel to move to').setRequired(true)),
+	/**
+	 * Searches all text channels and threads in the guild for the given message ID,
+	 * then moves it to the specified target channel. Replies ephemerally with the
+	 * operation status.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) 
     {
 		await interaction.deferReply({ ephemeral: true });

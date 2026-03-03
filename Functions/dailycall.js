@@ -73,6 +73,24 @@ function dailyCallStart(bot, dirName)
 	});
 }
 
+/**
+ * Find birthdays that match today's date and post a celebratory command
+ * into the configured `generalchan` channel.
+ *
+ * - Requires DB access: gated by `global.dbAccess[1] && global.dbAccess[0]`.
+ * - Calls `ObtainDBHolidays()` to load holiday/birthday records.
+ * - Uses `FindNextHoliday()` + `CheckHoliday("BIRTHDAY", ...)` to filter
+ *   today's birthday entries.
+ * - If birthdays are found, sets `global.BirthdayToday` to an array of
+ *   `safename` strings and sends two actions in the `generalchan`:
+ *     1) `channel.sendTyping()` (typing indicator)
+ *     2) `channel.send("!baba wednesday <names>")` (invokes another bot
+ *        command via chat message).
+ * - All fetching/send errors are logged; the function does not throw.
+ *
+ * @param {import('discord.js').Guild} guild - Guild to fetch the general channel from.
+ * @returns {Promise<void>}
+ */
 async function DisplayBirthdays(guild)
 {
 	/**
@@ -379,6 +397,22 @@ function todayDay(dow, guild, now)
 }
 
 
+/**
+ * Main daily runner. Performs one full daily pass and schedules the next run
+ * just after the next midnight.
+ *
+ * Steps performed:
+ * - reset RNG and errors
+ * - load babot config
+ * - set holiday channel if necessary
+ * - run reminders and birthday displays
+ * - schedule the next invocation at midnight + 20s
+ *
+ * @param {import('discord.js').Client} bot - Discord client instance.
+ * @param {import('discord.js').Guild} guild - Guild object to operate in.
+ * @param {string} sourceDir - Directory path where `babotdata.json` is located.
+ * @returns {Promise<void>} Resolves once scheduling is complete.
+ */
 async function dailyCall(bot, guild, sourceDir)
 {
 /**
@@ -459,6 +493,15 @@ async function dailyCall(bot, guild, sourceDir)
 }
 
 
+/**
+ * Perform holiday-specific adjustments for the server based on the provided date.
+ * - If early in the year, set a 'defeat' holiday channel for New Year.
+ * - If late-year (September+) ensure seasonal channels exist and call `MonthsPlus`.
+ *
+ * @param {Date} d1 - Date used to determine seasonal behavior.
+ * @param {import('discord.js').Guild} server - Guild object to adjust.
+ * @returns {void}
+ */
 function holidayDaily(d1, server)
 {
 /**
@@ -489,6 +532,13 @@ function holidayDaily(d1, server)
 }
 
 
+/**
+ * Cleanup function to clear any scheduled timers used by the daily runner.
+ * This function is exported to `global.DailyCallCleanup` and bound to
+ * process `SIGINT`/`SIGTERM` events.
+ *
+ * @returns {void}
+ */
 var cleanupFn = function cleanup() 
 {
 /**

@@ -1,3 +1,11 @@
+/**
+ * @file morshu.js
+ * @description Slash command that converts provided text into Morshu speech as an audio
+ * or video file. Text is split into 900-character chunks and processed sequentially.
+ * Supports optional subtitles and a personalized text/mention suffix. Defaults to video
+ * output mode when no mode is specified.
+ */
+
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { babaMorshu } = require("../Functions/Voice/VoiceHelpers/morshin.js");
 const { splitStringInto900CharChunksonSpace } = require('../Functions/HelperFunctions/slashFridayHelpers');
@@ -23,6 +31,17 @@ module.exports = {
 					{ name: "Audio", value: "audio" },
 					{ name: "Video", value: "video" }            
 				)),
+	/**
+	 * Converts the provided text into Morshu speech by splitting it into chunks and
+	 * generating audio or video files for each. Replies with the resulting media files
+	 * and optional subtitle/personalized text content. Reports an error if transcription
+	 * fails.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) {
 		await interaction.deferReply();
 		var mode = interaction.options.getString('mode');

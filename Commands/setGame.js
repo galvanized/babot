@@ -1,3 +1,11 @@
+/**
+ * @file setGame.js
+ * @description Slash command that sets the bot's Discord activity (game/status). Requires
+ * the `game` option; the `mode` option selects the activity type (Playing, Watching,
+ * Competing, Listening, or Streaming). For Streaming mode a Twitch URL is automatically
+ * attached. Default permissions are disabled; intended for admin use only.
+ */
+
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
 module.exports = {
@@ -19,6 +27,16 @@ module.exports = {
                 { name: 'Listening', value: '2' },
                 { name: 'Streaming', value: '1' }                
             )),
+	/**
+	 * Updates the bot's Discord activity to the specified game using the chosen activity
+	 * type. Attaches a Twitch URL for Streaming mode. Replies ephemerally confirming
+	 * the new activity.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) 
     {
 		await interaction.deferReply({ ephemeral: true });

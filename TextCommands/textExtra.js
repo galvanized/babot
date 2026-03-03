@@ -78,6 +78,26 @@ function objectParse(obj, ind)
 	return obje.join("\n");
 }
 
+/**
+ * Recursively diff two objects or arrays, producing a human-readable string
+ * that shows only changed values with arrow notation (`old -> new`).
+ *
+ * Behavior:
+ * - Picks the object with more keys to iterate so newly-added keys appear
+ *   in the diff output.
+ * - In `arraymode` the longer array is preferred and all elements are
+ *   included regardless of equality (to show additions/removals).
+ * - Recurses into nested objects and arrays, increasing indentation.
+ * - Primitive diffs are shown as `key: oldVal -> newVal`.
+ * - Empty-array pairs (same length, both empty) are skipped as trivial.
+ *
+ * @param {Object|Array} old - The original/old object or array.
+ * @param {Object|Array} neww - The updated/new object or array.
+ * @param {number} ind - Current indentation depth (number of tabs).
+ * @param {boolean} [arraymode=false] - When true, forces inclusion of all
+ *   elements (useful for array comparisons).
+ * @returns {string} Human-readable diff string.
+ */
 function twoObjectParseCompare(old, neww, ind, arraymode = false)
 {
 	var objs = [];
@@ -145,6 +165,26 @@ function twoObjectParseCompare(old, neww, ind, arraymode = false)
 	return objs.join("\n");
 }
 
+/**
+ * Produce a human-readable representation of a value or the diff between
+ * two values, routing to the appropriate helper based on which arguments
+ * are defined.
+ *
+ * Branches:
+ * - `old == undefined`: return `objectParse(neww)` if neww is an object,
+ *   else return neww as-is.
+ * - `neww == undefined`: return `objectParse(old)` if old is an object,
+ *   else return old as-is.
+ * - Both defined: return `old -> neww` for primitives, or call
+ *   `twoObjectParseCompare` recursively for objects/arrays.
+ *
+ * Note: The indentation offset calculation for arrays vs objects is a
+ * deliberate heuristic to produce readable top-level output.
+ *
+ * @param {*} old - Old value (may be undefined to indicate a new entry).
+ * @param {*} neww - New value (may be undefined to indicate a deleted entry).
+ * @returns {string} Human-readable representation or diff string.
+ */
 function parseItems(old, neww)
 {
 	if (old == undefined)
@@ -181,6 +221,159 @@ function parseItems(old, neww)
 }
 
 
+/**
+ * Secondary text command handler for admin/debug operations.
+ *
+ * ALL commands in this function require `sentvalid = true`, which is only set
+ * when the message arrives as a DM (`channel.type == 1`) AND the author's ID
+ * appears in `frogdata.froghelp.ifrog` (privileged frog-user list). This is
+ * an intentional hidden admin interface accessed exclusively through bot DMs.
+ *
+ * @param {Discord.Client} bot - The running Discord bot client.
+ * @param {Discord.Message} message - The received message.
+ * @param {boolean} sentvalid - True if the author is a privileged frog-user
+ *   (DM-accessible admin); gates the entire frog-debug command set.
+ * @param {string} msgContent - Normalized (lowercase) message content.
+ * @param {Discord.Guild} g - The main guild resolved from frogdata, used for
+ *   channel/member lookups inside the frog-debug handlers.
+ *
+ * ─── COMMAND REFERENCE (all require `sentvalid`) ─────────────────────────────
+ *
+ * `🐸 debug`
+ *   Holiday channel control. Digit 0–4 selects a preset holiday mode; `5` calls
+ *   SetHolidayChan(..., 0) to archive and lock the channel. `-n` suppresses the
+ *   rename step. `---<id>` re-enables a channel by ID via SetHolidayChan(..., 3).
+ *   Reads babotdata.json back after 1 second and DMs the new HC/HV values.
+ *
+ * `fronge <messageId>`
+ *   Finds the given message ID across all text channels and threads (best-effort,
+ *   errors swallowed) and removes all reactions from it.
+ *
+ * `funny silence <messageId>`
+ *   Finds a message by ID across all channels/threads and deletes it. No
+ *   confirmation and no permission check beyond being in `ifrog`.
+ *
+ * `cmes <channelId> <text>`
+ *   Sends `text` as the bot to the specified channel.
+ *   ⚠️ The permission guard (`if (!canSend || true)`) is ALWAYS true because:
+ *     1. `guildUser` is a Promise (never awaited), so `canSend` is `undefined`.
+ *     2. The `|| true` short-circuits the entire check unconditionally.
+ *   Sub-modes (checked by substring):
+ *   - `i-u <userId> <text>` – Creates a temporary webhook impersonating `userId`
+ *     (copies their display name and avatar), sends `text`, then deletes the
+ *     webhook after 10 seconds. The sent message persists after the webhook is
+ *     deleted. Thread targets are handled by fetching the parent channel.
+ *   - `d-lay <delayMs> <text>` – Schedules a delayed send via `reverseDelay`.
+ *   - `tnt` – Sends a typing indicator to the channel (no message body).
+ *   - `s-d` flag – Deletes the sent message after 8 seconds.
+ *   - `🐸` flag – Reacts to the sent message with the frog emoji.
+ *
+ * `rng <userId> <minutes>`
+ *   Calls `dailyRandom` (i.e. `maidenTime`) to apply a timeout to the given
+ *   user for the parsed minute value (converted to ms). Misleadingly named —
+ *   has nothing to do with randomness; it is a manual user-timeout tool.
+ *
+ * `getthefries`
+ *   Lists all files in `babadata.datalocation + "FridayCache"` and DMs them
+ *   to the author.
+ *
+ * `cachethefries`
+ *   Saves an attached file to `babadata.datalocation + "FridayCache/<filename>"`
+ *   using the original filename from the Discord attachment. No type, name, or
+ *   size validation is performed.
+ *
+ * `reee <messageId> <emojis…>`
+ *   Adds one or more emoji reactions to the specified message. Custom emoji in
+ *   `<:name:id>` format are reduced to the numeric ID only.
+ *
+ * `refried beans`
+ *   Triggers `LoadAllTheCache()` when DB access is enabled to reload the DOW
+ *   cache. DMs the result or an error to the author.
+ *
+ * `showthefridaydebug`
+ *   Toggles `global.DebugFriday`. When true, the RNG seed is appended to all
+ *   generated DOW messages (useful for reproducing outputs).
+ *
+ * `testthedmming`
+ *   Sends a test DM via `DMMePlease` to verify DM delivery.
+ *
+ * `babapleaseitistimetosleepforalittlebit`
+ *   Graceful bot restart: calls `global.CleanupEverything()`, then after 2 s
+ *   creates a new bot via `global.MakeBot()` and starts it with `global.BotOn`.
+ *   No rate limiting or cooldown; successive calls can cycle the bot rapidly.
+ *
+ * `rbcontdow <userId> <0|1|2>` / `rbcontfrog <userId> <0|1|2>`
+ *   Calls `controlDOW(userId, time, "DOW"|"FROG")` to set the DOW/FROG control
+ *   level (bounded to 0–2) for the given user. Requires DB access.
+ *
+ * `saintnick <name>`
+ *   Changes the bot's display nickname in the guild to `<name>`.
+ *
+ * `manuela`
+ *   Saves Friday counts via `SaveSlashFridayJson`. The `overide` substring
+ *   enables the override mode. DMs the result or error.
+ *
+ * `amhours <userId> <text>`
+ *   Fetches the given user and DMs them `text` directly via the bot client.
+ *   No content filtering or rate limiting; can target any Discord user ID.
+ *
+ * `cvcc`
+ *   Calls `clearVCCList()` to wipe the voice-channel-change log. Requires DB.
+ *
+ * `dbdownadam`
+ *   Reads `loggedUsersVCC.csv` and DMs a formatted human-readable summary of
+ *   each entry. `-force` flag disables filtering of same-channel events.
+ *   Output uses Discord timestamp format.
+ *
+ * `transpose <digits>`
+ *   Strips non-digit characters from the first token and maps each digit to the
+ *   character at that index in `validLetters` ("bikusfrday"). Useful for
+ *   decoding condensed DOW notation.
+ *
+ * `dbdownbytheriver`
+ *   Sends the raw `loggedUsersVCC.csv` file as a DM attachment.
+ *
+ * `trees`
+ *   Sends the main debug log (`debug.log`) as a DM attachment.
+ *
+ * `dabees`
+ *   Sends the DB debug log (`DBdebug.log`) as a DM attachment.
+ *
+ * `getthemfries`
+ *   Sends both `fridayCounter.json` and `fridaymessages.json` as DM attachments.
+ *
+ * `emptythefriesbasket`
+ *   Resets `fridayCounter.json` to `{}` and `fridaymessages.json` to `[]`.
+ *   Destructive; no confirmation prompt.
+ *
+ * `treecapitator`
+ *   Clears `debug.log` to an empty file.
+ *
+ * `dabeecapitator`
+ *   Clears `DBdebug.log` to an empty file.
+ *
+ * `statefarm <channelId> <status>`
+ *   Sets a voice channel's status string via `channelStatusChange`. Validates
+ *   that the channel exists in guild cache before calling.
+ *
+ * `dontbuy [count]`
+ *   DMs the last `count` (default 5, max 50) entries from `global.lastDBErrors`.
+ *
+ * `odd [count]`
+ *   Fetches up to `count` (default 50, max 100) guild audit log entries and
+ *   sends a formatted human-readable summary as DM pages. Optionally filters
+ *   out ChannelUpdate events from a specific hardcoded music-bot user ID
+ *   (`887854244567334973`) unless `--music` is present in the message.
+ *   Uses `enumConverter` for action type names and `parseItems` for change diffs.
+ *
+ * `am list [full]`
+ *   Fetches auto-moderation rules for the hardcoded guild ID `454457880825823252`
+ *   via a raw HTTPS request using `bot.token`. `full` dumps the entire rule
+ *   object per `objectParse`; otherwise sends `id - name` per rule.
+ *   Note: the guild ID is hardcoded here and differs from `babadata.guildId`.
+ *   Substring conflict: `amhours` contains "am" so the `am` branch explicitly
+ *   checks `!msgContent.includes("hours")` to avoid shadowing `amhours`.
+ */
 function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 {
 	// Main collection of ad-hoc, substring-triggered admin/debug commands.

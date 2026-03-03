@@ -1,3 +1,10 @@
+/**
+ * @file setVote.js
+ * @description Slash command that adds 👍 and 👎 vote reactions to a specified message.
+ * Requires the `messageid` option. Default permissions are disabled; intended for admin
+ * use only. Searches all text channels and threads in the guild for the target message.
+ */
+
 const { setVote } = require('../Functions/HelperFunctions/adminHelpers.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
@@ -7,6 +14,16 @@ module.exports = {
 		.setDescription('Adds a 👍 and 👎 reaction to a message')
         .setDefaultPermission(false)
         .addStringOption(option => option.setName('messageid').setDescription('the message id to append the vote to').setRequired(true)),
+	/**
+	 * Searches all text channels and threads in the guild for the given message ID,
+	 * then adds 👍 and 👎 vote reactions to it. Replies ephemerally with the operation
+	 * status.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot)
     {
 		await interaction.deferReply({ ephemeral: true });

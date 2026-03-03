@@ -1,3 +1,23 @@
+/**
+ * @file slashFridayHelpers.js
+ * @module slashFridayHelpers
+ * @description Helper functions for the Discord bot's Friday and day-of-week (DOW) features.
+ *
+ * Responsibilities include:
+ * - RNG lifecycle management (`resetRNG`)
+ * - Chunking long strings to respect Discord's 2000-character message limit
+ *   (`splitStringInto2000CharChunksonNewLine`, `splitStringInto900CharChunksonSpace`)
+ * - Generating and posting DOW messages with optional image generation
+ *   (`functionPostFunnyDOW`, `funnyDOWTextSaved`, `funnyDOWText`)
+ * - Morshu (voice-line) text generation and splitting (`morshin`, `checkForMorshus`)
+ * - Condensed-notation creation and nested-text replacement helpers
+ *   (`condensedNotationCreator`, `replaceNested`)
+ * - Repeat-detection utilities (`repeatCheck`, `repeatCheckInner`)
+ * - Text-sanitisation utilities (`onlyLettersNumbers`, `URLSafe`)
+ * - Funny-frog text generation (`funnyFrogText`, `generateFrogOps`)
+ * - Friday-specific option generation and count-ruin removal
+ *   (`generateFridayOps`, `removeCountRuin`)
+ */
 var babadata = require('../../babotdata.json'); //baba configuration file
 
 const fs = require('fs');

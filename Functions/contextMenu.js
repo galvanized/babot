@@ -1,3 +1,11 @@
+/**
+ * @file contextMenu.js
+ * @description Discord bot interaction handler for context menu commands, modal submissions,
+ * button interactions, and select menu interactions. Handles operations such as message
+ * deletion/moving, haiku navigation, reminder management, and purity score lookups.
+ * @module contextMenu
+ */
+
 var babadata = require('../babotdata.json'); //baba configuration file
 
 const Discord = require('discord.js');
@@ -12,6 +20,21 @@ const { getD1 } = require('../Tools/overrides.js');
 
 global.ReminderList = {};
 
+/**
+ * Handles context menu command interactions.
+ *
+ * Supported commands:
+ * - **"Delete"**: Searches all text channels and their threads for the targeted message
+ *   and moves it to the configured log channel (`babadata.logchan`). Replies ephemerally
+ *   with "Searching for Message" immediately, then updates to "Message Moved" on success.
+ * - **"Move To"**: Shows a modal (`movetoModal`) pre-filled with the target message ID,
+ *   prompting the user to supply a destination channel ID.
+ *
+ * @async
+ * @param {Discord.ContextMenuCommandInteraction} interaction - The context menu interaction object.
+ * @param {Discord.Client} bot - The Discord bot client instance.
+ * @returns {Promise<void>}
+ */
 async function contextInfo(interaction, bot)
 {
     var commandName = interaction.commandName;
@@ -85,6 +108,36 @@ async function contextInfo(interaction, bot)
     }
 }
 
+/**
+ * Handles modal submission interactions.
+ *
+ * Supported custom IDs:
+ * - **"movetoModal"**: Reads the target message ID and destination channel ID from the modal
+ *   fields. Searches all guild text channels and their threads for the message, then moves
+ *   it to the specified channel via `movetoChannel`. Replies ephemerally with progress and
+ *   result messages.
+ *   ⚠️ The destination channel ID (`chanIDInput`) is supplied entirely by the user with no
+ *   permission check. Any user who can access the "Move To" context menu can move messages
+ *   to ANY channel in the guild, including private channels the user cannot normally read or
+ *   write. The bot will attempt the move as long as it has permission in the target channel,
+ *   regardless of whether the invoking user does.
+ * - **"haiku-*"**: Processes a haiku/purity search form. Reads date, keyword, and person
+ *   filters from the modal, sanitises inputs against SQL injection, builds a haiku embed via
+ *   `babaHaikuEmbed`, and posts the paginated result. Registers pagination via
+ *   `handleButtonsEmbed` when multiple pages exist.
+ * - **"editReminder-*"**: Reads a new message, date, and time from the modal and updates the
+ *   matching reminder via `editReminder`. Falls back to the original values when inputs are
+ *   invalid or in the past. If a cached reminder message exists in `global.ReminderList` it
+ *   is replaced with an updated embed and the old message is deleted.
+ * - **"deleteReminder-*"**: Confirms deletion of the matching reminder via `removeReminder`.
+ *   If a cached reminder message exists in `global.ReminderList` it is replaced with an
+ *   updated reminder list embed and the old message is deleted.
+ *
+ * @async
+ * @param {Discord.ModalSubmitInteraction} interaction - The modal submit interaction object.
+ * @param {Discord.Client} bot - The Discord bot client instance.
+ * @returns {Promise<void>}
+ */
 async function modalInfo(interaction, bot)
 {
     var cid = interaction.customId;
@@ -292,6 +345,44 @@ async function modalInfo(interaction, bot)
     }
 }
 
+/**
+ * Handles button interaction events.
+ *
+ * Cross-user guard:
+ *   The top-level check `interaction.message.interaction.user.id != interaction.user.id`
+ *   only fires when `interaction.message.interaction != null` (i.e. the message was
+ *   itself a slash-command reply). For regular bot messages (e.g. reminder embeds
+ *   created by `viewReminders`), `interaction.message.interaction` is `null` and
+ *   the guard is bypassed. In those cases ownership is enforced separately by
+ *   comparing `interaction.user.id` against the `userID` encoded in the button's
+ *   custom ID (e.g. `"editrem-<remID>-<page>-<userID>"`). However, since the
+ *   custom ID is constructed by the bot and not user-supplied, this is still safe.
+ *
+ * Supported custom ID prefixes / values:
+ * - **"editrem-\<remID\>-\<page\>-\<userID\>"**: Validates the reminder exists and the user
+ *   owns it, then opens an `editReminder-*` modal pre-filled with the current message, date,
+ *   and time. Stores the source message in `global.ReminderList` for later replacement.
+ * - **"dismissrem-\<remID\>-\<page\>-\<userID\>"**: Validates ownership, replies ephemerally
+ *   with "Reminder Dismissed", marks the message as gone in `global.ReminderMessageExists`,
+ *   and deletes the reminder message.
+ * - **"deleterem-\<remID\>-\<page\>-\<userID\>"**: Validates ownership, then opens a
+ *   `deleteReminder-*` confirmation modal. Stores the source message in `global.ReminderList`.
+ * - **"cursed"**: Fetches and displays a cursed haiku embed (buy mode 6) without pagination
+ *   components.
+ * - **"purity" | "haiku" | "haiku_list"**: Initialises a new entry in `global.interactions`
+ *   for the reply message, then sends an ephemeral reply containing purity-mode, user, and
+ *   channel select menus plus a "generate" button. Purity mode additionally includes the
+ *   purity-score-type select menu.
+ * - **"generateHaikuList"**: Reads the current state from `global.interactions` for the
+ *   message. If purity mode is selected but no purity mode type has been chosen, prompts the
+ *   user to select one. Otherwise, opens a haiku/purity search form modal (`haiku-*`) with
+ *   fields pre-filled from any previously stored search state.
+ *
+ * @async
+ * @param {Discord.ButtonInteraction} interaction - The button interaction object.
+ * @param {Discord.Client} bot - The Discord bot client instance.
+ * @returns {Promise<void>}
+ */
 async function buttonInfo(interaction, bot)
 {
     var purity = false;
@@ -570,6 +661,20 @@ async function buttonInfo(interaction, bot)
     }
 }
 
+/**
+ * Handles string select menu interactions.
+ *
+ * Supported custom IDs:
+ * - **"puritymode"**: Stores the selected purity mode value (`"chans"`, `"users"`, or
+ *   `"dates"`) into `global.interactions` for the originating message, sets the `purity`
+ *   flag to `true`, then silently acknowledges the interaction by replying and immediately
+ *   deleting the reply.
+ *
+ * @async
+ * @param {Discord.StringSelectMenuInteraction} interaction - The string select menu interaction object.
+ * @param {Discord.Client} bot - The Discord bot client instance.
+ * @returns {Promise<void>}
+ */
 async function stringSelectInfo(interaction, bot)
 {
     var cid = interaction.customId;
@@ -586,6 +691,19 @@ async function stringSelectInfo(interaction, bot)
     }
 }
 
+/**
+ * Handles user select menu interactions.
+ *
+ * Supported custom IDs:
+ * - **"personList"**: Stores the array of selected user IDs into `global.interactions` for
+ *   the originating message, then silently acknowledges the interaction by replying and
+ *   immediately deleting the reply.
+ *
+ * @async
+ * @param {Discord.UserSelectMenuInteraction} interaction - The user select menu interaction object.
+ * @param {Discord.Client} bot - The Discord bot client instance.
+ * @returns {Promise<void>}
+ */
 async function userSelectInfo(interaction, bot)
 {
     var cid = interaction.customId;
@@ -600,6 +718,19 @@ async function userSelectInfo(interaction, bot)
     }
 }
 
+/**
+ * Handles channel select menu interactions.
+ *
+ * Supported custom IDs:
+ * - **"channelList"**: Stores the array of selected channel IDs into `global.interactions`
+ *   for the originating message, then silently acknowledges the interaction by replying and
+ *   immediately deleting the reply.
+ *
+ * @async
+ * @param {Discord.ChannelSelectMenuInteraction} interaction - The channel select menu interaction object.
+ * @param {Discord.Client} bot - The Discord bot client instance.
+ * @returns {Promise<void>}
+ */
 async function channelSelectInfo(interaction, bot)
 {
     var cid = interaction.customId;

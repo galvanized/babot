@@ -1,3 +1,11 @@
+/**
+ * @file archive.js
+ * @description Slash command that archives a specific message by replacing it in-place with
+ * the bot re-posting its content. Requires the `messageid` option and optionally the
+ * `display_user` flag to show the original sender. This command has default permissions
+ * disabled and is intended for admin use only.
+ */
+
 const { movetoChannel } = require('../Functions/HelperFunctions/adminHelpers.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 var babadata = require('../babotdata.json'); //baba configuration file
@@ -9,6 +17,16 @@ module.exports = {
         .setDefaultPermission(false)
         .addStringOption(option => option.setName('messageid').setDescription('the message id to move').setRequired(true))
         .addBooleanOption(option => option.setName('display_user').setDescription('set to true if want to show original sender')),
+	/**
+	 * Searches all text channels and threads in the guild for the given message ID,
+	 * then archives it in-place by re-posting its content via the bot, optionally
+	 * showing the original sender. Replies ephemerally with the operation status.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) 
     {
 		await interaction.deferReply({ ephemeral: true });

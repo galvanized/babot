@@ -1,3 +1,11 @@
+/**
+ * @file frogWednesday.js
+ * @description Slash command (`/wednesday`) that generates a frog image with the number
+ * of Wednesdays remaining until a specified holiday or event. Supports paginated results
+ * via FrogButtons with a short delay, and falls back to a funny day-of-week message when
+ * the result is "FUNNYDOW".
+ */
+
 const { babaUntilHolidays } = require('../Functions/commandFunctions.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { FrogButtons } = require("../Functions/HelperFunctions/basicHelpers.js");
@@ -11,6 +19,16 @@ module.exports = {
         opt.setName("event")
         .setDescription("The event that will get used.")
         .setRequired(true)),
+	/**
+	 * Fetches the number of Wednesdays remaining until the given event and replies with
+	 * a frog image. Uses FrogButtons pagination for multiple results with a 1-second
+	 * delay before attaching navigation controls.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) {
 		await interaction.deferReply();
         var event = interaction.options.getString("event");

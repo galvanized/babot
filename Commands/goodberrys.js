@@ -1,3 +1,10 @@
+/**
+ * @file goodberrys.js
+ * @description Slash command that retrieves upcoming Goodberry's D&D ice cream flavor
+ * calendar events. Optionally filters by flavor name (string) or specific day of the
+ * month (integer). Results are sorted chronologically and displayed as a list.
+ */
+
 const { babaGoodberrys } = require('../Functions/commandFunctions.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
@@ -9,6 +16,16 @@ module.exports = {
 			.setDescription('Search for a flavor of the day in the next month-ish'))
 		.addIntegerOption(option => option.setName('day')
 			.setDescription('Search for a flavor of the day on a specific day in the next month-ish')),
+	/**
+	 * Fetches Goodberry's upcoming D&D ice cream flavor calendar events, optionally
+	 * filtering by flavor name or day of the month, sorts them chronologically, and
+	 * replies with a formatted list.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) {
 		await interaction.deferReply();
 

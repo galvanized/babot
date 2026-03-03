@@ -1,3 +1,24 @@
+/**
+ * @file setPermissions.js
+ * @description
+ * Legacy utility script to set command role permissions for guild slash commands.
+ *
+ * Behavior:
+ * - Connects to Discord with a minimal-intent `Client` (Guilds, Guild Messages,
+ *   DMs) and logs in using `babotdata.token`.
+ * - On `ready`, resolves the configured guild via `babotdata.guildId` and calls
+ *   `setCommandRoles(gld)` from `HelperFunctions/adminHelpers.js` to apply role
+ *   permissions to all registered slash commands.
+ *
+ * Caveats:
+ * - This script is **broken** due to Discord API v9/v10 permission changes; the
+ *   `setCommandRoles` flow no longer works as intended with the current API.
+ * - The bot must be stopped manually once the output shows roles are set.
+ * - Not invoked by `babot.js`; run standalone as `node setPermissions.js`.
+ *
+ * @deprecated Use Discord server integration settings or `deployCommands.js`
+ *   with permission-gated commands instead.
+ */
 const { Client, Intents, Collection } = require('discord.js'); //discord module for interation with discord api
 const Discord = require('discord.js'); //discord module for interation with discord api
 var babadata = require('./babotdata.json'); //baba configuration file

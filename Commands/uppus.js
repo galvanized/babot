@@ -1,3 +1,10 @@
+/**
+ * @file uppus.js
+ * @description Slash command that reports how long the bot has been running since its
+ * start time (stored in `global.starttime`). Displays the uptime broken down into days,
+ * hours, minutes, seconds, and milliseconds.
+ */
+
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { getD1 } = require('../Tools/overrides');
 
@@ -5,6 +12,15 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('uppus')
 		.setDescription('How long baba has been awoken to the mortal realm for the rot consumes.'), 
+	/**
+	 * Calculates the bot's uptime from `global.starttime` to now and replies with the
+	 * duration broken down into days, hours, minutes, seconds, and milliseconds.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) 
         {
                 var start = global.starttime;
