@@ -228,6 +228,12 @@ function babaVibeFlag()
     
 }
 
+/**
+ * Return a random 'Yugo' image payload from the Yugo assets directory.
+ * Picks a random image numbered 0–10 from the `Yugo/` folder.
+ *
+ * @returns {{content:string, files:Array<Discord.AttachmentBuilder>}}
+ */
 function babaYugo()
 {
 /**
@@ -245,6 +251,12 @@ function babaYugo()
     return { content: yugotext, files: [yugo] };
 }
 
+/**
+ * Return a random repost image payload. Picks an image numbered 0–4 from
+ * the `Repost/` folder.
+ *
+ * @returns {{files:Array<Discord.AttachmentBuilder>}}
+ */
 function babaRepost()
 {
 /**
@@ -260,6 +272,15 @@ function babaRepost()
     return { files: [reppy] };
 }
 
+/**
+ * Convert an array of haiku message component pages into per-page
+ * ActionRowBuilder arrays that each contain a single URL "View Source" button.
+ * Pages without a URL button (style ≠ 5 on the last component) are skipped.
+ *
+ * @param {Array} cont - Array of message payload objects whose `.components[0].components`
+ *   contains Discord ButtonBuilder instances.
+ * @returns {Array} Array of ActionRow arrays (one per page that has a source URL).
+ */
 function babaHaikuLinks(cont)
 {
 /**
@@ -294,6 +315,21 @@ function babaHaikuLinks(cont)
     return deadData;
 }
 
+/**
+ * Build an embed or embeds for haiku queries.
+ *
+ * Modes/behavior:
+ * - When `purity` is true, the function returns a paginated "purity list"
+ *   (using `FormatPurityList`) and calls `EmbedPurityGen` to render pages.
+ * - When `purity` is false, a single haiku is selected via `HaikuSelection`
+ *   and formatted with `EmbedHaikuGen`.
+ *
+ * @param {boolean} purity - Whether to return purity lists instead of haiku.
+ * @param {number} mode - Mode indicator used by `HaikuSelection`.
+ * @param {Array|string} msgContent - Query arguments used by selection routines.
+ * @param {Object} pagestuff - Pagination settings (e.g., `ipp` = items per page).
+ * @returns {Array|Object} Embed objects or message payloads ready to send.
+ */
 function babaHaikuEmbed(purity, mode, msgContent, pagestuff)
 {
 /**
@@ -545,6 +581,13 @@ function EmbedPurityGen(hpl, bonust, bonupr, pagestuff, msgContent)
 }
 
 
+/**
+ * Return a message payload telling how many days until (or since) the next
+ * Wednesday. If `since` > 1 the calculation is scaled to that many weeks.
+ *
+ * @param {number} [since=1] - Week multiplier. 1 = until next Wednesday.
+ * @returns {{content:string}}
+ */
 function babaDayNextWed(since = 1)
 {
 /**
@@ -574,6 +617,11 @@ function babaDayNextWed(since = 1)
     return { content: dtnw };
 }
 
+/**
+ * Return a random adjective+animal 'jeremy' string built from `data.json`.
+ *
+ * @returns {{content:string}} Discord-formatted code block with the generated name.
+ */
 function babaJeremy()
 {
 /**

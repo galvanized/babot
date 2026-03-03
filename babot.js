@@ -1,3 +1,40 @@
+/**
+ * @file babot.js
+ * @description
+ * Main entry point for the Babot Discord bot.
+ *
+ * Responsibilities:
+ * - Loads `babotdata.json` configuration and `Tools/overrides.js` flags.
+ * - Overrides `console.log` and `console.error` to write to rotating log files
+ *   (`debug.log` and `DBdebug.log`) in addition to stdout.
+ * - Reads and loads all slash command files from `./Commands/`.
+ * - Creates the Discord `Client` with all required intents and partials via
+ *   `makeBot()` and connects it with `botOn()`.
+ * - Sets up event listeners for:
+ *   - `ready` – initialises globals and starts the daily call scheduler.
+ *   - `messageCreate` – delegates to `txtCommands.babaMessage`.
+ *   - `voiceStateUpdate` – delegates to `voiceChannelChange` (skipped in test mode).
+ *   - `guildScheduledEvent*` – delegates to `EventDB`.
+ *   - `interactionCreate` – routes context menus, modals, buttons, selects, and
+ *     slash commands; falls back to an ephemeral error reply on command errors.
+ * - Registers cleanup handlers on `SIGINT`, `SIGTERM`, and `uncaughtException`.
+ *   After 50 uncaught exceptions the process terminates.
+ *
+ * Global state set here:
+ * - `global.dbAccess` – `[shouldReadFromDB, shouldWriteToDB]` flags derived
+ *   from `-db` CLI flag.
+ * - `global.starttime` – `Date` representing when the bot started.
+ * - `global.DailyErrors` – running count of uncaught exceptions.
+ * - `global.DebugFriday` – mirrors `overrides.DebugFriday`.
+ * - `global.toke` – bot token read from `babotdata.json`.
+ * - `global.interactions` – shared interaction registry (used by other modules).
+ * - `global.loggedVCC` – voice channel change log array.
+ * - `global.Bot` – reference to the active Discord `Client`, set after `ready`.
+ * - `global.MakeBot` – factory function for creating a new bot client.
+ * - `global.BotOn` – function to attach event listeners and start the bot.
+ * - `global.KillBotCleanup` – graceful shutdown function.
+ * - `global.CleanupEverything` – full cleanup across all subsystems.
+ */
 var babadata = require('./babotdata.json'); //baba configuration file
 
 const fs = require('fs');
@@ -61,6 +98,15 @@ console.log("Starting up on " + global.starttime);
 	
 const commandFiles = fs.readdirSync('./Commands').filter(file => file.endsWith('.js')); //get all .js files in the commands folder
 
+/**
+ * Create and return a new Discord `Client` instance with all intents and
+ * partials required by the bot.
+ *
+ * Intents include guild members, messages, reactions, voice states, presence,
+ * scheduled events, auto-moderation, and DM variants.
+ *
+ * @returns {Discord.Client} Fully configured (but not yet logged-in) client.
+ */
 function makeBot()
 {
 	var bot = new Client({ intents: 
@@ -98,6 +144,23 @@ function makeBot()
 	return bot;
 }
 
+/**
+ * Attach all event listeners to `bot`, validate initial JSON data files,
+ * and log in to Discord.
+ *
+ * Side effects:
+ * - Reads `fridayCounter.json` and `fridaymessages.json`; writes defaults if
+ *   either file is empty.
+ * - Calls `bot.login(global.toke)` to start the Discord WebSocket session.
+ * - On `ready`: sets `global.Bot`, parses `fridayCounter.json`, and starts the
+ *   daily call scheduler.
+ * - Registers `messageCreate`, `voiceStateUpdate`, `guildScheduledEvent*`, and
+ *   `interactionCreate` listeners.
+ * - Registers `interactionCreate` which dispatches to context-menu, modal,
+ *   button, string-select, user-select, channel-select, and slash-command handlers.
+ *
+ * @param {Discord.Client} bot - A client instance created by `makeBot()`.
+ */
 function botOn(bot)
 {
 	var fjson1 = fs.readFileSync(babadata.datalocation + "fridayCounter.json");

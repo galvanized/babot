@@ -78,6 +78,26 @@ function objectParse(obj, ind)
 	return obje.join("\n");
 }
 
+/**
+ * Recursively diff two objects or arrays, producing a human-readable string
+ * that shows only changed values with arrow notation (`old -> new`).
+ *
+ * Behavior:
+ * - Picks the object with more keys to iterate so newly-added keys appear
+ *   in the diff output.
+ * - In `arraymode` the longer array is preferred and all elements are
+ *   included regardless of equality (to show additions/removals).
+ * - Recurses into nested objects and arrays, increasing indentation.
+ * - Primitive diffs are shown as `key: oldVal -> newVal`.
+ * - Empty-array pairs (same length, both empty) are skipped as trivial.
+ *
+ * @param {Object|Array} old - The original/old object or array.
+ * @param {Object|Array} neww - The updated/new object or array.
+ * @param {number} ind - Current indentation depth (number of tabs).
+ * @param {boolean} [arraymode=false] - When true, forces inclusion of all
+ *   elements (useful for array comparisons).
+ * @returns {string} Human-readable diff string.
+ */
 function twoObjectParseCompare(old, neww, ind, arraymode = false)
 {
 	var objs = [];
@@ -145,6 +165,26 @@ function twoObjectParseCompare(old, neww, ind, arraymode = false)
 	return objs.join("\n");
 }
 
+/**
+ * Produce a human-readable representation of a value or the diff between
+ * two values, routing to the appropriate helper based on which arguments
+ * are defined.
+ *
+ * Branches:
+ * - `old == undefined`: return `objectParse(neww)` if neww is an object,
+ *   else return neww as-is.
+ * - `neww == undefined`: return `objectParse(old)` if old is an object,
+ *   else return old as-is.
+ * - Both defined: return `old -> neww` for primitives, or call
+ *   `twoObjectParseCompare` recursively for objects/arrays.
+ *
+ * Note: The indentation offset calculation for arrays vs objects is a
+ * deliberate heuristic to produce readable top-level output.
+ *
+ * @param {*} old - Old value (may be undefined to indicate a new entry).
+ * @param {*} neww - New value (may be undefined to indicate a deleted entry).
+ * @returns {string} Human-readable representation or diff string.
+ */
 function parseItems(old, neww)
 {
 	if (old == undefined)
@@ -181,6 +221,42 @@ function parseItems(old, neww)
 }
 
 
+/**
+ * Secondary text command handler for admin/debug operations.
+ *
+ * This function processes DM messages from privileged frog-users (`sentvalid`)
+ * and a collection of special text triggers in the main channel. It is
+ * intentionally permissive and best-effort: most fetch errors are swallowed
+ * to avoid interrupting normal operation.
+ *
+ * Parameters:
+ * @param {Discord.Client} bot - The running Discord bot client.
+ * @param {Discord.Message} message - The received message.
+ * @param {boolean} sentvalid - True if the author is a privileged frog-user
+ *   (DM-accessible admin); gates the frog-debug command set.
+ * @param {string} msgContent - Normalized (lowercase) message content.
+ * @param {Discord.Guild} g - The main guild resolved from frogdata, used for
+ *   channel/member lookups inside the frog-debug handlers.
+ *
+ * Command branches (all require `sentvalid`):
+ * - `🐸 debug` – Controls holiday channel modes; digits 0–5 select preset
+ *   holiday states; `---` re-enables an old channel; `-n` suppresses rename.
+ * - `fronge <id>` – Removes all reactions from message with the given id.
+ * - `funny silence <id>` – Deletes a message by id.
+ * - `anti delay` – Downloads an attachment and makes an API call with it.
+ * - `transpose` – Converts digit characters in message to letters using validLetters.
+ * - `control dow` – Triggers DOW (day-of-week) control logic.
+ * - `clear vcc` – Clears the voice channel change list.
+ * - `bot dump` – Dumps bot state (guild count, etc.) to DM.
+ * - `db dump` / `db dump2` – Dumps DB state to DM with object diff output.
+ * - `debug log` / `db debug log` – Posts recent debug log contents to DM.
+ * - `debug reset log` / `db debug reset log` – Clears the log file.
+ * - `save slash friday` – Forces a save of the slash friday JSON.
+ * - `dmmeplease` – Sends the cleanup DM.
+ * - `reload all cache` – Reloads all DB caches (destructive).
+ * - `channel status` – Updates a voice channel status string.
+ * - `enumconvert` – Converts a numeric audit log type to its name string.
+ */
 function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 {
 	// Main collection of ad-hoc, substring-triggered admin/debug commands.
