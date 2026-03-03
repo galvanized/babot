@@ -215,6 +215,19 @@ function RefreshReminders(dontRun = false)
  * fetches the target guild → channel (→ thread) and sends the message.
  * Locally cached attachment files are deleted from disk after sending.
  *
+ * Hardcoded guild ID:
+ *   The guild is fetched using a hardcoded ID — `454457880825823252` in
+ *   production or `522136584649310208` when `babadata.testing` is defined.
+ *   Unlike most functions this does not use `babadata.guildId`. Reminders
+ *   created in any other guild cannot be delivered.
+ *
+ * `var msg` re-declaration bug in paginated file sends:
+ *   When `AdditionalMessagesToSend` is non-empty, the loop uses
+ *   `var msg = await msg.reply(...)`. The `var` re-declaration shadows the
+ *   outer `msg` and progressively chains each additional file message as a
+ *   reply to the previous one. This works as intended for chaining but the
+ *   `var` inside a loop is confusing since it hoists to function scope.
+ *
  * @param {Object} reminderItem - The reminder object to deliver.
  * @param {string} reminderItem.ID - Unique identifier for the reminder.
  * @param {string} reminderItem.UserID - Discord user ID of the reminder owner.
@@ -373,12 +386,20 @@ async function getAttachments(message, IDID)
  * Creates a new reminder and persists it to disk, then refreshes the scheduler.
  *
  * If `DelayinMS` is negative the reminder is considered invalid and
- * `antiDelay` is called instead.  Otherwise a reminder object is constructed
+ * `antiDelay` is called instead. Otherwise a reminder object is constructed
  * with state `Added`, any message attachments are saved locally, and the
- * object is appended to `reminders.json`.  `RefreshReminders` is invoked
+ * object is appended to `reminders.json`. `RefreshReminders` is invoked
  * afterwards to immediately evaluate and arm the new reminder.
  *
  * This function is exported as `reverseDelay`.
+ *
+ * Edge case — negative delay with `null` message:
+ *   If `DelayinMS < 0` and `DiscordMessage` is `null` (programmatic call),
+ *   `antiDelay(null)` is invoked, which delegates to `dealWithFile(null)`.
+ *   `dealWithFile` immediately tries to access `null.attachments`, throwing
+ *   an uncaught TypeError. In practice the negative-delay path is only
+ *   reached from the `cmes d-lay` admin command which always provides a real
+ *   message, so the crash does not occur in normal operation.
  *
  * @async
  * @param {import('discord.js').Message|null} DiscordMessage - The originating
@@ -769,12 +790,17 @@ function getUserReminder(userID, i)
  *      the reminder's lifespan.
  *   2. **Yellow → Red** (`#FFFF00` → `#FF0000`) during the second half.
  *
+ * Note: The `return "#FFFFFF"` on the final line is unreachable dead code.
+ *   Both branches of the `if/else` contain `return` statements, so execution
+ *   never reaches that line. The comment `// Default to white if something
+ *   goes wrong` is misleading — there is no reachable fallback path.
+ *
  * @param {Date} started - The date/time the reminder was created (i.e. its ID
  *   interpreted as a Unix timestamp).
  * @param {Date} end - The scheduled delivery date/time of the reminder.
  * @param {Date} now - The current date/time used to compute progress.
- * @returns {string} A CSS hex colour string (e.g. `"#FF8000"`), or `"#FFFFFF"`
- *   as a fallback if the computation cannot produce a valid colour.
+ * @returns {string} A CSS hex colour string (e.g. `"#FF8000"`). Cannot return
+ *   `"#FFFFFF"` despite the dead-code fallback at the end of the function.
  */
 function getReminderColor(started, end, now) 
 {

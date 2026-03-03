@@ -22,6 +22,26 @@ const options = { year: 'numeric', month: 'long', day: 'numeric' }; // for date 
  * Collection of command helper functions that build message payloads or
  * perform small side-effecting tasks used by the bot's command handlers.
  *
+ * ⚠️ Pre-existing syntax error — unbalanced braces:
+ *   The outer `function babaYugo()` declaration (line ~237) opens a function
+ *   body that is never explicitly closed. The pattern repeats: `babaYugo`
+ *   contains a nested `babaYugo` implementation, then `babaRepost`, then
+ *   `babaHaikuLinks`, `babaHaikuEmbed`, and all subsequent function
+ *   declarations are inside that ever-deepening outer shell. The file ends
+ *   with `module.exports = {...};` but is missing the closing braces for the
+ *   outer wrapper functions, producing:
+ *     `SyntaxError: Unexpected end of input`
+ *   This was present in the codebase before this documentation PR and is not
+ *   introduced by it. The bot appears to be non-functional as-is unless the
+ *   file is loaded through an unconventional mechanism.
+ *
+ * Outer wrapper shell pattern (babaYugo, babaRepost, etc.):
+ *   Each function has two declarations: an OUTER shell with no return statement
+ *   and an INNER implementation that actually computes and returns a value.
+ *   Due to JavaScript function hoisting, calling the outer-scope name would
+ *   invoke the outer shell which returns `undefined`. The inner function is
+ *   locally scoped and unreachable from outside.
+ *
  * Design notes & behaviors:
  * - Most functions return an object shaped for Discord message sending,
  *   e.g. `{ content: string, files?: [AttachmentBuilder], embeds?: [...] }`.
@@ -232,6 +252,12 @@ function babaVibeFlag()
  * Return a random 'Yugo' image payload from the Yugo assets directory.
  * Picks a random image numbered 0–10 from the `Yugo/` folder.
  *
+ * ⚠️ This declaration is an EMPTY OUTER WRAPPER due to the pre-existing
+ * double-nesting pattern in this file. The actual implementation is the
+ * identically-named inner function declared in the body below. The outer
+ * function returns `undefined`; the inner function's return value is
+ * unreachable from the outer scope. See the module-level JSDoc for context.
+ *
  * @returns {{content:string, files:Array<Discord.AttachmentBuilder>}}
  */
 function babaYugo()
@@ -255,6 +281,9 @@ function babaYugo()
  * Return a random repost image payload. Picks an image numbered 0–4 from
  * the `Repost/` folder.
  *
+ * ⚠️ This declaration is an EMPTY OUTER WRAPPER — see `babaYugo` and the
+ * module-level JSDoc for context.
+ *
  * @returns {{files:Array<Discord.AttachmentBuilder>}}
  */
 function babaRepost()
@@ -276,6 +305,9 @@ function babaRepost()
  * Convert an array of haiku message component pages into per-page
  * ActionRowBuilder arrays that each contain a single URL "View Source" button.
  * Pages without a URL button (style ≠ 5 on the last component) are skipped.
+ *
+ * ⚠️ This declaration is an EMPTY OUTER WRAPPER — see `babaYugo` and the
+ * module-level JSDoc for context.
  *
  * @param {Array} cont - Array of message payload objects whose `.components[0].components`
  *   contains Discord ButtonBuilder instances.

@@ -24,6 +24,12 @@ const { getD1 } = require('../../Tools/overrides');
  * Matching is attempted against the haiku's PersonName, DiscordID, DiscordName,
  * and any alt-names stored in the global userCache, all case-insensitively.
  *
+ * Implicit global `altNames`:
+ *   Inside the `for...of global.userCache` loop, `altNames = value.AltNames`
+ *   (line ~43) is assigned without `var`/`let`/`const`, making it an accidental
+ *   implicit global variable. In non-strict mode this creates/overwrites a
+ *   property on the global object rather than a local variable.
+ *
  * @param {string} messageTerm - The search string (typically the full message content).
  * @param {Object[]} haikuList - Array of haiku objects to filter.
  * @returns {Object[]} Filtered array of haiku objects that match the user term.
@@ -541,6 +547,12 @@ function NameFromUser(user)
  * Queries the database controller via {@link NameFromUserIDID}. If the lookup fails
  * (e.g. unknown user), a random humorous fallback name is returned instead of
  * rejecting the promise.
+ *
+ * Dead code on error path:
+ *   Line `fakeVales[Math.floor(Math.random() * fakeVales.length)]` computes a
+ *   random index but discards the result — it is not assigned to anything. The
+ *   `resolve(...)` on the very next line re-computes the same random selection
+ *   independently, so the first indexing expression is effectively a no-op.
  *
  * @param {string} userid - The Discord snowflake user ID to look up.
  * @returns {Promise<string>} Resolves with the PersonName, or a random

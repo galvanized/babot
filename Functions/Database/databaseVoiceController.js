@@ -109,6 +109,16 @@ function pingConnection()
  * healthy. Also resets (or sets) a 60-second idle-disconnect timer so the
  * connection is automatically closed when there is no query activity.
  *
+ * Double `con = null` assignment:
+ *   Inside the `setTimeout` disconnect handler, `con` is set to `null` both
+ *   inside the `con.end()` callback AND immediately after calling `con.end()`
+ *   on the next line (line ~157). The immediate assignment means `con` becomes
+ *   `null` synchronously before `end()` finishes, making `con.end()`'s own
+ *   null-assignment inside the callback a no-op. In practice this is harmless
+ *   — the connection is still closed — but the double assignment is confusing
+ *   and the immediate null-set means the callback's error check runs against
+ *   a connection that `con` no longer references.
+ *
  * @async
  * @returns {Promise<import('mysql2').Connection>} The active MySQL connection object.
  */
@@ -176,6 +186,17 @@ async function getConnection()
  * consecutive successful pings are confirmed after a recovery, the database is
  * re-enabled and any buffered voice-channel-change (VCC) records are replayed via
  * {@link clearVCCList}.
+ *
+ * `arguments.callee` usage:
+ *   The `confirmDbRestore` inner async function uses `arguments.callee` on
+ *   line ~259 to re-schedule the outer retry `setTimeout`. Because
+ *   `confirmDbRestore` is an `async` arrow function assigned inside a
+ *   `setTimeout` callback, `arguments.callee` in strict mode would be
+ *   `undefined`. In non-strict mode (the bot's execution context), it refers
+ *   to the containing non-arrow function — the outer `timeoutFix` callback —
+ *   which is the intended retry target. This is a fragile pattern that relies
+ *   on non-strict-mode semantics; if the file is ever moved to strict mode or
+ *   modules, this will throw a `TypeError`.
  */
 function dbErrored()
 {
@@ -467,6 +488,14 @@ function NameFromUserIDID(userID)
  * `eventpurity` table is updated:
  *  - `"useradd"`    – upserts the user as having joined (flaked = 0, joined = 1),
  *  - `"userremove"` – marks the user as having flaked (flaked = 1, joined = 0).
+ *
+ * ⚠️ SQL injection risk:
+ *   The `name`, `description`, and `loc` (from `event.entityMetadata.location`)
+ *   fields are directly interpolated into the SQL query strings using template
+ *   literals with no escaping. A Discord event whose name or description
+ *   contains SQL metacharacters (e.g. quotes, semicolons) could corrupt or
+ *   exfiltrate data. The `sqlEscapeString...` helper exists in `dbHelpers.js`
+ *   but is not used here.
  *
  * @param {import('discord.js').GuildScheduledEvent} event - The Discord scheduled event object.
  * @param {"create"|"delete"|"update"|"useradd"|"userremove"} change - The type of change to record.
@@ -1012,6 +1041,13 @@ function NameFromUserIDNoFakes(userid)
  *  - `"G"` – Discord global display name (`member.user.globalName`)
  *  - `"U"` – Discord username (`member.user.username`)
  *
+ * Implicit global variable leaks:
+ *   `nName`, `cahcedName`, `gName`, and `uName` are assigned without
+ *   `var`/`let`/`const` (lines ~1059–1062), making them accidental implicit
+ *   globals in non-strict mode. Any concurrent call to this function would
+ *   clobber the same global variables, causing race conditions if two calls
+ *   overlap (e.g. two simultaneous voice channel changes).
+ *
  * @async
  * @param {import('discord.js').GuildMember} member - The guild member whose name to resolve.
  * @param {Array<"N"|"C"|"G"|"U">} [order=["N","C","G","U"]] - Priority order of name sources.
@@ -1084,6 +1120,17 @@ async function PickThePerfectUsername(member, order = ["N", "C", "G", "U"], rege
  *
  * On any processing error, the event is buffered to the CSV log via {@link logVCC}
  * so it can be replayed once the database recovers.
+ *
+ * Hardcoded "Shadow Realm" channel ID:
+ *   The channel that triggers the sleeping-user status update is identified by a
+ *   hardcoded ID: `454464489681715200` in production or `1240062704966832209` in
+ *   testing. Any rename or recreation of this channel would require a code change.
+ *
+ * `channelStatusChange` lazy-require:
+ *   The `channelStatusChange` function is required inline (not at the top of the
+ *   module) to avoid a circular dependency. This `require` is called on every voice
+ *   state event that involves the Shadow Realm channel, but Node.js module caching
+ *   makes repeated `require` calls effectively free after the first load.
  *
  * @param {import('discord.js').VoiceState} newMember - The updated voice state.
  * @param {import('discord.js').VoiceState} oldMember - The previous voice state.

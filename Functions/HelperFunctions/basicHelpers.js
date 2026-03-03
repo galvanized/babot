@@ -28,8 +28,31 @@ const options = { year: 'numeric', month: 'long', day: 'numeric' }; // for date 
 /**
  * Parses a human-readable date from a message string.
  *
- * Strips bot-command prefixes and common noise words, then scans the remaining
- * tokens for a month name, a day number (≤ 31), and an optional year.
+ * Strips bot-command prefixes and common noise words (`!baba`, `wednesday`,
+ * `days`, `until`, `next`), then scans the remaining whitespace-split tokens
+ * for a month name, a day number (≤ 31), and an optional year.
+ *
+ * Month detection quirk — prefix matching:
+ *   The check uses `"january".includes(item)` (i.e. whether the FULL month name
+ *   contains the token), so any prefix of a month name matches. For example:
+ *   - "m" → matches "march" (checked first) not "may"
+ *   - "ma" → matches "march"
+ *   - "may" → matches "may" (but also matches "may" in "maybe" if "maybe" is a token)
+ *   Words like "mar" or "jan" will trigger month detection. The first matching
+ *   month in the check order wins; months are checked in calendar order.
+ *
+ * Day/year overlap:
+ *   Any integer token ≤ 31 is treated as the day. Tokens > 31 that are NOT a
+ *   previously detected day set the year: values < 100 get 2000 added; values
+ *   ≥ 100 but < 1300 are stored as-is (producing years like 100, 500, 1000 AD).
+ *   There is no lower bound check, so single-digit non-day numbers (none in
+ *   practice, since all are ≤ 31) won't accidentally set the year.
+ *
+ * Validation:
+ *   After scanning, if `day > max_days_in_month` for February (29) or months
+ *   with 30 days (Apr, Jun, Sep, Nov) `null` is returned. There is no leap-year
+ *   check; February 29 is always accepted.
+ *
  * Returns `null` when a required field is missing (unless `haiku` is `true`).
  *
  * @param {string} message - Raw message content to parse.
@@ -402,6 +425,21 @@ function getEaster(year) //Thanks to Jeremy's Link
  *   set its position, and restore `SendMessages` for `@everyone`.
  *
  * Always writes the updated `babotdata.json` after an optional delay.
+ *
+ * Race condition (`resetid == 0`):
+ *   The `baadata.holidaychan = "0"` assignment (line ~497) happens **inside**
+ *   an async `.then()` callback that may not have fired yet when the outer
+ *   `setTimeout` writes `babotdata.json` (line ~543). If the `guild.channels.fetch()`
+ *   chain hasn't resolved before the JSON write fires, the persisted
+ *   `holidaychan` value may still be the old channel ID rather than `"0"`.
+ *   On a subsequent restart, the bot will believe the holiday channel still
+ *   exists and attempt to use it.
+ *
+ * `"-n"` suffix in `name`:
+ *   If `name` contains `"-n"` (e.g. `"crimbo-n"`), the channel rename step is
+ *   suppressed (`rename = false`) and the suffix is stripped before further
+ *   processing. This lets callers request a state change without triggering
+ *   Discord API rate limits from a channel rename.
  *
  * @param {import('discord.js').Guild|null} guild - The Discord guild, or `null`
  *   to skip all channel operations and only persist the state change.
@@ -1491,12 +1529,21 @@ function RandFont(text, index = -1)
 /**
  * Loads `FISHcache.json` and replies with fish images based on keyword matches.
  *
- * Each cache entry defines fish-related keywords and URLs.  If a matching
+ * Each cache entry defines fish-related keywords and URLs. If a matching
  * keyword is detected in `msgContent`, the corresponding URL is queued for
- * reply.  Entries with `ProcFishless` can trigger regardless of the "fish"
- * keyword, subject to a `1/ProcChance` probability.  The bare word "fish"
- * independently activates a 1-in-500 chance to reply with a random fish image
- * from the full pool.
+ * reply. Entries with `ProcFishless` can trigger regardless of the "fish"
+ * keyword, subject to a `1/ProcChance` probability.
+ *
+ * Critical behavioral quirk — "fish" suppresses all keyword matches:
+ *   When `msgContent` contains the literal word `"fish"` (i.e. `fishio = true`),
+ *   the loop runs as normal and may populate `mesgtosend` via keyword matches.
+ *   However, the subsequent `if (fishio)` block ALWAYS unconditionally resets
+ *   `mesgtosend`:
+ *   - If the 1-in-500 random fires → `mesgtosend` is set to one random fish URL.
+ *   - Otherwise → `mesgtosend` is set to `[]` (empty).
+ *   This means that when the message contains "fish", ALL prior keyword matches
+ *   are discarded regardless of what they triggered. The `ProcFishless` loop is
+ *   effectively a no-op for messages containing "fish".
  *
  * @param {import('discord.js').Message} message - The Discord message to reply
  *   to.
@@ -1750,13 +1797,28 @@ function handleButtonsEmbed(channel, message, userid, data, deadData = null)
 /**
  * Checks whether the given URL returns a non-404 HTTP response.
  *
- * Performs an HTTPS GET and returns `false` if the status code is 404;
- * otherwise returns `true`. Note: due to the callback-based `https.get` usage
- * the return values are currently not propagated back to the caller.
+ * ⚠️ Broken: return values are NEVER propagated.
+ *   The function is declared `async` but internally uses the callback-based
+ *   `https.get`. The `return false` and `return true` statements inside the
+ *   callback only return from the callback itself — they do not resolve the
+ *   `async` function's implicit Promise. The outer `async` function always
+ *   resolves with `undefined`.
+ *
+ *   However, because `uExist` is an `async` function, it always returns a
+ *   Promise object (not `undefined`). Promises are truthy, so:
+ *     `var urlE = uExist(url);`
+ *     `if (!urlE) { break; }` → `!Promise` → `false` → the break NEVER fires.
+ *
+ *   This means the `!urlE` guard in `checkHurricaneStuff` is permanently
+ *   bypassed. The hurricane-discovery loop does NOT rely on `uExist` to detect
+ *   missing URLs; instead it falls through to the `xml.includes("Page Not Found")`
+ *   content check on line ~760. The `uExist` call on line ~750 is completely
+ *   inert dead code.
  *
  * @async
  * @param {string} url - The URL to probe.
- * @returns {Promise<void>}
+ * @returns {Promise<void>} Always resolves with `undefined` due to the broken
+ *   return-value propagation described above.
  */
 async function uExist(url)
 {
@@ -1926,6 +1988,18 @@ function enumConverter(int)
  * - `"sometime"` → picks a random moment within the next 5 days.
  *
  * When multiple candidates are generated, one is selected at random.
+ *
+ * Implicit global variable leaks:
+ * - In the `"tonight"` block (when the parsed explicit time falls within the
+ *   tonight window), `hourTEd`, `minuteTEd`, and `secondTEd` are assigned
+ *   without `var`/`let`/`const` (lines ~2049–2051), making them accidental
+ *   implicit globals.
+ * - `extraSeconds` is declared with `var` inside the `"tonight"` block but
+ *   referenced again in the `"tomorrow"` + `"later"` block (line ~2117). Due
+ *   to `var` hoisting, this works when `"tonight"` ran first, but if only
+ *   `"tomorrow"` + `"later"` is in the string (without `"tonight"`), the
+ *   earlier `extraSeconds` declaration in the `"tomorrow"` block provides the
+ *   value correctly.
  *
  * @param {string} timestring - The time description to parse.
  * @returns {Date|undefined} A future `Date` matching the parsed description, or

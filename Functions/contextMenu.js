@@ -116,6 +116,11 @@ async function contextInfo(interaction, bot)
  *   fields. Searches all guild text channels and their threads for the message, then moves
  *   it to the specified channel via `movetoChannel`. Replies ephemerally with progress and
  *   result messages.
+ *   ⚠️ The destination channel ID (`chanIDInput`) is supplied entirely by the user with no
+ *   permission check. Any user who can access the "Move To" context menu can move messages
+ *   to ANY channel in the guild, including private channels the user cannot normally read or
+ *   write. The bot will attempt the move as long as it has permission in the target channel,
+ *   regardless of whether the invoking user does.
  * - **"haiku-*"**: Processes a haiku/purity search form. Reads date, keyword, and person
  *   filters from the modal, sanitises inputs against SQL injection, builds a haiku embed via
  *   `babaHaikuEmbed`, and posts the paginated result. Registers pagination via
@@ -343,8 +348,15 @@ async function modalInfo(interaction, bot)
 /**
  * Handles button interaction events.
  *
- * Guards against cross-user button use: if the originating interaction's user differs from
- * the button presser, an ephemeral error reply is sent and the handler returns early.
+ * Cross-user guard:
+ *   The top-level check `interaction.message.interaction.user.id != interaction.user.id`
+ *   only fires when `interaction.message.interaction != null` (i.e. the message was
+ *   itself a slash-command reply). For regular bot messages (e.g. reminder embeds
+ *   created by `viewReminders`), `interaction.message.interaction` is `null` and
+ *   the guard is bypassed. In those cases ownership is enforced separately by
+ *   comparing `interaction.user.id` against the `userID` encoded in the button's
+ *   custom ID (e.g. `"editrem-<remID>-<page>-<userID>"`). However, since the
+ *   custom ID is constructed by the bot and not user-supplied, this is still safe.
  *
  * Supported custom ID prefixes / values:
  * - **"editrem-\<remID\>-\<page\>-\<userID\>"**: Validates the reminder exists and the user
