@@ -1,3 +1,13 @@
+/**
+ * @fileoverview Database and voice helper utilities for the BaBot Discord bot.
+ *
+ * Provides haiku filtering (by user, channel, date, keyword), purity calculation
+ * and formatting, random/custom haiku selection, holiday loading from the DB,
+ * and user-name resolution from a Discord user object or raw user ID.
+ *
+ * @module Functions/Database/databaseandvoice
+ */
+
 var babadata = require('../../babotdata.json'); //baba configuration file
 
 const fs = require('fs');
@@ -8,6 +18,16 @@ const { getD1 } = require('../../Tools/overrides');
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Filters a haiku list to only those belonging to a given user.
+ *
+ * Matching is attempted against the haiku's PersonName, DiscordID, DiscordName,
+ * and any alt-names stored in the global userCache, all case-insensitively.
+ *
+ * @param {string} messageTerm - The search string (typically the full message content).
+ * @param {Object[]} haikuList - Array of haiku objects to filter.
+ * @returns {Object[]} Filtered array of haiku objects that match the user term.
+ */
 function FilterUser(messageTerm, haikuList)
 {
     var messageTerm = messageTerm.toLowerCase();
@@ -72,6 +92,15 @@ function FilterUser(messageTerm, haikuList)
     return filteredList;
 }
 
+/**
+ * Filters a haiku list to only those recorded in a specific channel.
+ *
+ * Matches against the haiku's ChannelName and ChannelID, case-insensitively.
+ *
+ * @param {string} messageTerm - The search string containing the channel name or ID.
+ * @param {Object[]} haikuList - Array of haiku objects to filter.
+ * @returns {Object[]} Filtered array of haiku objects that match the channel term.
+ */
 function FilterChannel(messageTerm, haikuList)
 {
     var messageTerm = messageTerm.toLowerCase();
@@ -85,6 +114,20 @@ function FilterChannel(messageTerm, haikuList)
     return filteredList;
 }
 
+/**
+ * Filters a haiku list by date using an "Exact", "Before", or "After" comparison.
+ *
+ * Any date component (Year, Month, Day) that is `null` is treated as a wildcard
+ * and will always match. Month values follow JavaScript's `Date.getMonth()` convention
+ * (0-indexed, so January = 0).
+ *
+ * @param {Object[]} haikuList - Array of haiku objects to filter.
+ * @param {"Exact"|"Before"|"After"} BFE - The comparison mode.
+ * @param {number|null} Year  - Four-digit year to match, or `null` to ignore.
+ * @param {number|null} Month - Zero-indexed month to match, or `null` to ignore.
+ * @param {number|null} Day   - Day of the month to match, or `null` to ignore.
+ * @returns {Object[]|null} Filtered haiku array, or `null` if BFE is unrecognised.
+ */
 function FilterDate(haikuList, BFE, Year, Month, Day)
 {
     if (BFE == "Exact")
@@ -127,6 +170,16 @@ function FilterDate(haikuList, BFE, Year, Month, Day)
     return null;
 }
 
+/**
+ * Filters a haiku list to those whose text contains every word in the search term.
+ *
+ * The search term is split on spaces and each word must appear (case-insensitively)
+ * in the haiku text for the haiku to be included.
+ *
+ * @param {string} messageTerm - Space-separated keyword(s) to search for.
+ * @param {Object[]} haikuList - Array of haiku objects to filter.
+ * @returns {Object[]} Filtered array of haiku objects matching all keywords.
+ */
 function FilterKeyword(messageTerm, haikuList)
 {
     var splitbySpace = messageTerm.split(" ");
@@ -148,6 +201,17 @@ function FilterKeyword(messageTerm, haikuList)
     return filteredList;
 }
 
+/**
+ * Generates a random "Frankenstein" haiku by randomly recombining lines from the list.
+ *
+ * Each existing haiku is split into its three lines (5-7-5). A new haiku is assembled
+ * by independently selecting a random first five-syllable line, a random seven-syllable
+ * line, and a random second five-syllable line from all available lines.
+ *
+ * @param {Object[]} haikuList - Array of haiku objects to draw lines from.
+ * @returns {Object} A synthetic haiku object with `PersonName`, `HaikuFormatted`,
+ *   `DiscordName`, `Date`, `ChannelName`, and `Accidental` fields.
+ */
 function GenerateRandomHaiku(haikuList)
 {
     var object = {};
@@ -178,6 +242,16 @@ function GenerateRandomHaiku(haikuList)
     return object;
 }
 
+/**
+ * Collects all unique Discord display names ever used by a given Discord ID.
+ *
+ * Iterates over the full haiku list and gathers every distinct DiscordName
+ * that is associated with the supplied Discord user ID.
+ *
+ * @param {Object[]} haikuList - The complete (unfiltered) haiku list.
+ * @param {string} discordID   - The Discord user ID to look up.
+ * @returns {string[]} De-duplicated array of Discord display names for that ID.
+ */
 function GenerateAssociatedNames(haikuList, discordID)
 {
     var associatedNames = [];
@@ -197,6 +271,20 @@ function GenerateAssociatedNames(haikuList, discordID)
     return associatedNames;
 }
 
+/**
+ * Builds a purity-statistics list from a haiku list, grouped by a chosen dimension.
+ *
+ * Each entry in the returned list contains:
+ * - `Name`       – group key (channel name, person name, or date string)
+ * - `ID`         – Discord channel/user ID (omitted for `"date"` mode)
+ * - `Count`      – total haiku count for the group
+ * - `Accidental` – cumulative accidental count
+ * - `Purity`     – percentage of haikus that were accidental (`Accidental / Count * 100`)
+ *
+ * @param {Object[]} haikuList            - Array of haiku objects to aggregate.
+ * @param {"chans"|"users"|"date"} pMode  - Grouping dimension.
+ * @returns {Object[]} Array of purity-stat objects, one per unique group key.
+ */
 function GetPurityList(haikuList, pMode)
 {
     var purityList = [];
@@ -288,6 +376,27 @@ function GetPurityList(haikuList, pMode)
     return purityList;
 }
 
+/**
+ * Selects one or more haikus from the cache according to the requested mode.
+ *
+ * Modes:
+ * - `1` – filter by user (messageTerm = search string)
+ * - `2` – filter by channel (messageTerm = search string)
+ * - `3` – filter by exact date (messageTerm = date string)
+ * - `4` – custom multi-filter (messageTerm = array: [startDate, endDate, channel, person, keyword, outputMode, purityMode])
+ * - `5` – filter by keyword (messageTerm = search string)
+ * - `6` – generate a random Frankenstein haiku from the filtered list
+ *
+ * For mode `4` with `messageTerm[5] == "purity"`, a raw purity list is returned instead
+ * of a haiku selection. For mode `4` with `messageTerm[5] == "all"`, the full filtered
+ * list is returned.
+ *
+ * @param {string|Array} messageTerm - Search term or parameter array depending on mode.
+ * @param {1|2|3|4|5|6} mode        - Selection mode (see above).
+ * @returns {Array|null} `[haikuArray, associatedNames]` for single selections,
+ *   a raw purity list for purity mode, the full filtered list for "all" mode,
+ *   or `null` if no haikus match.
+ */
 function HaikuSelection(messageTerm, mode)
 {
     var haikuJson = fs.readFileSync(babadata.datalocation + "HaikusCache.json");
@@ -405,6 +514,15 @@ function HaikuSelection(messageTerm, mode)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Resolves the bot-database PersonName for a Discord user object.
+ *
+ * Wraps {@link NameFromUserID} using `user.id` as the lookup key.
+ *
+ * @param {import('discord.js').User} user - A Discord.js User (or GuildMember) object.
+ * @returns {Promise<string>} Resolves with the PersonName from the database,
+ *   or a random friendly fallback string if the user is not found.
+ */
 function NameFromUser(user)
 {
     var userDBItemPromise = new Promise((resolve, reject) => {
@@ -417,6 +535,17 @@ function NameFromUser(user)
     return userDBItemPromise;
 }
 
+/**
+ * Resolves the bot-database PersonName for a raw Discord user ID.
+ *
+ * Queries the database controller via {@link NameFromUserIDID}. If the lookup fails
+ * (e.g. unknown user), a random humorous fallback name is returned instead of
+ * rejecting the promise.
+ *
+ * @param {string} userid - The Discord snowflake user ID to look up.
+ * @returns {Promise<string>} Resolves with the PersonName, or a random
+ *   friendly placeholder (e.g. "Buddy", "Pal") on error.
+ */
 function NameFromUserID(userid)
 {
     var userDBItemPromise = new Promise((resolve, reject) => {
@@ -436,6 +565,17 @@ function NameFromUserID(userid)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Formats a single purity-list entry as a display string for Discord.
+ *
+ * For date entries (`type == 2`) the name is rendered as a Discord timestamp mention;
+ * for channel entries (`type == 1`) a `#channel` mention is used; for user entries
+ * an `@user` mention is used. Purity is rounded to three decimal places.
+ *
+ * @param {Object} line       - A purity-stat entry (mutated in-place for name/purity).
+ * @param {number} type       - Display type: `1` = channel, `2` = date, other = user.
+ * @returns {string} Formatted one-line string ready for embedding in a Discord message.
+ */
 function GenInfo(line, type)
 {
 	// if (type == 2) line.Name = line.Name.toLocaleDateString('en-US', options);
@@ -444,6 +584,15 @@ function GenInfo(line, type)
 	return line.Name + (type == 2 ? "" : " [<" + (type == 1 ? "#" : "@") + line.ID + ">]") + "\n\t`" + line.Count + " Haikus` - `" + line.Accidental + " Accidental` - `" + line.Purity + "% Purity`";
 }
 
+/**
+ * Comparator for sorting purity-list entries by haiku count in descending order.
+ *
+ * Intended for use with `Array.prototype.sort`.
+ *
+ * @param {{ Count: number }} a - First entry.
+ * @param {{ Count: number }} b - Second entry.
+ * @returns {1|-1|0} Positive if `a` should sort after `b`, negative if before, 0 if equal.
+ */
 function compare( a, b ) 
 {
 	if (a.Count < b.Count)
@@ -457,6 +606,20 @@ function compare( a, b )
 	return 0;
 }
 
+/**
+ * Sorts and paginates a purity-stat list into Discord-ready page strings.
+ *
+ * Entries are sorted by haiku count (descending via {@link compare}) and then split
+ * into pages based on `pagestuff.ipp` (items per page). Each page is rendered as a
+ * newline-separated string of {@link GenInfo} lines.
+ *
+ * @param {Object[]} resultList     - Raw purity-stat entries (from {@link GetPurityList}).
+ * @param {number}   type           - Display type forwarded to {@link GenInfo}
+ *                                    (`1` = channel, `2` = date, other = user).
+ * @param {{ ipp: number }} pagestuff - Pagination config; `ipp` is items per page.
+ * @returns {{ retstring: string[], total: number }} `retstring` is an array of
+ *   page strings; `total` is the overall entry count.
+ */
 function FormatPurityList(resultList, type, pagestuff)
 {
 	var listsFull = [];
@@ -507,6 +670,17 @@ function FormatPurityList(resultList, type, pagestuff)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * Finds and returns the `sub` collection of a nested holiday entry by its ID.
+ *
+ * Used internally by {@link ObtainDBHolidays} to locate the correct sub-object
+ * when attaching child events to a parent holiday entry.
+ *
+ * @param {Object} retme - The current top-level holiday map being built.
+ * @param {string|number} id - The parent event ID to search for.
+ * @returns {Object} The `sub` object of the matching entry, or `retme` itself if
+ *   no match is found.
+ */
 function GetParent(retme, id)
 {
 	for (var x in retme)
@@ -516,6 +690,23 @@ function GetParent(retme, id)
 	return retme;
 }
 
+/**
+ * Loads and structures the holiday/event data from the local JSON database file.
+ *
+ * Reads `HolidayFrogs.json` from the configured data location and converts the flat
+ * array into a nested map keyed by `EventRealName`. Each entry contains:
+ * - `safename`   – the frog-safe event name
+ * - `mode`       – event scheduling mode (`-1` means it has child events via `sub`)
+ * - `id`         – unique event ID
+ * - `day`        – day of month (if applicable)
+ * - `month`      – month number (if applicable)
+ * - `week`       – week number (if applicable)
+ * - `dayofweek`  – day of week (if applicable)
+ * - `name`       – array of all display names for this event
+ * - `sub`        – nested child-event map (present when `mode == -1`)
+ *
+ * @returns {Object} Nested holiday map structured for bot consumption.
+ */
 function ObtainDBHolidays()
 {
     let holidayJson = fs.readFileSync(babadata.datalocation + "HolidayFrogs.json");
