@@ -26,14 +26,14 @@ const fs = require('fs'); //file stream used for del fuction
 
 const Discord = require('discord.js'); //discord module for interation with discord api
 
-const { SetHolidayChan, CheckFrogID, handleButtonsEmbed, preformEasterEggs } = require("../Functions/HelperFunctions/basicHelpers.js");
-const { getErrorFlag } = require("../Functions/HelperFunctions/commandHelpers.js");
-const { setGrole, setVote, setVBH, movetoChannel, timedOutFrog } = require("../Functions/HelperFunctions/adminHelpers.js");
-const { normalizeMSG } = require("../Functions/HelperFunctions/dbHelpers.js");
-const { TextCommandBackup } = require("./textExtra.js");
-const { functionPostFunnyDOW } = require("../Functions/HelperFunctions/slashFridayHelpers.js");
-const { getD1 } = require("../Tools/overrides.js");
-const { babaFriday,  babaHelp, babaPlease, babaPizza, babaVibeFlag, babaYugo, babaHaikuEmbed, babaDayNextWed, babaJeremy, babaHurricane, babaRepost, babaWeather, babaProgress, babaAurora, babaGoodberrys, babaHaikuLinks, babaUntilHolidays } = require("../Functions/commandFunctions.js");
+const { SetHolidayChan, CheckFrogID, handleButtonsEmbed, preformEasterEggs } = require('../Functions/HelperFunctions/basicHelpers.js');
+const { getErrorFlag } = require('../Functions/HelperFunctions/commandHelpers.js');
+const { setGrole, setVote, setVBH, movetoChannel, timedOutFrog } = require('../Functions/HelperFunctions/adminHelpers.js');
+const { normalizeMSG } = require('../Functions/HelperFunctions/dbHelpers.js');
+const { TextCommandBackup } = require('./textExtra.js');
+const { functionPostFunnyDOW } = require('../Functions/HelperFunctions/slashFridayHelpers.js');
+const { getD1 } = require('../Tools/overrides.js');
+const { babaFriday,  babaHelp, babaPlease, babaPizza, babaVibeFlag, babaYugo, babaHaikuEmbed, babaDayNextWed, babaJeremy, babaHurricane, babaRepost, babaWeather, babaProgress, babaAurora, babaGoodberrys, babaHaikuLinks, babaUntilHolidays } = require('../Functions/commandFunctions.js');
 
 
 //To Do:
@@ -106,7 +106,7 @@ const { babaFriday,  babaHelp, babaPlease, babaPizza, babaVibeFlag, babaYugo, ba
 // stuff when message is recived.
 async function babaMessage(bot, message)
 {
-	let rawdata = fs.readFileSync(babadata.datalocation + "FrogHolidays/" + 'frogholidays.json'); //load file each time of calling wednesday
+	let rawdata = fs.readFileSync(babadata.datalocation + 'FrogHolidays/' + 'frogholidays.json'); //load file each time of calling wednesday
 	let frogdata = JSON.parse(rawdata);
 	var g, rl = null;
 	var sentvalid = false;
@@ -122,32 +122,32 @@ async function babaMessage(bot, message)
 		sentvalid = true;
 	}
 	
-	TextCommandBackup(bot, message, sentvalid, msgContent, g)
+	TextCommandBackup(bot, message, sentvalid, msgContent, g);
 	
 	if (babadata.holidaychan == null)
 	{
-		let rawdata = fs.readFileSync(__dirname.replace("TextCommands", "") + '/babotdata.json');
+		let rawdata = fs.readFileSync(__dirname.replace('TextCommands', '') + '/babotdata.json');
 		let baadata = JSON.parse(rawdata);
-		baadata.holidaychan = "0";
-		baadata.holidayval = "null";
-		let n = JSON.stringify(baadata)
-		fs.writeFileSync(__dirname.replace("TextCommands", "") + '/babotdata.json', n);
+		baadata.holidaychan = '0';
+		baadata.holidayval = 'null';
+		let n = JSON.stringify(baadata);
+		fs.writeFileSync(__dirname.replace('TextCommands', '') + '/babotdata.json', n);
 
 		babadata = baadata;
 	}
 
 	var yr = getD1().getFullYear(); //get this year
 
-	if(msgContent.includes(yr - 1) && msgContent.includes("560231259842805770") && msgContent.includes("563063109422415872") && !message.author.bot && message.author.id == "360228104997961740") //if message contains baba and is not from bot
+	if(msgContent.includes(yr - 1) && msgContent.includes('560231259842805770') && msgContent.includes('563063109422415872') && !message.author.bot && message.author.id == '360228104997961740') //if message contains baba and is not from bot
 	{
-		let rawdata = fs.readFileSync(__dirname.replace("TextCommands", "") + '/babotdata.json');
+		let rawdata = fs.readFileSync(__dirname.replace('TextCommands', '') + '/babotdata.json');
 		let baadata = JSON.parse(rawdata);
 
 		babadata = baadata;
-		if (babadata.holidayval == "defeat")
+		if (babadata.holidayval == 'defeat')
 		{
 			//560231259842805770  563063109422415872
-			SetHolidayChan(message.guild, "null", 0);
+			SetHolidayChan(message.guild, 'null', 0);
 		}
 	}
 	
@@ -205,7 +205,7 @@ async function babaMessage(bot, message)
 	}
 	*/
 
-	await preformEasterEggs(message, msgContent, bot)
+	await preformEasterEggs(message, msgContent, bot);
 
 	if(msgContent.includes('!baba')) //if message contains baba and is not from bot
 	{
@@ -215,8 +215,8 @@ async function babaMessage(bot, message)
 		// keyword and sends a response or triggers a helper. Handlers should
 		// generally be fast and non-blocking; heavy operations use callbacks.
 		message.channel.sendTyping();
-		if (msgContent.includes("baba is help") && message.author.bot)
-			return
+		if (msgContent.includes('baba is help') && message.author.bot)
+			return;
 		
 		var exampleEmbed = null;
 		var text = 'BABA IS ADMIN'; //start of reply string for responce message.
@@ -232,13 +232,13 @@ async function babaMessage(bot, message)
 		// - If today is not Friday, call `functionPostFunnyDOW` to post a DOW
 		//   (day-of-week) message; otherwise call `babaFriday()` to return the
 		//   regular Friday response.
-		if (msgContent.includes("friday"))
+		if (msgContent.includes('friday'))
 		{
 			message.channel.sendTyping();
 			var tod = getD1();
 			if (tod.getDay() != 5)
 			{
-				await functionPostFunnyDOW("message", message, 5);
+				await functionPostFunnyDOW('message', message, 5);
 			}
 			else
 			{
@@ -248,10 +248,10 @@ async function babaMessage(bot, message)
 
 		// Branch: please
 		// - Minimal polite helper: returns `babaPlease()` content when present.
-		if (msgContent.includes("please")) //this could do something better but its ok for now
+		if (msgContent.includes('please')) //this could do something better but its ok for now
 		{
 			message.channel.sendTyping();
-			var cont = babaPlease()
+			var cont = babaPlease();
 			if (cont != null)
 			{
 				message.channel.send(cont);
@@ -260,7 +260,7 @@ async function babaMessage(bot, message)
 
 		// Branch: progress
 		// - Return a short progress/status string using `babaProgress`.
-		if (msgContent.includes("progress"))
+		if (msgContent.includes('progress'))
 		{
 			message.channel.sendTyping();
 			var progress = babaProgress(20);
@@ -270,7 +270,7 @@ async function babaMessage(bot, message)
 		// Branch: goodberries / goodberry
 		// - Fetches calendar events via `babaGoodberrys` and formats them into
 		//   a human-readable list. The callback receives an object with `events`.
-		if (msgContent.includes("goodberries") || msgContent.includes("goodberry"))
+		if (msgContent.includes('goodberries') || msgContent.includes('goodberry'))
 		{
 			message.channel.sendTyping();
 			babaGoodberrys(function(val)
@@ -283,16 +283,16 @@ async function babaMessage(bot, message)
 					return a.start - b.start;
 				});
 
-				var resp = "";
+				var resp = '';
 				for (var i = 0; i < evnts.length; i++)
 				{
 					var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 					
-					resp += evnts[i].summary + " on " + evnts[i].start.toLocaleDateString("en-US", options) + "\n";
+					resp += evnts[i].summary + ' on ' + evnts[i].start.toLocaleDateString('en-US', options) + '\n';
 				}
 
-				if (resp == "")
-					resp = "No events found";
+				if (resp == '')
+					resp = 'No events found';
 
 				message.channel.send(resp);
 			});
@@ -300,7 +300,7 @@ async function babaMessage(bot, message)
 
 		// Branch: uppus
 		// - Returns uptime since `global.starttime` formatted in days/hours/etc.
-		if (msgContent.includes("uppus"))
+		if (msgContent.includes('uppus'))
 		{
 			message.channel.sendTyping();
 			var start = global.starttime;
@@ -311,17 +311,17 @@ async function babaMessage(bot, message)
 			var diffMins = Math.floor(((diff % 86400000) % 3600000) / 60000); // minutes
 			var diffSecs = Math.floor((((diff % 86400000) % 3600000) % 60000) / 1000); // seconds
 			var diffMs = Math.floor((((diff % 86400000) % 3600000) % 60000) % 1000); // milliseconds
-			var diffString = diffDays + " days, " + diffHrs + " hours, " + diffMins + " minutes, " + diffSecs + " seconds, " + diffMs + " milliseconds";
-			message.channel.send("`" + diffString + "`");
+			var diffString = diffDays + ' days, ' + diffHrs + ' hours, ' + diffMins + ' minutes, ' + diffSecs + ' seconds, ' + diffMs + ' milliseconds';
+			message.channel.send('`' + diffString + '`');
 		}
 
 		// Branch: aurora
 		// - Calls `babaAurora` which uses a callback; replies with the returned
 		//   text when the callback fires.
-		if (msgContent.includes("aurora"))
+		if (msgContent.includes('aurora'))
 		{
 			message.channel.sendTyping();
-			var time = "tonights";
+			var time = 'tonights';
 			babaAurora(time, function(val)
 			{
 				message.channel.send(val);
@@ -330,7 +330,7 @@ async function babaMessage(bot, message)
 
 		// Branch: order pizza
 		// - Returns a short pizza-ordering string from `babaPizza`.
-		if (msgContent.includes("order pizza"))
+		if (msgContent.includes('order pizza'))
 		{
 			message.channel.sendTyping();
 			message.channel.send(babaPizza());
@@ -338,10 +338,10 @@ async function babaMessage(bot, message)
 
 		// Branch: hurricane
 		// - Calls `babaHurricane` with a callback and forwards the output.
-		if (msgContent.includes("hurricane"))
+		if (msgContent.includes('hurricane'))
 		{
 			message.channel.sendTyping();
-			babaHurricane("", function(val)
+			babaHurricane('', function(val)
 			{
 				message.channel.send(val);
 			});
@@ -349,7 +349,7 @@ async function babaMessage(bot, message)
 
 		// Branch: repost
 		// - Returns the output of `babaRepost()` directly to the channel.
-		if (msgContent.includes("repost"))
+		if (msgContent.includes('repost'))
 		{
 			message.channel.sendTyping();
 			message.channel.send(babaRepost());
@@ -357,7 +357,7 @@ async function babaMessage(bot, message)
 
 		// Branch: jeremy
 		// - Synchronous helper returning a string from `babaJeremy()`.
-		if (msgContent.includes("jeremy"))
+		if (msgContent.includes('jeremy'))
 		{
 			message.channel.send(babaJeremy());
 		}
@@ -371,10 +371,10 @@ async function babaMessage(bot, message)
 		// - Calls `babaWeather` with a callback and forwards the result. This
 		//   branch currently hardcodes the location parameter; consider
 		//   externalizing if multi-location support is required.
-		if (msgContent.includes("weather"))
+		if (msgContent.includes('weather'))
 		{
 			message.channel.sendTyping();
-			babaWeather("deets", "Apex NC", function(val)
+			babaWeather('deets', 'Apex NC', function(val)
 			{
 				message.channel.send(val);
 			});
@@ -399,7 +399,7 @@ async function babaMessage(bot, message)
 			message.channel.send(flagcontent).catch(error => {
 
 				var newAttch = new Discord.AttachmentBuilder(getErrorFlag(), 
-					{ name: 'errrrrr.png', description : "No flag for you bud hee!"}); //makes a new discord attachment
+					{ name: 'errrrrr.png', description : 'No flag for you bud hee!'}); //makes a new discord attachment
 
 				message.channel.send({content: flagcontent.content, files: [newAttch] }); // send file
 			});
@@ -428,9 +428,9 @@ async function babaMessage(bot, message)
 		if (msgContent.includes('haiku')) // add custom haiku search term?
 		{
 			message.channel.sendTyping();
-			var purity = msgContent.includes("purity");
-			var buy = msgContent.includes("by");
-			var info = {"ipp": 5, "page": 0};
+			var purity = msgContent.includes('purity');
+			var buy = msgContent.includes('by');
+			var info = {'ipp': 5, 'page': 0};
 
 			var cont = babaHaikuEmbed(purity, buy, msgContent, info);
 			var deadData = purity || cont[0].components == null ? null : babaHaikuLinks(cont);
@@ -455,9 +455,9 @@ async function babaMessage(bot, message)
 			if (msgContent.includes('days until next wednesday'))
 				message.channel.send(babaDayNextWed());
 
-			var texts = await babaUntilHolidays(msgContent, message.author, "04");
+			var texts = await babaUntilHolidays(msgContent, message.author, '04');
 			
-			var templocal = babadata.datalocation + "FrogHolidays/"; //creates the output frog image
+			var templocal = babadata.datalocation + 'FrogHolidays/'; //creates the output frog image
 
 			for ( var i = 0; i < texts.length; i++)
 			{
@@ -465,8 +465,8 @@ async function babaMessage(bot, message)
 				{
 					var text = texts[i].content;
 
-					if (text == "FUNNYDOW")
-						await functionPostFunnyDOW("message", message, 3);
+					if (text == 'FUNNYDOW')
+						await functionPostFunnyDOW('message', message, 3);
 					else
 						await message.channel.send(text);	
 				}
@@ -499,7 +499,7 @@ async function babaMessage(bot, message)
 								thr.messages.fetch(message_id).then(message => 
 								{
 									fnd = true;
-									movetoChannel(message, thr, babadata.logchan)
+									movetoChannel(message, thr, babadata.logchan);
 								}).catch(function (err) {});
 							})
 						).catch(function (err) {});
@@ -507,7 +507,7 @@ async function babaMessage(bot, message)
 						chan.messages.fetch(message_id).then(message => 
 						{
 							fnd = true;
-							movetoChannel(message, chan, babadata.logchan)
+							movetoChannel(message, chan, babadata.logchan);
 						}).catch(function (err) {}); 
 					}
 				});
@@ -535,7 +535,7 @@ async function babaMessage(bot, message)
 								thr.messages.fetch(message_id).then(message => 
 								{
 									fnd = true;
-									movetoChannel(message, thr, babadata.politicschan)
+									movetoChannel(message, thr, babadata.politicschan);
 								}).catch(function (err) {});
 							})
 						).catch(function (err) {});
@@ -543,7 +543,7 @@ async function babaMessage(bot, message)
 						chan.messages.fetch(message_id).then(message => 
 						{
 							fnd = true;
-							movetoChannel(message, chan, babadata.politicschan)
+							movetoChannel(message, chan, babadata.politicschan);
 						}).catch(function (err) {}); 
 					}
 				});
@@ -571,7 +571,7 @@ async function babaMessage(bot, message)
 								thr.messages.fetch(message_id).then(message => 
 								{
 									fnd = true;
-									setVote(message)
+									setVote(message);
 								}).catch(function (err) {});
 							})
 						).catch(function (err) {});
@@ -579,7 +579,7 @@ async function babaMessage(bot, message)
 						chan.messages.fetch(message_id).then(message => 
 						{
 							fnd = true;
-							setVote(message)
+							setVote(message);
 						}).catch(function (err) {}); 
 					}
 				});
@@ -597,25 +597,25 @@ async function babaMessage(bot, message)
 		{
 			var text = msgContent;
 			var tyepe = -1;
-			if (text.includes("idle"))
-				tyepe = "idle";
-			if (text.includes("afk"))
-				tyepe = "idle";
-			else if (text.includes("online"))
-				tyepe = "online";
-			else if (text.includes("woke"))
-				tyepe = "online";
-			else if (text.includes("invisible"))
-				tyepe = "invisible";
-			else if (text.includes("offline"))
-				tyepe = "invisible";
-			else if (text.includes("dnd"))
-				tyepe = "dnd";
-			else if (text.includes("do not disturb"))
-				tyepe = "dnd";
+			if (text.includes('idle'))
+				tyepe = 'idle';
+			if (text.includes('afk'))
+				tyepe = 'idle';
+			else if (text.includes('online'))
+				tyepe = 'online';
+			else if (text.includes('woke'))
+				tyepe = 'online';
+			else if (text.includes('invisible'))
+				tyepe = 'invisible';
+			else if (text.includes('offline'))
+				tyepe = 'invisible';
+			else if (text.includes('dnd'))
+				tyepe = 'dnd';
+			else if (text.includes('do not disturb'))
+				tyepe = 'dnd';
 
 			if (tyepe == -1)
-				tyepe = "online";
+				tyepe = 'online';
 			
 			bot.user.setStatus(tyepe);
 		}
@@ -632,15 +632,15 @@ async function babaMessage(bot, message)
 			var text = msgContent;
 			var tyepe = -1;
 			var lc = 2;
-			if (text.includes("watching"))
+			if (text.includes('watching'))
 				tyepe = 3;
-			else if (text.includes("playing"))
+			else if (text.includes('playing'))
 				tyepe = 0;
-			else if (text.includes("listening"))
+			else if (text.includes('listening'))
 				tyepe = 2;
-			else if (text.includes("competing"))
+			else if (text.includes('competing'))
 				tyepe = 5;
-			else if (text.includes("streaming"))
+			else if (text.includes('streaming'))
 				tyepe = 1;
 
 			if (tyepe == -1)
@@ -653,7 +653,7 @@ async function babaMessage(bot, message)
 
 			var help = { type: tyepe };
 			if (tyepe == 1)
-				help.url = "https://www.twitch.tv/directory/game/Baba%20is%20You";
+				help.url = 'https://www.twitch.tv/directory/game/Baba%20is%20You';
 			
 			bot.user.setActivity(mess, help);
 		}
@@ -679,7 +679,7 @@ async function babaMessage(bot, message)
 								thr.messages.fetch(message_id).then(message => 
 								{
 									fnd = true;
-									setVBH(message)
+									setVBH(message);
 								}).catch(function (err) {});
 							})
 						).catch(function (err) {});
@@ -687,7 +687,7 @@ async function babaMessage(bot, message)
 						chan.messages.fetch(message_id).then(message => 
 						{
 							fnd = true;
-							setVBH(message)
+							setVBH(message);
 						}).catch(function (err) {}); 
 					}
 				});
@@ -737,7 +737,7 @@ async function babaMessage(bot, message)
 	// Small utility branch: reset a daily flag when 'robot' is mentioned.
 	// This toggles `global.ResetDaily` off when present; used by internal
 	// automation to avoid repeated daily resets.
-	if (msgContent.includes("robot") && global.ResetDaily)
+	if (msgContent.includes('robot') && global.ResetDaily)
 	{
 		message.channel.sendTyping();
 		global.ResetDaily = false;
@@ -758,4 +758,4 @@ async function babaMessage(bot, message)
 
 module.exports = {
 	babaMessage
-}
+};

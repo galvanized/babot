@@ -31,7 +31,7 @@ module.exports = {
                 var diffMins = Math.floor(((diff % 86400000) % 3600000) / 60000); // minutes
                 var diffSecs = Math.floor((((diff % 86400000) % 3600000) % 60000) / 1000); // seconds
                 var diffMs = Math.floor((((diff % 86400000) % 3600000) % 60000) % 1000); // milliseconds
-                var diffString = diffDays + " days, " + diffHrs + " hours, " + diffMins + " minutes, " + diffSecs + " seconds, " + diffMs + " milliseconds";
-                await interaction.reply("`" + diffString + "`");
+                var diffString = diffDays + ' days, ' + diffHrs + ' hours, ' + diffMins + ' minutes, ' + diffSecs + ' seconds, ' + diffMs + ' milliseconds';
+                await interaction.reply('`' + diffString + '`');
 	},
 };

@@ -29,7 +29,7 @@ const options = { year: 'numeric', month: 'long', day: 'numeric' }; // for date 
  */
 function getErrorFlag()
 {
-	return babadata.datalocation + "Flags/" + "error.png";
+	return babadata.datalocation + 'Flags/' + 'error.png';
 }
 
 /**
@@ -73,7 +73,7 @@ async function MakeImage(templocal, base, wednesdayoverlay, weeks, outputname, h
 	}
 
 	var bonus = 0;
-	var yeartop = holidayinfo.year && holidayinfo.name != "date" ? true : false;
+	var yeartop = holidayinfo.year && holidayinfo.name != 'date' ? true : false;
 
 	if (weeks > 100) //set bonus val and reset weeks to between 1 - 100
 	{
@@ -81,23 +81,23 @@ async function MakeImage(templocal, base, wednesdayoverlay, weeks, outputname, h
 		weeks = weeks % 100;
 	}
 
-	Jimp.read(templocal + base).catch((err) => {base = "date_base.png";});
+	Jimp.read(templocal + base).catch((err) => {base = 'date_base.png';});
 	
-	var baseImg = await Jimp.read(templocal + base).catch((err) => {base = "date_base.png"; textoverlay = true;});
+	var baseImg = await Jimp.read(templocal + base).catch((err) => {base = 'date_base.png'; textoverlay = true;});
 
-	if (base == "date_base.png") baseImg = await Jimp.read(templocal + base);
+	if (base == 'date_base.png') baseImg = await Jimp.read(templocal + base);
 
-	var mydudes = await Jimp.read(templocal + "mydudes.png");
+	var mydudes = await Jimp.read(templocal + 'mydudes.png');
 
 	baseImg.composite(mydudes, 0, 0);
 
 	if (!(bonus > 0 && weeks == 0)) //if weeks is 0 and bonus is real - no printing zero
 	{
-		var week = await Jimp.read(templocal + weeks + ".png");
+		var week = await Jimp.read(templocal + weeks + '.png');
 		baseImg.composite(week, 0, 0);
 	}
 
-	if (wednesdayoverlay != "since" && wednesdayoverlay != "sinces")
+	if (wednesdayoverlay != 'since' && wednesdayoverlay != 'sinces')
 	{
 		var wednesday = await Jimp.read(templocal + wednesdayoverlay);
 		baseImg.composite(wednesday, 0, 0);
@@ -107,17 +107,17 @@ async function MakeImage(templocal, base, wednesdayoverlay, weeks, outputname, h
 	baseImg = res[0];
 	var textlocal = res[1];
 
-	if (wednesdayoverlay == "since" || wednesdayoverlay == "sinces")
+	if (wednesdayoverlay == 'since' || wednesdayoverlay == 'sinces')
 	{
-		var s = wednesdayoverlay == "sinces" ? "s" : "";
+		var s = wednesdayoverlay == 'sinces' ? 's' : '';
 		var font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK);
 		baseImg.print(font, 80,
 							textlocal - 45, 
-							"Wednesday" + s + " Since", 
+							'Wednesday' + s + ' Since', 
 							textoverlay ? 367 : 467);
 	}
 
-	if (holidayinfo.name == "date" || textoverlay || yeartop)
+	if (holidayinfo.name == 'date' || textoverlay || yeartop)
 	{
 		var font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK);
 
@@ -145,20 +145,20 @@ async function MakeImage(templocal, base, wednesdayoverlay, weeks, outputname, h
 function GetWhite(weekct) //For frogs more than 100 weeks; "Retarded Lookup Table" - Hank 2021
 {
 	var wites = [
-		["1", 0,1,2,4,5,6,9,10], 
-		["2", 3,8],
-		["3", 7,11,12,14,15,16,18,19],
-		["4", 13,17,20],
-		["5", 21,22,23,24,25,26,28,29,31,32,33,34,35,37,38,39],
-		["6", 27],
-		["7", 30,40,50,60,70,80,90],
-		["8", 36,41,42,43,44,45,46,47,48,49,
+		['1', 0,1,2,4,5,6,9,10], 
+		['2', 3,8],
+		['3', 7,11,12,14,15,16,18,19],
+		['4', 13,17,20],
+		['5', 21,22,23,24,25,26,28,29,31,32,33,34,35,37,38,39],
+		['6', 27],
+		['7', 30,40,50,60,70,80,90],
+		['8', 36,41,42,43,44,45,46,47,48,49,
 				 51,52,53,54,55,56,57,58,59,
 				 61,62,63,64,65,66,67,68,69,
 				 71,72,73,74,75,76,77,78,79,
 				 81,82,83,84,85,86,87,88,89,
 				 91,92,93,94,95,96,97,98,99],
-		["9", 100,200,300,400,500,600,700,800,900]
+		['9', 100,200,300,400,500,600,700,800,900]
 	]; // for more than 100 week
 
 	for ( var i = 0; i < wites.length; i++) 
@@ -171,7 +171,7 @@ function GetWhite(weekct) //For frogs more than 100 weeks; "Retarded Lookup Tabl
 		}
 	}
 
-	return "8";
+	return '8';
 }
 
 /**
@@ -234,23 +234,23 @@ async function BonusGenerator(bonus, im, templocal, weeks, ct, ln, moere) //for 
 		if (!kip) //not skipped
 		{
 			textlocal += 38; //move down text
-			var ni = new Jimp(427, 512 + mult, "#FFFFFF"); //new imgre
+			var ni = new Jimp(427, 512 + mult, '#FFFFFF'); //new imgre
 		
 			var h = Math.pow(10, (ct + 1) % 4) * bonus; // value of the image
 			
 			if (h > 1000)
 				h = 1000;
 
-			var whitenm = "White" + GetWhite(Math.pow(100, (ct - 1) % 4) * weeks) + ".png"; //white overaly because otherwise there will be 1000 image
+			var whitenm = 'White' + GetWhite(Math.pow(100, (ct - 1) % 4) * weeks) + '.png'; //white overaly because otherwise there will be 1000 image
 			var whiteImg = await Jimp.read(templocal + whitenm);
-			var Twight = await Jimp.read(templocal + "TopWhite.png");
+			var Twight = await Jimp.read(templocal + 'TopWhite.png');
 			
-			if (h == 900 && moere) h = h + "+";
+			if (h == 900 && moere) h = h + '+';
 
 			if (ct != 3 && weeks != 0) //only block white on values where last line wasnt 1000
 				im.composite(whiteImg, 0, 0);
 
-			var him = await Jimp.read(templocal + h + ".png");
+			var him = await Jimp.read(templocal + h + '.png');
 
 			ni.composite(him, 0, 0) //draw image
 				.composite(im, 0, (ln == 0 ? 0 : 40)) // redraw img
@@ -357,15 +357,15 @@ function FindNextHoliday(d1, yr, simpleholidays)
  */
 function SingleHaiku(haiku, simnames, page, pagetotal)
 {
-	var obj = {content: "BABA MAKE HAIKU"};
+	var obj = {content: 'BABA MAKE HAIKU'};
     var showchan = Math.random();
     var showname = Math.random();
     var showdate = Math.random();
 
     //get signiture and things
-	var outname = "";
-	var channame = "";
-	var datetime = "";
+	var outname = '';
+	var channame = '';
+	var datetime = '';
 
 	if (simnames == null)
 	{
@@ -375,31 +375,31 @@ function SingleHaiku(haiku, simnames, page, pagetotal)
 	}
     else
 	{
-		outname = showname < .025 ? "Anonymous" : (showname < .325 ? haiku.PersonName : (showname < .5 ? haiku.DiscordName : GetSimilarName(simnames))); // .85 > random discord name
-		channame = showchan < .35 ? haiku.ChannelName : "";
-		datetime = showdate < .5 ? new Date(haiku.Date) : "";
+		outname = showname < .025 ? 'Anonymous' : (showname < .325 ? haiku.PersonName : (showname < .5 ? haiku.DiscordName : GetSimilarName(simnames))); // .85 > random discord name
+		channame = showchan < .35 ? haiku.ChannelName : '';
+		datetime = showdate < .5 ? new Date(haiku.Date) : '';
 	}
 
-    var signature = "";
+    var signature = '';
 
-    if (channame == "" && datetime == "") signature = outname; // randomness is great, dont judge
+    if (channame == '' && datetime == '') signature = outname; // randomness is great, dont judge
     else 
     {
         signature = outname;
 
-        if (channame != "") signature += " in " + channame;
-        if (datetime != "") signature += " on " + datetime.toLocaleDateString('en-US', options);
+        if (channame != '') signature += ' in ' + channame;
+        if (datetime != '') signature += ' on ' + datetime.toLocaleDateString('en-US', options);
     }
 
 	//footer from discordjs
 
 	var footobj = {
-		text : "- " + (!haiku.Accidental ? "Purposful Haiku by " : "") + signature + (page != null ? " - Page " + (1 + page) + " of " + pagetotal : ""),
-		iconURL : "https://media.discordapp.net/attachments/574840583563116566/949515044746559568/JSO3bX0V.png"
+		text : '- ' + (!haiku.Accidental ? 'Purposful Haiku by ' : '') + signature + (page != null ? ' - Page ' + (1 + page) + ' of ' + pagetotal : ''),
+		iconURL : 'https://media.discordapp.net/attachments/574840583563116566/949515044746559568/JSO3bX0V.png'
 	};
 
     exampleEmbed = new Discord.EmbedBuilder() // embed for the haiku
-    .setColor("#" + (Math.random() < .5 ? "0" : "F") + (Math.random() < .5 ? "0" : "F") + (Math.random() < .5 ? "0" : "F") + (Math.random() < .5 ? "0" : "F") + (Math.random() < .5 ? "0" : "F") + (Math.random() < .5 ? "0" : "F"))
+    .setColor('#' + (Math.random() < .5 ? '0' : 'F') + (Math.random() < .5 ? '0' : 'F') + (Math.random() < .5 ? '0' : 'F') + (Math.random() < .5 ? '0' : 'F') + (Math.random() < .5 ? '0' : 'F') + (Math.random() < .5 ? '0' : 'F'))
     .setDescription(haiku.HaikuFormatted)
     .setFooter(footobj);
 
@@ -430,14 +430,14 @@ function EmbedHaikuGen(haiku, simnames)
     if (haiku == null) 
     {
         var footobj = {
-            text : "Haikus by Baba",
-            iconURL : "https://media.discordapp.net/attachments/574840583563116566/949515044746559568/JSO3bX0V.png"
+            text : 'Haikus by Baba',
+            iconURL : 'https://media.discordapp.net/attachments/574840583563116566/949515044746559568/JSO3bX0V.png'
         };
 
-		var obj = {content: "BABA MAKE HAIKU"};
+		var obj = {content: 'BABA MAKE HAIKU'};
         var bad = new Discord.EmbedBuilder() // embed for the haiku
-        .setColor("#" + (Math.random() < .5 ? "0" : "F") + (Math.random() < .5 ? "0" : "F") + (Math.random() < .5 ? "0" : "F") + (Math.random() < .5 ? "0" : "F") + (Math.random() < .5 ? "0" : "F") + (Math.random() < .5 ? "0" : "F"))
-        .setDescription("No Haikus Found!")
+        .setColor('#' + (Math.random() < .5 ? '0' : 'F') + (Math.random() < .5 ? '0' : 'F') + (Math.random() < .5 ? '0' : 'F') + (Math.random() < .5 ? '0' : 'F') + (Math.random() < .5 ? '0' : 'F') + (Math.random() < .5 ? '0' : 'F'))
+        .setDescription('No Haikus Found!')
         .setFooter(footobj);
         obj.embeds = [bad];
         return [obj];
@@ -449,13 +449,13 @@ function EmbedHaikuGen(haiku, simnames)
 		var ovb = null;
 		var row = new Discord.ActionRowBuilder();
 
-		var URLButton = new Discord.ButtonBuilder().setURL(haiku[e].URL == null ? "https://discord.com/channels/454457880825823252/979881683790733333/1183900512828006492" : haiku[e].URL).setLabel("View Source").setStyle(5);
+		var URLButton = new Discord.ButtonBuilder().setURL(haiku[e].URL == null ? 'https://discord.com/channels/454457880825823252/979881683790733333/1183900512828006492' : haiku[e].URL).setLabel('View Source').setStyle(5);
 
 		if (haiku.length > 1)
 		{
 			ovb = SingleHaiku(haiku[e], simnames, e, haiku.length);
-			var pButton = new Discord.ButtonBuilder().setCustomId("page"+(e - 1)).setLabel("Previous").setStyle(1);
-			var nButton = new Discord.ButtonBuilder().setCustomId("page"+(1 + e)).setLabel("Next").setStyle(1);
+			var pButton = new Discord.ButtonBuilder().setCustomId('page'+(e - 1)).setLabel('Previous').setStyle(1);
+			var nButton = new Discord.ButtonBuilder().setCustomId('page'+(1 + e)).setLabel('Next').setStyle(1);
 			
 			if (e == 0)
 			{
@@ -466,7 +466,7 @@ function EmbedHaikuGen(haiku, simnames)
 				nButton.setDisabled(true);
 			}
 
-			var jumpButton = new Discord.ButtonBuilder().setCustomId("jumpToHaiku").setLabel("Jump to ...").setStyle(3);
+			var jumpButton = new Discord.ButtonBuilder().setCustomId('jumpToHaiku').setLabel('Jump to ...').setStyle(3);
 	
 			row.addComponents(pButton, jumpButton, nButton);
 		}
@@ -517,7 +517,7 @@ function CheckHoliday(msg, holdaylist) //checks if any of the holiday list is sa
 
 		for ( var i = 0; i < hol.name.length; i++) 
 		{
-			if ((msg == "BIRTHDAY" && hol.safename == "Birthday") || msg == "ALL" || msg.toLowerCase().includes(hol.name[i].replace("[NY]", getD1().getFullYear() + 1))) //checks if the holiday name is in the message
+			if ((msg == 'BIRTHDAY' && hol.safename == 'Birthday') || msg == 'ALL' || msg.toLowerCase().includes(hol.name[i].replace('[NY]', getD1().getFullYear() + 1))) //checks if the holiday name is in the message
 			{
 				var item = {};
 				item.name = x; //picture lookup value
@@ -525,7 +525,7 @@ function CheckHoliday(msg, holdaylist) //checks if any of the holiday list is sa
 				item.safename = hol.safename; //display value
 				item.ignoredays = hol.ignoredays; //for days with custom images
 
-				var outps = msg.toLowerCase().split(" ");
+				var outps = msg.toLowerCase().split(' ');
 
 				var year = 0;
 				for ( var j = 0; j < outps.length; j++)
@@ -548,13 +548,13 @@ function CheckHoliday(msg, holdaylist) //checks if any of the holiday list is sa
 				{
 					case -1: //Nested Holiday
 						smsg = msg;
-						if (msg == "BIRTHDAY") smsg = "ALL";
-						var tempret = CheckHoliday(smsg, hol.sub) //Check all the subs
+						if (msg == 'BIRTHDAY') smsg = 'ALL';
+						var tempret = CheckHoliday(smsg, hol.sub); //Check all the subs
 						for ( var j = 0; j < tempret.length; j++) 
 						{
 							retme[ct] = tempret[j]; //Add items in return list to current returnlist
 							retme[ct].name = item.name + retme[ct].name; //modify name for picture finding
-							retme[ct].safename = retme[ct].safename + " " + item.safename; //display text name modify
+							retme[ct].safename = retme[ct].safename + ' ' + item.safename; //display text name modify
 							ct++; //counter add
 						}
 						break;
@@ -637,8 +637,8 @@ function checkHurricane(hurricaneName, hurricaneJsonI)
 {
 	var huricaneNameLetter = hurricaneName.charAt(0).toUpperCase();
 	var match = hurricaneJsonI.Name.toLowerCase() == hurricaneName.toLowerCase() || 
-	(hurricaneJsonI.Name.charAt(0).toLowerCase() == huricaneNameLetter.toLowerCase() && (hurricaneJsonI.systemType != "POTENTIAL TROPICAL CYCLONE" && hurricaneJsonI.systemType != "TROPICAL DEPRESSION")) ||
-	hurricaneJsonI.Number == hurricaneName
+	(hurricaneJsonI.Name.charAt(0).toLowerCase() == huricaneNameLetter.toLowerCase() && (hurricaneJsonI.systemType != 'POTENTIAL TROPICAL CYCLONE' && hurricaneJsonI.systemType != 'TROPICAL DEPRESSION')) ||
+	hurricaneJsonI.Number == hurricaneName;
 
 	return match;
 }
@@ -663,7 +663,7 @@ function parseHurricaneDate(date)
 	var time = date.substring(9, 17);
 	var ampm = date.substring(18, 20);
 
-	var ddd = Date.parse(month + " " + day + " " + year + " " + time + " " + ampm + " UTC");
+	var ddd = Date.parse(month + ' ' + day + ' ' + year + ' ' + time + ' ' + ampm + ' UTC');
 	return ddd;
 }
 
@@ -710,9 +710,9 @@ async function checkHurricaneStuff(hurricanename)
 		// compare lowercase, if not found, compare first letter, if not found, compare number
 		if (checkHurricane(hurricanename, hurricaneJson[i]))
 		{
-			console.log("Hurricane Info Found for " + hurricanename);
+			console.log('Hurricane Info Found for ' + hurricanename);
 			var xml = await fetch(hurricaneJson[i].XMLURL).then(response => response.text());	
-			var lastUpdated = xml.split("<messageDateTimeUTC>")[1].split("</messageDateTimeUTC>")[0];
+			var lastUpdated = xml.split('<messageDateTimeUTC>')[1].split('</messageDateTimeUTC>')[0];
 			var lastUpdatedDate = parseHurricaneDate(lastUpdated);
 			// if lastUpdated is different than hurricaneJson[i].lastUpdated, update the hurricaneJson[i].lastUpdated
 			var newDay = new Date(lastUpdatedDate);
@@ -720,19 +720,19 @@ async function checkHurricaneStuff(hurricanename)
 			var dbDay = new Date(hurricaneJson[i].LastUpdated);
 			if (newDay > dbDay)
 			{
-				console.log("Hurricane Info Updated for " + hurricanename);
+				console.log('Hurricane Info Updated for ' + hurricanename);
 				hurricaneJson[i].LastUpdated = newDay.toISOString().slice(0, 19).replace('T', ' ');
 				hurricaneJson[i].Updated = true;
-				var systemType = xml.split("<systemType>")[1].split("</systemType>")[0];
-				var saffirsympson = xml.split("<systemSaffirSimpsonCategory>")[1].split("</systemSaffirSimpsonCategory>")[0];
+				var systemType = xml.split('<systemType>')[1].split('</systemType>')[0];
+				var saffirsympson = xml.split('<systemSaffirSimpsonCategory>')[1].split('</systemSaffirSimpsonCategory>')[0];
 				hurricaneJson[i].Type = systemType;
 				hurricaneJson[i].Category = saffirsympson;
-				hurricaneJson[i].Name = xml.split("<systemName>")[1].split("</systemName>")[0];
+				hurricaneJson[i].Name = xml.split('<systemName>')[1].split('</systemName>')[0];
 			}
 			
 			hurricaneJson[i].OverideText = 
-				hurricaneJson[i].Name.charAt(0).toLowerCase() == huricaneNameLetter.toLowerCase() ? {"AltName": hurricanename} : 
-				(hurricaneJson[i].Number == hurricanename ? {"NumberSearch": hurricanename} : null);
+				hurricaneJson[i].Name.charAt(0).toLowerCase() == huricaneNameLetter.toLowerCase() ? {'AltName': hurricanename} : 
+				(hurricaneJson[i].Number == hurricanename ? {'NumberSearch': hurricanename} : null);
 
 			iNum = i;
 			fs.writeFileSync(babadata.datalocation + '/hurricanes.json', JSON.stringify(hurricaneJson));
@@ -742,7 +742,7 @@ async function checkHurricaneStuff(hurricanename)
 
 	if (iNum == hurricaneJson.length)
 	{
-		console.log("Hurricane Info Not Found for " + hurricanename + " searching for it");
+		console.log('Hurricane Info Not Found for ' + hurricanename + ' searching for it');
 		// loop until xml file cant be found
 		var xmlFound = true;
 		var iNumTemp = iNum;
@@ -751,8 +751,8 @@ async function checkHurricaneStuff(hurricanename)
 			iNumTemp++;
 
 			var hurricanenameNum = iNumTemp;
-			if (hurricanenameNum < 10) hurricanenameNum = "0" + hurricanenameNum;
-			var url = "https://www.nhc.noaa.gov/storm_graphics/AT" + hurricanenameNum + "/atcf-al" + hurricanenameNum + thisYear + ".xml";
+			if (hurricanenameNum < 10) hurricanenameNum = '0' + hurricanenameNum;
+			var url = 'https://www.nhc.noaa.gov/storm_graphics/AT' + hurricanenameNum + '/atcf-al' + hurricanenameNum + thisYear + '.xml';
 
 			var urlE = uExist(url);
 
@@ -764,43 +764,43 @@ async function checkHurricaneStuff(hurricanename)
 
 			var xml = await fetch(url).then(response => response.text());
 
-			if (xml.includes("Page Not Found") || xml.includes("503 Service Temporarily Unavailable"))
+			if (xml.includes('Page Not Found') || xml.includes('503 Service Temporarily Unavailable'))
 			{
 				xmlFound = false;
 				break;
 			}
 
-			var id = hurricanenameNum + "" + thisYear;
-			var lastUpdated = xml.split("<messageDateTimeUTC>")[1].split("</messageDateTimeUTC>")[0];
-			var stormName = xml.split("<systemName>")[1].split("</systemName>")[0];
+			var id = hurricanenameNum + '' + thisYear;
+			var lastUpdated = xml.split('<messageDateTimeUTC>')[1].split('</messageDateTimeUTC>')[0];
+			var stormName = xml.split('<systemName>')[1].split('</systemName>')[0];
 			var number = iNumTemp;
-			var systemType = xml.split("<systemType>")[1].split("</systemType>")[0];
-			var saffirsympson = xml.split("<systemSaffirSimpsonCategory>")[1].split("</systemSaffirSimpsonCategory>")[0];
-			var imgURL = "https://www.nhc.noaa.gov/storm_graphics/AT" + hurricanenameNum + "/refresh/AL" + hurricanenameNum + thisYear + "_5day_cone_no_line_and_wind+png/";
+			var systemType = xml.split('<systemType>')[1].split('</systemType>')[0];
+			var saffirsympson = xml.split('<systemSaffirSimpsonCategory>')[1].split('</systemSaffirSimpsonCategory>')[0];
+			var imgURL = 'https://www.nhc.noaa.gov/storm_graphics/AT' + hurricanenameNum + '/refresh/AL' + hurricanenameNum + thisYear + '_5day_cone_no_line_and_wind+png/';
 			var xmlURL = url;
 			var year = thisYear;
 
 			var lUpdateDate = new Date(parseHurricaneDate(lastUpdated));
 
 			var item = {
-				"ID": id,
-				"LastUpdated": lUpdateDate.toISOString().slice(0, 19).replace('T', ' '),
-				"Name": stormName,
-				"Number": number,
-				"Type": systemType,
-				"Category": saffirsympson,
-				"ImageURL": imgURL,
-				"XMLURL": xmlURL,
-				"Year": year,
-				"Updated": true,
-				"OverideText": 
-					stormName.charAt(0).toLowerCase() == huricaneNameLetter.toLowerCase() ? {"AltName": hurricanename} : 
-					(number == hurricanename ? {"NumberSearch": hurricanename} : null)
+				'ID': id,
+				'LastUpdated': lUpdateDate.toISOString().slice(0, 19).replace('T', ' '),
+				'Name': stormName,
+				'Number': number,
+				'Type': systemType,
+				'Category': saffirsympson,
+				'ImageURL': imgURL,
+				'XMLURL': xmlURL,
+				'Year': year,
+				'Updated': true,
+				'OverideText': 
+					stormName.charAt(0).toLowerCase() == huricaneNameLetter.toLowerCase() ? {'AltName': hurricanename} : 
+					(number == hurricanename ? {'NumberSearch': hurricanename} : null)
 			};
 
 			iNum = checkHurricane(hurricanename, item) ? iNumTemp - 1 : iNum;
 
-			console.log("Getting Hurricane Info for " + stormName + " from " + url);
+			console.log('Getting Hurricane Info for ' + stormName + ' from ' + url);
 
 			hurricaneJson.push(item);
 	
@@ -830,29 +830,29 @@ function monthFromInt(mint)
 	switch(mint)
 	{
 		case 1:
-			return "January";
+			return 'January';
 		case 2:
-			return "Febuary";
+			return 'Febuary';
 		case 3:
-			return "March";
+			return 'March';
 		case 4:
-			return "April";
+			return 'April';
 		case 5:
-			return "May";
+			return 'May';
 		case 6:
-			return "June";
+			return 'June';
 		case 7:
-			return "July";
+			return 'July';
 		case 8:
-			return "August";
+			return 'August';
 		case 9:
-			return "September";
+			return 'September';
 		case 10:
-			return "October";
+			return 'October';
 		case 11:
-			return "November";
+			return 'November';
 		default:
-			return "December";
+			return 'December';
 	}
 }
 

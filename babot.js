@@ -50,7 +50,7 @@ const txtCommands = require('./TextCommands/textCommands.js');
 
 var overrides = getOverides();
 
-global.dbAccess = [!process.argv.includes("-db"), process.argv.includes("-db") ? false : true];
+global.dbAccess = [!process.argv.includes('-db'), process.argv.includes('-db') ? false : true];
 global.starttime = getD1(true); //get today
 global.DailyErrors = 0;
 global.DebugFriday = overrides.DebugFriday;
@@ -78,7 +78,7 @@ console.log = function(d, ignoresave=false, DBdebugLog=false)
 			log_file.write(util.format(d) + '\n');
 	}
 
-	log_stdout.write((DBdebugLog ? "DB: " : "") + util.format(d) + '\n');
+	log_stdout.write((DBdebugLog ? 'DB: ' : '') + util.format(d) + '\n');
 };
 
 console.error = function(d, supress=false) 
@@ -94,7 +94,7 @@ console.error = function(d, supress=false)
 		log_stdout.write(util.format(d) + '\n');
 };
 
-console.log("Starting up on " + global.starttime);
+console.log('Starting up on ' + global.starttime);
 	
 const commandFiles = fs.readdirSync('./Commands').filter(file => file.endsWith('.js')); //get all .js files in the commands folder
 
@@ -173,19 +173,19 @@ function makeBot()
  */
 function botOn(bot)
 {
-	var fjson1 = fs.readFileSync(babadata.datalocation + "fridayCounter.json");
-	var fjson2 = fs.readFileSync(babadata.datalocation + "fridaymessages.json");
+	var fjson1 = fs.readFileSync(babadata.datalocation + 'fridayCounter.json');
+	var fjson2 = fs.readFileSync(babadata.datalocation + 'fridaymessages.json');
 
 	// if fjason1 is empty, set it to an empty object {} and save
-	if (fjson1 == "")
+	if (fjson1 == '')
 	{
-		fs.writeFileSync(babadata.datalocation + "fridayCounter.json", "{}");
+		fs.writeFileSync(babadata.datalocation + 'fridayCounter.json', '{}');
 	}
 
 	// if fjason2 is empty, set it to an empty object [] and save
-	if (fjson2 == "")
+	if (fjson2 == '')
 	{
-		fs.writeFileSync(babadata.datalocation + "fridaymessages.json", "[]");
+		fs.writeFileSync(babadata.datalocation + 'fridaymessages.json', '[]');
 	}
 
 	bot.login(global.toke); //login
@@ -195,13 +195,13 @@ function botOn(bot)
 		global.Bot = bot;
 		console.log('Connected');
 	
-		var fridayJson = fs.readFileSync(babadata.datalocation + "fridayCounter.json");
+		var fridayJson = fs.readFileSync(babadata.datalocation + 'fridayCounter.json');
 		var fridayData = JSON.parse(fridayJson);
 		
 		if (fridayData.friday === undefined)
 			global.fridayCounter = {};
 		else
-			global.fridayCounter = fridayData
+			global.fridayCounter = fridayData;
 		
 		dailyCallStart(bot, __dirname);
 	});
@@ -215,7 +215,7 @@ function botOn(bot)
 	}
 	
 	// v14 works
-	bot.on('messageCreate', async message => {await txtCommands.babaMessage(bot, message)}); //baba message handler
+	bot.on('messageCreate', async message => {await txtCommands.babaMessage(bot, message);}); //baba message handler
 	
 	// v14 works
 	bot.on('voiceStateUpdate', (oldMember, newMember) => 
@@ -229,13 +229,13 @@ function botOn(bot)
 	});
 	
 	// v14 works
-	bot.on('guildScheduledEventCreate', async event => {EventDB(event, "create")});
-	bot.on('guildScheduledEventUpdate', async (eold, enew) => {EventDB(enew, "update")});
-	bot.on('guildScheduledEventDelete', async event => {EventDB(event, "delete")});
+	bot.on('guildScheduledEventCreate', async event => {EventDB(event, 'create');});
+	bot.on('guildScheduledEventUpdate', async (eold, enew) => {EventDB(enew, 'update');});
+	bot.on('guildScheduledEventDelete', async event => {EventDB(event, 'delete');});
 	 
 	// v14 works
-	bot.on('guildScheduledEventUserAdd', async (event, user) => {EventDB(event, "useradd", user)});
-	bot.on('guildScheduledEventUserRemove', async (event, user) => {EventDB(event, "userremove", user)});
+	bot.on('guildScheduledEventUserAdd', async (event, user) => {EventDB(event, 'useradd', user);});
+	bot.on('guildScheduledEventUserRemove', async (event, user) => {EventDB(event, 'userremove', user);});
 	
 	bot.on('interactionCreate', async interaction => {
 		if (interaction.isContextMenuCommand()) 
@@ -297,16 +297,16 @@ botOn(bot);
 //not shure what this does also but it was in jeremy's code so
 var cleanupFn = function cleanup() 
 {	
-	DMMePlease("https://media.discordapp.net/attachments/979881683790733333/1344098978438053969/Bear_hugs__eskimo_kisses..png?ex=67bfad38&is=67be5bb8&hm=6825f9faae0e9e3e300c7f0e2cc1e6b320f8076449e21d1d31512814f236b3f6&=&format=webp&quality=lossless&width=1400&height=993");
+	DMMePlease('https://media.discordapp.net/attachments/979881683790733333/1344098978438053969/Bear_hugs__eskimo_kisses..png?ex=67bfad38&is=67be5bb8&hm=6825f9faae0e9e3e300c7f0e2cc1e6b320f8076449e21d1d31512814f236b3f6&=&format=webp&quality=lossless&width=1400&height=993');
 
-	console.log("Logging off");
+	console.log('Logging off');
 	if (global.Bot != null)
 	{
 		global.Bot.destroy();
-		console.log("Bot destroyed");
+		console.log('Bot destroyed');
 	}
-	console.log("");
-}
+	console.log('');
+};
 
 global.KillBotCleanup = cleanupFn;
 
@@ -316,7 +316,7 @@ global.CleanupEverything = function()
 	global.DBVoiceCleanup();
 	global.CommandHelperCleanup();
 	cleanupFn();
-}
+};
 
 process.on('SIGINT', cleanupFn);
 process.on('SIGTERM', cleanupFn);
@@ -326,16 +326,16 @@ process.on('uncaughtException', function (err)
 	global.DailyErrors++;
 	if (uignoreErrors)
 		return;
-	console.log("---------------------------------");
-	console.log("Uncaught Exception:");
-	console.log("Incrementing DailyErrors to " + global.DailyErrors);
+	console.log('---------------------------------');
+	console.log('Uncaught Exception:');
+	console.log('Incrementing DailyErrors to ' + global.DailyErrors);
 	console.log(err);
-	console.log("---------------------------------");
+	console.log('---------------------------------');
 
 	if (global.DailyErrors > 50)
 	{
-		console.log("Too many errors, shutting down");
+		console.log('Too many errors, shutting down');
 		global.CleanupEverything();
-		throw new Error("Too many errors, shutting down");
+		throw new Error('Too many errors, shutting down');
 	}
 });

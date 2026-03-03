@@ -85,7 +85,7 @@ async function setGrole(msg, rname) //creates role and sets users
 
 		if (role == null) //if null make new role
 		{
-			console.log("Creating Role: " + rname);
+			console.log('Creating Role: ' + rname);
 
 			//create the role
 			await msg.guild.roles.create({
@@ -120,7 +120,7 @@ async function setGrole(msg, rname) //creates role and sets users
 	} 
 	catch (error) 
 	{
-		console.log("nos"); //if error this goes
+		console.log('nos'); //if error this goes
 	}
 }
 
@@ -247,11 +247,11 @@ async function movetoChannel(msg, channel, logchan, silent) //archive the messag
 	 */
 	var hiddenChan = msg.guild.channels.cache.get(logchan); //gets the special archive channel
 	var usr = msg.author; //gets the user that sent the message
-	var savemsg = "";
-	if (!silent) savemsg = "This message sent by: <@" + usr + "> in <#" + channel.id + ">\n> "; //sets the header of the message to mention the original poster
+	var savemsg = '';
+	if (!silent) savemsg = 'This message sent by: <@' + usr + '> in <#' + channel.id + '>\n> '; //sets the header of the message to mention the original poster
 	savemsg += msg.content; //insert the actual message below
 
-	if (silent == 2) savemsg += "\n\n> Sent by: <@" + usr + ">";
+	if (silent == 2) savemsg += '\n\n> Sent by: <@' + usr + '>';
 
 	var attch = msg.attachments; //get the attacments from the original message
 
@@ -264,15 +264,15 @@ async function movetoChannel(msg, channel, logchan, silent) //archive the messag
 	{
 		// Build a compact reactions summary (emoji : count) and post it if present.
 		var reactMap = msg.reactions.cache; //get a map of the reactions
-		var memgage = "";
+		var memgage = '';
 		for(let [k, reee] of reactMap) //iterate through all the reactions
 		{
-			memgage += k + ": " + reee.count + " reactions\n";
+			memgage += k + ': ' + reee.count + ' reactions\n';
 		}
 		
-		if (memgage != "")
+		if (memgage != '')
 		{
-			hiddenChan.send("```" + memgage + "```",); //send the text
+			hiddenChan.send('```' + memgage + '```',); //send the text
 		}
 	}
 	var icount = 0;
@@ -330,18 +330,18 @@ async function DelayedDeletion(hiddenChan, img) //download function used when th
 	 */
 	var suffix = img.url.substring(img.url.lastIndexOf('.')); //gets the file extension
 	// remove anything ? and after
-	suffix = suffix.split("?")[0];
-	var tempFilePath = babadata.temp + "tempfile" + suffix; // temp file location 
+	suffix = suffix.split('?')[0];
+	var tempFilePath = babadata.temp + 'tempfile' + suffix; // temp file location 
 	var url = img.url;
 
 	download(url, tempFilePath, () => { //downloads the file to the system at tempfile location
-		console.log('Done!')
-	})
+		console.log('Done!');
+	});
 
 	var newAttch = tempFilePath; //makes a new discord attachment
 
 	var newAttch = new Discord.AttachmentBuilder(tempFilePath, 
-		{ name: 'file' + suffix, description : "Twas deleted from a place in time, ADAM PLEASE!"}); //makes a new discord attachment
+		{ name: 'file' + suffix, description : 'Twas deleted from a place in time, ADAM PLEASE!'}); //makes a new discord attachment
 
 	setTimeout(function(){ hiddenChan.send({files: [newAttch] }); }, 2000); //sends the attachment (delayed by 1 sec to allow for download)
 
@@ -370,11 +370,11 @@ function timedOutFrog(i, texts, message, templocal)
 	{ 
 		var ti = texts[i];
 		message.channel.send(ti).catch(error => {
-			var newAttch = new Discord.AttachmentBuilder(templocal + "error.png", 
-				{ name: 'error.png', description : "Error Fronge!"}); //makes a new discord attachment
+			var newAttch = new Discord.AttachmentBuilder(templocal + 'error.png', 
+				{ name: 'error.png', description : 'Error Fronge!'}); //makes a new discord attachment
 
-			message.channel.send({ content: "It is Wednesday, My BABAs", files: [newAttch] }); // send file
-		})
+			message.channel.send({ content: 'It is Wednesday, My BABAs', files: [newAttch] }); // send file
+		});
 	}, 1000);
 }
 
@@ -394,7 +394,7 @@ const download = (url, path, callback) =>
 			const dest = fs.createWriteStream(path);
 			res.body.pipe(dest);
 	});
-}
+};
 
 /**
  * Ensure slash command permissions are set so that only the configured admin

@@ -17,8 +17,8 @@ module.exports = {
 				.setDescription('The mode of the weather data!')
 				.setRequired(true)
 				.addChoices(
-					{ name: "Three Day Forcast", value: "four" },
-					{ name: "Temperature Graph", value: "deets" }            
+					{ name: 'Three Day Forcast', value: 'four' },
+					{ name: 'Temperature Graph', value: 'deets' }            
 				))
         .addStringOption(option => option.setName('city').setDescription('The city to get the weather for!')),
 	/**
@@ -36,7 +36,7 @@ module.exports = {
         var city = interaction.options.getString('city');
 		var mode = interaction.options.getString('mode');
         if (city == null)
-            city = "Apex";
+            city = 'Apex';
             
 		babaWeather(mode, city, function(val)
 		{

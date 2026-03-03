@@ -20,7 +20,7 @@ module.exports = {
 	 * @returns {Promise<void>}
 	 */
 	async execute(interaction, bot) {
-		var cats = ["😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🐈", "🐱", "CAT!"];
+		var cats = ['😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾', '🐈', '🐱', 'CAT!'];
 		await interaction.reply(cats[Math.floor(Math.random() * cats.length)]);
 		// babaCat(function(val)
 		// {

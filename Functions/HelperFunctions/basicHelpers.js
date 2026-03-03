@@ -10,7 +10,7 @@
 var babadata = require('../../babotdata.json'); //baba configuration file
 
 const fs = require('fs');
-const https = require('https')
+const https = require('https');
 const fetch = require('node-fetch');
 
 const Discord = require('discord.js'); //discord module for interation with discord api
@@ -21,7 +21,7 @@ const { ComponentType } = require('discord.js');
 const { getD1 } = require('../../Tools/overrides');
 const { resetRNG, functionPostFunnyDOW } = require('./slashFridayHelpers');
 
-const validLetters = "bikusfrday";
+const validLetters = 'bikusfrday';
 
 const options = { year: 'numeric', month: 'long', day: 'numeric' }; // for date parsing to string
 
@@ -64,12 +64,12 @@ const options = { year: 'numeric', month: 'long', day: 'numeric' }; // for date 
  */
 function FindDate(message, haiku = false) //Not Thanks to Jeremy's Link
 {
-	var outps = message.toLowerCase().replace("!baba", "") //there is no point to this, i did it because i wanted too
-		.replace("wednesday", "")
-		.replace("days", "")
-		.replace("until", "")
-		.replace("next", "")
-		.split(" ");
+	var outps = message.toLowerCase().replace('!baba', '') //there is no point to this, i did it because i wanted too
+		.replace('wednesday', '')
+		.replace('days', '')
+		.replace('until', '')
+		.replace('next', '')
+		.split(' ');
 
 	var day = 0;
 	var month = 0;
@@ -80,31 +80,31 @@ function FindDate(message, haiku = false) //Not Thanks to Jeremy's Link
 		var item = outps[i];
 		if (month == 0) //set month to a detected month
 		{
-			if (item == "")
+			if (item == '')
 				month = 0;
-			else if ("january".includes(item))
+			else if ('january'.includes(item))
 				month = 1;
-			else if ("february".includes(item))
+			else if ('february'.includes(item))
 				month = 2;
-			else if ("march".includes(item))
+			else if ('march'.includes(item))
 				month = 3;
-			else if ("april".includes(item))
+			else if ('april'.includes(item))
 				month = 4;
-			else if ("may".includes(item))
+			else if ('may'.includes(item))
 				month = 5;
-			else if ("june".includes(item))
+			else if ('june'.includes(item))
 				month = 6;
-			else if ("july".includes(item))
+			else if ('july'.includes(item))
 				month = 7;
-			else if ("august".includes(item))
+			else if ('august'.includes(item))
 				month = 8;
-			else if ("september".includes(item))
+			else if ('september'.includes(item))
 				month = 9;
-			else if ("october".includes(item))
+			else if ('october'.includes(item))
 				month = 10;
-			else if ("november".includes(item))
+			else if ('november'.includes(item))
 				month = 11;
-			else if ("december".includes(item))
+			else if ('december'.includes(item))
 				month = 12;
 		}
 
@@ -135,7 +135,7 @@ function FindDate(message, haiku = false) //Not Thanks to Jeremy's Link
 	var months = [ //Another lookup table - Hank likes these :)
 		[29, 2],
 		[30, 4, 6, 9, 11]
-	]
+	];
 
 	for ( var i = 0; i < months.length; i++) 
 	{
@@ -159,7 +159,7 @@ function FindDate(message, haiku = false) //Not Thanks to Jeremy's Link
 		year = getD1().getFullYear();
 
 	var item = {};
-	item.name = "date"; //picture lookup value
+	item.name = 'date'; //picture lookup value
 	item.mode = 5; //date calc value
 
 	item.day = day;
@@ -184,10 +184,10 @@ function FindDate(message, haiku = false) //Not Thanks to Jeremy's Link
 function MonthsPlus(guild, d1)
 {
 	var yr = d1.getFullYear();
-	if (d1.getMonth() == 9 && babadata.holidayval != "spook")
+	if (d1.getMonth() == 9 && babadata.holidayval != 'spook')
 	{
 		//set channel info
-		SetHolidayChan(guild, "spook");
+		SetHolidayChan(guild, 'spook');
 	}
 	else if (d1.getMonth() == 10)
 	{
@@ -204,32 +204,32 @@ function MonthsPlus(guild, d1)
 
 		var tday = getD1().getDate(); //get this day
 
-		if (tgday.getFullYear() == yr && babadata.holidayval != "thanks")
+		if (tgday.getFullYear() == yr && babadata.holidayval != 'thanks')
 		{
-			SetHolidayChan(guild, "thanks");
+			SetHolidayChan(guild, 'thanks');
 		}
 		else if (tgdayThisYearAlways.getDate() < tday)
 		{
-			if (babadata.holidayval != "crimbo")
+			if (babadata.holidayval != 'crimbo')
 			{
-				SetHolidayChan(guild, "crimbo");
+				SetHolidayChan(guild, 'crimbo');
 			}
 		}
 	}
 
 	if (d1.getMonth() == 11)
 	{
-		if (d1.getDate() <= 25 && babadata.holidayval != "crimbo")
-			SetHolidayChan(guild, "crimbo");
-		else if (babadata.holidayval != "defeat" && d1.getDate() > 25)
-			SetHolidayChan(guild, "defeat");
+		if (d1.getDate() <= 25 && babadata.holidayval != 'crimbo')
+			SetHolidayChan(guild, 'crimbo');
+		else if (babadata.holidayval != 'defeat' && d1.getDate() > 25)
+			SetHolidayChan(guild, 'defeat');
 	}
 
 	var dnow = getD1(true);
 	// only call this at midnight
 	if (dnow.getHours() == 0 && dnow.getMinutes() < 3)
 	{
-		console.log("Setting Holiday Channel Description to Progress");
+		console.log('Setting Holiday Channel Description to Progress');
 		setTimeout(function() {setChannelDescriptionToProgress(guild, dnow);}, 1000 * 60 * 15); //15 minutes later
 	}
 }
@@ -249,14 +249,14 @@ function MonthsPlus(guild, d1)
  */
 function setChannelDescriptionToProgress(guild, d1)
 {
-	if (guild != null && babadata.holidaychan != "0")
+	if (guild != null && babadata.holidaychan != '0')
 	{
 		guild.channels.fetch(babadata.holidaychan).then(channels => {
 			var holidaychan = channels;
 
 			if (holidaychan != null)
 			{
-				holidaychan.setTopic("Holidays Brought to you by Baba!\n" + progressSimple(20));
+				holidaychan.setTopic('Holidays Brought to you by Baba!\n' + progressSimple(20));
 			}
 		});
 	}
@@ -361,7 +361,7 @@ function GetDate(d1, yr, holidayinfo) //Gets the specified date from the selecte
 		return new Date(200000, 0, 1);
 	}
 
-	if (holidayinfo.name == "date" && holidayinfo.day != d2.getDate())
+	if (holidayinfo.name == 'date' && holidayinfo.day != d2.getDate())
 	{
 		d2 = GetDate(new Date(yr + 1, 0, 1), yr + 1, holidayinfo); //re-call function w/year of next
 	}
@@ -380,7 +380,7 @@ function GetDate(d1, yr, holidayinfo) //Gets the specified date from the selecte
 			d2 = GetDate(new Date(yr + 1, 0, 1), yr + 1, holidayinfo); //re-call function w/year of next
 	}
 
-	if (holidayinfo.name == "date")
+	if (holidayinfo.name == 'date')
 		holidayinfo.safename = d2.toLocaleDateString('en-US', options); //display value
 
 	return d2;
@@ -451,17 +451,17 @@ function getEaster(year) //Thanks to Jeremy's Link
  */
 function SetHolidayChan(guild, name, resetid = -1)
 {
-	console.log("SetHolidayChan: " + name + " " + resetid);
+	console.log('SetHolidayChan: ' + name + ' ' + resetid);
 
 	let to = 0;
-	var dirni = __dirname.replace("Functions/HelperFunctions", "").replace("Functions\\HelperFunctions", "");
+	var dirni = __dirname.replace('Functions/HelperFunctions', '').replace('Functions\\HelperFunctions', '');
 	console.log(dirni);
 	let rawdata = fs.readFileSync(dirni + '/babotdata.json');
 	let baadata = JSON.parse(rawdata);
 
-	var rename = name.indexOf("-n") <= 0;
+	var rename = name.indexOf('-n') <= 0;
 
-	name = name.replace("-n", "");
+	name = name.replace('-n', '');
 
 	if (resetid > 0 && resetid != 3)
 		baadata.holidaychan = resetid.toString();
@@ -474,33 +474,33 @@ function SetHolidayChan(guild, name, resetid = -1)
 		{
 			switch(name)
 			{
-				case "spook": //Spooky
-					console.log("Spooky Time!");
-					chanyu.setName("🎃👻💀🕸️ 𝕳𝖆𝖑𝖑𝖔𝖜𝖘 𝕰𝖛𝖊 🕸️💀👻🎃")
+				case 'spook': //Spooky
+					console.log('Spooky Time!');
+					chanyu.setName('🎃👻💀🕸️ 𝕳𝖆𝖑𝖑𝖔𝖜𝖘 𝕰𝖛𝖊 🕸️💀👻🎃')
 						.then((newChannel) =>
 						console.log(`The channel's new name is ${newChannel.name}`),
 					)
 					.catch(console.error);
 					break;
-				case "thanks": //Thanks
-					console.log("Thanksgiving Time!");
-					chanyu.setName("🌽 ᵀʰᵃⁿᵏˢᵍⁱᵛⁱⁿᵍ ⁴: ᴹⁱˢˢⁱⁿᵍ ᵀᵁᴿᴷᴱʸ 🌽") //🦃
+				case 'thanks': //Thanks
+					console.log('Thanksgiving Time!');
+					chanyu.setName('🌽 ᵀʰᵃⁿᵏˢᵍⁱᵛⁱⁿᵍ ⁴: ᴹⁱˢˢⁱⁿᵍ ᵀᵁᴿᴷᴱʸ 🌽') //🦃
 						.then((newChannel) =>
 						console.log(`The channel's new name is ${newChannel.name}`),
 					)
 					.catch(console.error);
 					break;
-				case "crimbo": //Crimbo
-					console.log("Crimbo Time!");
-					chanyu.setName("🎄 𓀒 匚卄尺丨丂ㄒ爪卂丂  ㄒㄩ尺ㄒㄥ乇  乇ᗪ丨ㄒ丨ㄖ几 𓀒 🎄")
+				case 'crimbo': //Crimbo
+					console.log('Crimbo Time!');
+					chanyu.setName('🎄 𓀒 匚卄尺丨丂ㄒ爪卂丂  ㄒㄩ尺ㄒㄥ乇  乇ᗪ丨ㄒ丨ㄖ几 𓀒 🎄')
 						.then((newChannel) =>
 						console.log(`The channel's new name is ${newChannel.name}`),
 					)
 					.catch(console.error);
 					break;
-				case "defeat": //New Year
-					console.log("New Year Time!");
-					chanyu.setName("🎉🚨 /🅵🆁🅸🅳🅰🆈 on J₳₦Ʉ₳ⱤɎ 1🅢ⓣ, 2️⃣0️⃣2️⃣7️⃣ 🚨🎉") //🅵🆁🅸🅳🅰🆈, J₳₦Ʉ₳ⱤɎ 1🅢ⓣ, 2️⃣0️⃣2️⃣7️⃣ - change to 2027 because i found funnier one for 2026
+				case 'defeat': //New Year
+					console.log('New Year Time!');
+					chanyu.setName('🎉🚨 /🅵🆁🅸🅳🅰🆈 on J₳₦Ʉ₳ⱤɎ 1🅢ⓣ, 2️⃣0️⃣2️⃣7️⃣ 🚨🎉') //🅵🆁🅸🅳🅰🆈, J₳₦Ʉ₳ⱤɎ 1🅢ⓣ, 2️⃣0️⃣2️⃣7️⃣ - change to 2027 because i found funnier one for 2026
 						.then((newChannel) =>
 						console.log(`The channel's new name is ${newChannel.name}`),
 					)
@@ -513,7 +513,7 @@ function SetHolidayChan(guild, name, resetid = -1)
 	}
 	else if (guild != null && resetid == 0)
 	{
-		to = 300
+		to = 300;
 		guild.channels.fetch(babadata.holidaychan).then(channels => {
 			var holidaychan = channels;
 
@@ -523,7 +523,7 @@ function SetHolidayChan(guild, name, resetid = -1)
 					channels.each(chan => {
 						if (chan.type == 4)
 						{
-							if (chan.name.toLowerCase() === "archive")
+							if (chan.name.toLowerCase() === 'archive')
 							{
 								holidaychan.setParent(chan);
 								holidaychan.permissionOverwrites.set([
@@ -532,11 +532,11 @@ function SetHolidayChan(guild, name, resetid = -1)
 									  deny: [PermissionsBitField.Flags.SendMessages],
 									}
 								  ]);
-								baadata.holidaychan = "0";
+								baadata.holidaychan = '0';
 							}
 						}
 					});
-				})
+				});
 			}
 		});
 	}
@@ -545,8 +545,8 @@ function SetHolidayChan(guild, name, resetid = -1)
 	if (guild != null && resetid == 3)
 	{
 		baadata.holidaychan = name;
-		name = "null";
-		to = 500
+		name = 'null';
+		to = 500;
 		guild.channels.fetch(baadata.holidaychan).then(channels => {
 			var holidaychan = channels;
 
@@ -556,7 +556,7 @@ function SetHolidayChan(guild, name, resetid = -1)
 					channels.each(chan => {
 						if (chan.type == 4)
 						{
-							if (chan.name.toLowerCase() === "text channels")
+							if (chan.name.toLowerCase() === 'text channels')
 							{
 								holidaychan.setParent(chan);
 								holidaychan.setPosition(3);
@@ -569,7 +569,7 @@ function SetHolidayChan(guild, name, resetid = -1)
 							}
 						}
 					});
-				})
+				});
 			}
 		});
 	}
@@ -577,9 +577,9 @@ function SetHolidayChan(guild, name, resetid = -1)
 	baadata.holidayval = name;
 	setTimeout(function()
 	{
-		var dirni = __dirname.replace("Functions/HelperFunctions", "").replace("Functions\\HelperFunctions", "");
+		var dirni = __dirname.replace('Functions/HelperFunctions', '').replace('Functions\\HelperFunctions', '');
 		fs.writeFileSync(dirni + '/babotdata.json', JSON.stringify(baadata, null, 2) + '\n', 'utf8');
-	}, to)
+	}, to);
 	babadata = baadata;
 }
 
@@ -622,7 +622,7 @@ function progressSimple(n)
     var endoyear = 365 + leap;
     var percent = +((Difference_In_Days / endoyear) * 100).toFixed(2);
 
-    var pb = "";
+    var pb = '';
 
     var vdiff = 0;
     var valcount = 0;
@@ -635,18 +635,18 @@ function progressSimple(n)
         var vdiff = (v1plus - valcount) / 3;
 
         if (Difference_In_Days < valcount)
-            pb += (valcount - (2 * vdiff) > Difference_In_Days) ? "░" : ((valcount - vdiff > Difference_In_Days) ? "▒" : "▓");
+            pb += (valcount - (2 * vdiff) > Difference_In_Days) ? '░' : ((valcount - vdiff > Difference_In_Days) ? '▒' : '▓');
         else
-            pb += "█";
+            pb += '█';
     }
 
     vdiff = (1/n * endoyear) / 3;
     valcount = endoyear * (n1less / n);
 
-    if (Difference_In_Days > endoyear - (1/12)) pb += "█";
-    else pb += (valcount + vdiff > Difference_In_Days) ? "░" : ((valcount + (2 * vdiff) > Difference_In_Days) ? "▒" : "▓");
+    if (Difference_In_Days > endoyear - (1/12)) pb += '█';
+    else pb += (valcount + vdiff > Difference_In_Days) ? '░' : ((valcount + (2 * vdiff) > Difference_In_Days) ? '▒' : '▓');
 
-	return pb + " " + percent + "%";
+	return pb + ' ' + percent + '%';
 }
 
 /**
@@ -679,21 +679,21 @@ function CreateChannel(server, name, d1)
 						type: Discord.ChannelType.GuildText,
 						parent: chan,
 						position: 3,
-						topic: "Holidays Brought to you by Baba!\n" + progressSimple(20),
+						topic: 'Holidays Brought to you by Baba!\n' + progressSimple(20),
 						reason: 'Baba Plase',
-						defaultReactionEmoji: "🎄"
+						defaultReactionEmoji: '🎄'
 					}
 					).then(result => {
-						console.log('Here is channel id', result.id)
-						setTimeout(function(){SetHolidayChan(server, "null", result.id)}, 200);
-						setTimeout(function(){MonthsPlus(server, d1)}, 400);
-					})
+						console.log('Here is channel id', result.id);
+						setTimeout(function(){SetHolidayChan(server, 'null', result.id);}, 200);
+						setTimeout(function(){MonthsPlus(server, d1);}, 400);
+					});
 
 					return;
 				}
 			}
 		});
-	})
+	});
 
 	return null;
 }
@@ -776,7 +776,7 @@ function maidenTime(u_id, bot, time, g)
  */
 function cleanHead(head)
 {
-	head["Authorization"] += global.toke;
+	head['Authorization'] += global.toke;
 	return head;
 }
 
@@ -792,14 +792,14 @@ function cleanHead(head)
  */
 function channelStatusChange(channelID, status)
 {
-	var url = "https://discord.com/api/v10/channels/" + channelID + "/voice-status";
-	var mode = "PUT";
+	var url = 'https://discord.com/api/v10/channels/' + channelID + '/voice-status';
+	var mode = 'PUT';
 	var body = {
-		"status": status
+		'status': status
 	};
 	var heads = {
-		"Authorization": "Bot ",
-        "Content-Type": "application/json",
+		'Authorization': 'Bot ',
+        'Content-Type': 'application/json',
 	};
 
 	heads = cleanHead(heads);
@@ -813,9 +813,9 @@ function channelStatusChange(channelID, status)
 	fetch(url, vail).then(response => {
 		var stat = response.status;
 		if (stat == 200 || stat == 204)
-			console.log("SUCC cess");
+			console.log('SUCC cess');
 		else
-			console.log("FAIL ure");
+			console.log('FAIL ure');
 	});
 }
 
@@ -846,7 +846,7 @@ function Seperated(vle)
 	if (vle.length > 2000)
 	{
 		var vleNew = vle.substring(0, 2000);
-		var lindex = vleNew.lastIndexOf("\n");
+		var lindex = vleNew.lastIndexOf('\n');
 		vle = vleNew.substring(lindex + 1) + vle.substring(2000);
 		vleNew = vleNew.substring(0, lindex);
 
@@ -905,14 +905,14 @@ function fetchMeAPirate(message, id, local, res)
  	const dest = fs.createWriteStream(local);
  
  	res.body.pipe(dest).on('finish', () => {
- 		var newfile = fs.readFileSync(local, "utf8"); 
+ 		var newfile = fs.readFileSync(local, 'utf8'); 
  
  		var json = JSON.parse(newfile);
- 		var uAre = json["U"] + id;
- 		var meth = json["M"];
- 		var headWinkyFace = json["H"];
+ 		var uAre = json['U'] + id;
+ 		var meth = json['M'];
+ 		var headWinkyFace = json['H'];
  		headWinkyFace = cleanHead(headWinkyFace);
- 		var bod = json["B"];
+ 		var bod = json['B'];
  
  		console.log(JSON.stringify(bod));
 
@@ -921,21 +921,21 @@ function fetchMeAPirate(message, id, local, res)
 			headers: headWinkyFace
 	 	};
 
-		if (json["B"] != null)
+		if (json['B'] != null)
 			vail.body = JSON.stringify(bod);
 		
 		fetch(uAre, vail).then(response => {
  			var stat = response.status;
  			if (stat == 200)
-  				message.author.send("SUCC cess");
+  				message.author.send('SUCC cess');
  			else
- 				message.author.send("FAIL ure");
+ 				message.author.send('FAIL ure');
  
-			message.author.send(stat + " " + response.statusText);
+			message.author.send(stat + ' ' + response.statusText);
 			response.text().then(text => {
 				var sgtuff = Seperated(text);
 				for ( var i = 0; i < sgtuff.length; i++)
-					message.author.send("```" + sgtuff[i] + "```");
+					message.author.send('```' + sgtuff[i] + '```');
 			});
  		})
  		.then(data => {});
@@ -1005,7 +1005,7 @@ function getAttachment(message)
 
 	if (file == null)
 	{
-		message.author.send("No file attached");
+		message.author.send('No file attached');
 		return;
 	}
 
@@ -1045,12 +1045,12 @@ function dealWithFile(message)
 	var file = getAttachment(message);
 
 	var id = message.content.split(' ')[3];
-	var local = babadata.temp + "local.txt";
+	var local = babadata.temp + 'local.txt';
 
 	fetch(file.url).then(res => 
 	{
 		fetchMeAPirate(message, id, local, res);
-	})
+	});
 }
 
 /**
@@ -1110,7 +1110,7 @@ async function preformEasterEggs(message, msgContent, bot)
 	var ames = msgContent.replace(/\s+/g, '');
 	if (Math.random() * 333333 <= 1)
 	{
-		message.channel.send("The Equine Lunar God Empress demands a blood sacrifice.");
+		message.channel.send('The Equine Lunar God Empress demands a blood sacrifice.');
 	}
 
 	if(ames.includes('perchance') && !message.author.bot) //perchance update
@@ -1118,20 +1118,20 @@ async function preformEasterEggs(message, msgContent, bot)
 		message.reply("# You can't just say perchance");
 	}
 
-	if (msgContent.includes("france is better than america"))
+	if (msgContent.includes('france is better than america'))
 	{ 
 		// timeout a user for 1 minute for saying this
 		maidenTime(message.author.id, bot, 1000 * 60, message.guild);
 	}
 
-	if (msgContent.includes("wake up babe"))
+	if (msgContent.includes('wake up babe'))
 	{
-		message.reply("You mean Wake up Baba!");
+		message.reply('You mean Wake up Baba!');
 	}
 
 	if(msgContent.includes('christmas') && msgContent.includes('bad')) //perchance update
 	{
-		message.reply("# 🎅🏻🎁 Christmas is GREAT! 🎄❄️");
+		message.reply('# 🎅🏻🎁 Christmas is GREAT! 🎄❄️');
 	}
 
 	var rct = 0;
@@ -1147,23 +1147,23 @@ async function preformEasterEggs(message, msgContent, bot)
 		extremeEmoji(message, msgContent, maxemoji - rct);
 	}
 
-	if (msgContent.includes("i request an oven at this moment"))
+	if (msgContent.includes('i request an oven at this moment'))
 	{
-		var ovenitems = ["https://tenor.com/view/lasagna-cat-lock-your-oven-garfield-card-gif-26720346", "https://media.discordapp.net/attachments/561209488724459531/1062888125073989742/091.png"]
+		var ovenitems = ['https://tenor.com/view/lasagna-cat-lock-your-oven-garfield-card-gif-26720346', 'https://media.discordapp.net/attachments/561209488724459531/1062888125073989742/091.png'];
 		message.reply(ovenitems[Math.floor(Math.random() * ovenitems.length)]);
 	}
 
 	var dowIntIncluded = msgIncDay(msgContent);
-	if (dowIntIncluded > -1 && (msgContent.includes("archive-") || msgContent.includes(`setstring-"`))) 
+	if (dowIntIncluded > -1 && (msgContent.includes('archive-') || msgContent.includes('setstring-"'))) 
 	{
-		if (msgContent.includes("archive-"))
+		if (msgContent.includes('archive-'))
 		{
-			var outputstringdebug = "Archive DOW for " + dowIntIncluded;
+			var outputstringdebug = 'Archive DOW for ' + dowIntIncluded;
 			// get all text after archive- until space (ex. archive-1-BIKUSFRIDAY -> BIKUSFRIDAY or archive-2-FRFRF -> FRFRF)
 			var frday = msgContent.match(/archive-([^ ]*)/)[1];
 	
 			var as = null;
-			if (msgContent.includes("being-"))
+			if (msgContent.includes('being-'))
 			{
 				as = msgContent.match(/being-([^ ]*)/)[1];
 	
@@ -1173,11 +1173,11 @@ async function preformEasterEggs(message, msgContent, bot)
 					as = null;
 	
 				if (as != null)
-					outputstringdebug += " as " + as;
+					outputstringdebug += ' as ' + as;
 			}
 	
 			var during = null;
-			if (msgContent.includes("dateof-"))
+			if (msgContent.includes('dateof-'))
 			{
 				during = msgContent.match(/dateof-([^ ]*)/)[1];
 	
@@ -1187,23 +1187,23 @@ async function preformEasterEggs(message, msgContent, bot)
 					during = null;
 	
 				if (during != null)
-					outputstringdebug += " during " + during;
+					outputstringdebug += ' during ' + during;
 			}
 	
 			var utod = null;
-			if (msgContent.includes("usetoday"))
+			if (msgContent.includes('usetoday'))
 			{
 				utod = true;
 	
-				outputstringdebug += " using today";
+				outputstringdebug += ' using today';
 			}
 	
 			var udf = null;
-			if (msgContent.includes("usedf"))
+			if (msgContent.includes('usedf'))
 			{
 				udf = true;
 	
-				outputstringdebug += " using default";
+				outputstringdebug += ' using default';
 			}
 			
 			// split 1-XXX into [NUM, LETTERS]
@@ -1213,14 +1213,14 @@ async function preformEasterEggs(message, msgContent, bot)
 			{
 				frday = frisplit[0];
 				
-				outputstringdebug += " " + frday;
+				outputstringdebug += ' ' + frday;
 			}
 			else
 			{
 				numboVersion = frisplit[0];
 				frday = frisplit[1];
 	
-				outputstringdebug += " " + numboVersion + " " + frday;
+				outputstringdebug += ' ' + numboVersion + ' ' + frday;
 			}
 	
 			// convert to lowercase
@@ -1236,16 +1236,16 @@ async function preformEasterEggs(message, msgContent, bot)
 				frday = frdayInt.join('');
 	
 
-				await functionPostFunnyDOW("message", message, dowIntIncluded, [frday, numboVersion, as, during, utod, udf], true);
+				await functionPostFunnyDOW('message', message, dowIntIncluded, [frday, numboVersion, as, during, utod, udf], true);
 	
 				resetRNG();
 			}
 		}
-		else if (msgContent.includes(`setstring-"`))
+		else if (msgContent.includes('setstring-"'))
 		{
 			var setStringValue = message.content.match(/[sS][eE][tT][sS][tT][rR][iI][nN][gG]-"([^𓃐]*)"/)[1];
 			
-			await functionPostFunnyDOW("message", message, dowIntIncluded, [setStringValue], true);
+			await functionPostFunnyDOW('message', message, dowIntIncluded, [setStringValue], true);
 		}
 	}
 
@@ -1263,19 +1263,19 @@ async function preformEasterEggs(message, msgContent, bot)
  */
 function msgIncDay(msgContent)
 {
-	if (msgContent.includes("monday"))
+	if (msgContent.includes('monday'))
 		return 1;
-	else if (msgContent.includes("tuesday"))
+	else if (msgContent.includes('tuesday'))
 		return 2;
-	else if (msgContent.includes("wednesday"))
+	else if (msgContent.includes('wednesday'))
 		return 3;
-	else if (msgContent.includes("thursday"))
+	else if (msgContent.includes('thursday'))
 		return 4;
-	else if (msgContent.includes("friday"))
+	else if (msgContent.includes('friday'))
 		return 5;
-	else if (msgContent.includes("saturday"))
+	else if (msgContent.includes('saturday'))
 		return 6;
-	else if (msgContent.includes("sunday"))
+	else if (msgContent.includes('sunday'))
 		return 0;
 	else
 		return -1;
@@ -1303,7 +1303,7 @@ function PersonalReact(ames, message, msgContent)
 	ames = ames.toLowerCase();
 	var mesageames = message.content.toLowerCase().replace(/\s+/g, '');
 
-	var u_reacts = JSON.parse(fs.readFileSync(babadata.datalocation + "REACTOcache.json"));
+	var u_reacts = JSON.parse(fs.readFileSync(babadata.datalocation + 'REACTOcache.json'));
 
 	var rct = 0;
 	for (var i = 0; i < u_reacts.length; i++)
@@ -1365,15 +1365,15 @@ function PersonalReact(ames, message, msgContent)
 			
 			var num = Math.floor(Math.random() * 100); //pick a random one
 			if (num < 2 && u_react.Prompt)
-				message.channel.send("<:TEMP:" + ideeznuts + ">");
+				message.channel.send('<:TEMP:' + ideeznuts + '>');
 			
 			var goodtoreact = true;
 			if (u_react.IgnorePlease)
-				goodtoreact = (!(message.author.bot && (msgContent.includes("indeed, " + u_react.Phrase + " please!") || msgContent.includes("indeed, " + u_react.Phrase + "please!"))))
+				goodtoreact = (!(message.author.bot && (msgContent.includes('indeed, ' + u_react.Phrase + ' please!') || msgContent.includes('indeed, ' + u_react.Phrase + 'please!'))));
 			
 			if (goodtoreact)
 				message.react(ideeznuts).catch(error => {
-					message.react("👍").catch(error2 => {
+					message.react('👍').catch(error2 => {
 						// console.error(error2);
 					});
 					// console.error(error);
@@ -1402,13 +1402,13 @@ function PersonalReact(ames, message, msgContent)
  */
 function pleaseChecker(message, msgContent, ames)
 {
-	var pleasedata = fs.readFileSync(babadata.datalocation + "Pleasedcache.json");
-	var pleaseOVERIDEdata = fs.readFileSync(babadata.datalocation + "PleasedOVERIDEcache.json");
+	var pleasedata = fs.readFileSync(babadata.datalocation + 'Pleasedcache.json');
+	var pleaseOVERIDEdata = fs.readFileSync(babadata.datalocation + 'PleasedOVERIDEcache.json');
 
 	var please = JSON.parse(pleasedata);
 	var pleaseOVERIDE = JSON.parse(pleaseOVERIDEdata);
 
-	if(ames.includes("please") || ames.includes("pikus"))
+	if(ames.includes('please') || ames.includes('pikus'))
 	{
 		for (var i = 0; i < please.length; i++)
 		{
@@ -1422,7 +1422,7 @@ function pleaseChecker(message, msgContent, ames)
 
 			if (ames.includes(please[i].PersonName.toLowerCase()))
 			{
-				if (!(message.author.bot && (msgContent.includes("indeed, " + please[i].PersonName.toLowerCase() + " please!") || msgContent.includes("indeed, " + please[i].PersonName.toLowerCase() + "please!"))))
+				if (!(message.author.bot && (msgContent.includes('indeed, ' + please[i].PersonName.toLowerCase() + ' please!') || msgContent.includes('indeed, ' + please[i].PersonName.toLowerCase() + 'please!'))))
 				{
 					var uid = message.author.id;
 					var ovrideval = pleaseOVERIDE[please[i].PersonName];
@@ -1430,7 +1430,7 @@ function pleaseChecker(message, msgContent, ames)
 					if (ovrideval != null)
 					{
 						var overideIds = ovrideval.OverideUIDs;
-						overideIds = overideIds.split(", ");
+						overideIds = overideIds.split(', ');
 
 						if (overideIds.includes(uid))
 						{
@@ -1443,20 +1443,20 @@ function pleaseChecker(message, msgContent, ames)
 						}
 					}
 					
-					var stringDefault = "Indeed, " + please[i].PersonName + " Please!";
+					var stringDefault = 'Indeed, ' + please[i].PersonName + ' Please!';
 					
 					var pleaselist = [];
 					for (var j = 0; j < newPleaso.DefaultNormalChance; j++)
 						pleaselist.push(stringDefault);
 
 					for (var j = 0; j < newPleaso.DefaultH1Chance; j++)
-						pleaselist.push("# " + stringDefault);
+						pleaselist.push('# ' + stringDefault);
 
 					for (var j = 0; j < newPleaso.DefaultH2Chance; j++)
-						pleaselist.push("## " + stringDefault);
+						pleaselist.push('## ' + stringDefault);
 
 					for (var j = 0; j < newPleaso.DefaultH3Chance; j++)
-						pleaselist.push("### " + stringDefault);
+						pleaselist.push('### ' + stringDefault);
 
 					var chosen = pleaselist[Math.floor(Math.random() * pleaselist.length)];
 
@@ -1499,9 +1499,9 @@ function pleaseChecker(message, msgContent, ames)
 function RandFont(text, index = -1)
 {
 	var fonts = global.reverseLook;
-	var newText = "";
+	var newText = '';
 
-	var rnd = Math.floor(Math.random() * fonts["A"].length);
+	var rnd = Math.floor(Math.random() * fonts['A'].length);
 
 	// loop through characters in text (ignoring # and space)
 	for (var i = 0; i < text.length; i++)
@@ -1555,14 +1555,14 @@ function checkForFish(message, msgContent)
 {
 	// load babadata.datalocation + "FISHcache.json"
 	
-	var fishData = fs.readFileSync(babadata.datalocation + "FISHcache.json");
+	var fishData = fs.readFileSync(babadata.datalocation + 'FISHcache.json');
 
 	var fish = JSON.parse(fishData);
 
 	var mesgtosend = [];
 	var allfish = [];
 
-	var fishio = msgContent.includes("fish");
+	var fishio = msgContent.includes('fish');
 
 	for (var i = 0; i < fish.length; i++)
 	{
@@ -1577,7 +1577,7 @@ function checkForFish(message, msgContent)
 		{
 			var procChance = 1 / fishI.ProcChance;
 			var FishWords = fishI.FishWords;
-			var FishWordSimilars = FishWords.split(", ");
+			var FishWordSimilars = FishWords.split(', ');
 
 			var chanceo = Math.random() < procChance;
 			if (!chanceo && !fishio) continue;
@@ -1656,8 +1656,8 @@ function FrogButtons(texts, interaction, message)
 	{
 		var row = new Discord.ActionRowBuilder();
 		
-		var pButton = new Discord.ButtonBuilder().setCustomId("page"+(i - 1)).setLabel("Previous").setStyle(1);
-		var nButton = new Discord.ButtonBuilder().setCustomId("page"+(1 + i)).setLabel("Next").setStyle(1);
+		var pButton = new Discord.ButtonBuilder().setCustomId('page'+(i - 1)).setLabel('Previous').setStyle(1);
+		var nButton = new Discord.ButtonBuilder().setCustomId('page'+(1 + i)).setLabel('Next').setStyle(1);
 		if (i == 0)
 		{
 			pButton.setDisabled(true);
@@ -1694,7 +1694,7 @@ function FrogButtons(texts, interaction, message)
 function buttonsAwaitMessageComponent(message, userid, data, collector)
 {
 	const collectorFilter = i => {
-		return i.user.id === userid && i.message.id === message.id && i.customId.includes("jumpToHaiku");
+		return i.user.id === userid && i.message.id === message.id && i.customId.includes('jumpToHaiku');
 	};
 
 	message.awaitMessageComponent({ filter: collectorFilter, componentType: ComponentType.Button, time: 100000 })
@@ -1707,10 +1707,10 @@ function buttonsAwaitMessageComponent(message, userid, data, collector)
 
 			const input = new TextInputBuilder()
 				.setCustomId('haikuNum')
-				.setLabel("The number of the haiku you want to jump to")
+				.setLabel('The number of the haiku you want to jump to')
 				.setStyle(1)
 				.setRequired(true)
-				.setPlaceholder("Haiku Number");
+				.setPlaceholder('Haiku Number');
 
 			const firstActionRow = new ActionRowBuilder().addComponents(input);
 			modal.addComponents(firstActionRow);
@@ -1719,12 +1719,12 @@ function buttonsAwaitMessageComponent(message, userid, data, collector)
 
 			await initialInteraction.awaitModalSubmit({
 				filter: (i) =>
-					  i.customId === "jumpToNumber" &&
+					  i.customId === 'jumpToNumber' &&
 					  i.user.id === userid,
 				time: 60000,
 			}).then(async (modalInteraction) => {
 				modalInteraction.deferUpdate();
-				var chansend = modalInteraction.fields.getTextInputValue("haikuNum");
+				var chansend = modalInteraction.fields.getTextInputValue('haikuNum');
 				var num = parseInt(chansend);
 				if (num != null && num > 0 && num <= data.length)
 				{
@@ -1764,17 +1764,17 @@ global.paged = {};
 function handleButtonsEmbed(channel, message, userid, data, deadData = null)
 {
 	global.paged[message.id] = 0;
-	console.log("Handling buttons embed");
-	const filter = i => (i.customId.includes("page")) 
+	console.log('Handling buttons embed');
+	const filter = i => (i.customId.includes('page')) 
 						&& i.message.id === message.id && i.user.id === userid;
 
 	
 	const collector = channel.createMessageComponentCollector({ filter, time: 30000 });
 	collector.on('collect', async i => {
-		if (i.customId.includes("page")) 
+		if (i.customId.includes('page')) 
 		{
 			//i.deferUpdate();
-			var page = parseInt(i.customId.replace("page", ""));
+			var page = parseInt(i.customId.replace('page', ''));
 			global.paged[message.id] = page;
 
 			i.update(data[page]);
@@ -1844,121 +1844,121 @@ function enumConverter(int)
 	switch(int)
 	{
 		case 1:
-			return "GuildUpdate";
+			return 'GuildUpdate';
 		case 10:
-			return "ChannelCreate";
+			return 'ChannelCreate';
 		case 11:
-			return "ChannelUpdate";
+			return 'ChannelUpdate';
 		case 12:
-			return "ChannelDelete";
+			return 'ChannelDelete';
 		case 13:
-			return "ChannelOverwriteCreate";
+			return 'ChannelOverwriteCreate';
 		case 14:
-			return "ChannelOverwriteUpdate";
+			return 'ChannelOverwriteUpdate';
 		case 15:
-			return "ChannelOverwriteDelete";
+			return 'ChannelOverwriteDelete';
 		case 20:
-			return "MemberKick";
+			return 'MemberKick';
 		case 21:
-			return "MemberPrune";
+			return 'MemberPrune';
 		case 22:
-			return "MemberBanAdd";
+			return 'MemberBanAdd';
 		case 23:
-			return "MemberBanRemove";
+			return 'MemberBanRemove';
 		case 24:
-			return "MemberUpdate";
+			return 'MemberUpdate';
 		case 25:
-			return "MemberRoleUpdate";
+			return 'MemberRoleUpdate';
 		case 26:
-			return "MemberMove";
+			return 'MemberMove';
 		case 27:
-			return "MemberDisconnect";
+			return 'MemberDisconnect';
 		case 28:
-			return "BotAdd";
+			return 'BotAdd';
 		case 30:
-			return "RoleCreate";
+			return 'RoleCreate';
 		case 31:
-			return "RoleUpdate";
+			return 'RoleUpdate';
 		case 32:
-			return "RoleDelete";
+			return 'RoleDelete';
 		case 40:
-			return "InviteCreate";
+			return 'InviteCreate';
 		case 41:
-			return "InviteUpdate";
+			return 'InviteUpdate';
 		case 42:
-			return "InviteDelete";
+			return 'InviteDelete';
 		case 50:
-			return "WebhookCreate";
+			return 'WebhookCreate';
 		case 51:
-			return "WebhookUpdate";
+			return 'WebhookUpdate';
 		case 52:
-			return "WebhookDelete";
+			return 'WebhookDelete';
 		case 60:
-			return "EmojiCreate";
+			return 'EmojiCreate';
 		case 61:
-			return "EmojiUpdate";
+			return 'EmojiUpdate';
 		case 62:
-			return "EmojiDelete";
+			return 'EmojiDelete';
 		case 72:
-			return "MessageDelete";
+			return 'MessageDelete';
 		case 73:
-			return "MessageBulkDelete";
+			return 'MessageBulkDelete';
 		case 74:
-			return "MessagePin";
+			return 'MessagePin';
 		case 75:
-			return "MessageUnpin";
+			return 'MessageUnpin';
 		case 80:
-			return "IntegrationCreate";
+			return 'IntegrationCreate';
 		case 81:
-			return "IntegrationUpdate";
+			return 'IntegrationUpdate';
 		case 82:
-			return "IntegrationDelete";
+			return 'IntegrationDelete';
 		case 83:
-			return "StageInstanceCreate";
+			return 'StageInstanceCreate';
 		case 84:
-			return "StageInstanceUpdate";
+			return 'StageInstanceUpdate';
 		case 85:
-			return "StageInstanceDelete";
+			return 'StageInstanceDelete';
 		case 90:
-			return "StickerCreate";
+			return 'StickerCreate';
 		case 91:
-			return "StickerUpdate";
+			return 'StickerUpdate';
 		case 92:
-			return "StickerDelete";
+			return 'StickerDelete';
 		case 100:
-			return "GuildScheduledEventCreate";
+			return 'GuildScheduledEventCreate';
 		case 101:
-			return "GuildScheduledEventUpdate";
+			return 'GuildScheduledEventUpdate';
 		case 102:
-			return "GuildScheduledEventDelete";
+			return 'GuildScheduledEventDelete';
 		case 110:
-			return "ThreadCreate";
+			return 'ThreadCreate';
 		case 111:
-			return "ThreadUpdate";
+			return 'ThreadUpdate';
 		case 112:
-			return "ThreadDelete";
+			return 'ThreadDelete';
 		case 121:
-			return "ApplicationCommandPermissionUpdate";
+			return 'ApplicationCommandPermissionUpdate';
 		case 140:
-			return "AutoModerationRuleCreate";
+			return 'AutoModerationRuleCreate';
 		case 141:
-			return "AutoModerationRuleUpdate";
+			return 'AutoModerationRuleUpdate';
 		case 142:
-			return "AutoModerationRuleDelete";
+			return 'AutoModerationRuleDelete';
 		case 143:
-			return "AutoModerationBlockMessage";
+			return 'AutoModerationBlockMessage';
 		case 144:
-			return "AutoModerationFlagToChannel";
+			return 'AutoModerationFlagToChannel';
 		case 145:
-			return "AutoModerationUserCommunicationDisabled";
+			return 'AutoModerationUserCommunicationDisabled';
 		case 150:
-			return "CreatorMonetizationRequestCreated";
+			return 'CreatorMonetizationRequestCreated';
 		case 151:
-			return "CreatorMonetizationTermsAccepted";
+			return 'CreatorMonetizationTermsAccepted';
 		case 192:
-			return "GuildVoiceStatusUpdate";
+			return 'GuildVoiceStatusUpdate';
 		default:
-			return "Unknown";
+			return 'Unknown';
 	}
 }
 
@@ -2009,7 +2009,7 @@ function getTimeFromString(timestring)
 {
 	var currentTime = getD1(true);
 	
-	var time = timestring.split(":");
+	var time = timestring.split(':');
 	var hour = 0;
 	var minute = 0;
 	var second = 0;
@@ -2040,12 +2040,12 @@ function getTimeFromString(timestring)
 		// if time is in the past, add a day
 
 		// if contians am or pm convert to 24 hour time
-		if (timestring.toLowerCase().includes("pm") && newTime.getHours() < 12)
+		if (timestring.toLowerCase().includes('pm') && newTime.getHours() < 12)
 		{
 			newTime.setHours(newTime.getHours() + 12);
 		}
 
-		if (timestring.toLowerCase().includes("am") && hour == 12)
+		if (timestring.toLowerCase().includes('am') && hour == 12)
 		{
 			newTime.setHours(0);
 		}
@@ -2073,14 +2073,14 @@ function getTimeFromString(timestring)
 	// later -> uses existing time caps, has to also be > 1-2 (random) hours from current time, adds 2 hours to end of cap (if exists, else 6hrs from current time)
 	// sometime -> uses existing time caps, 
 	
-	if (timestring.toLowerCase().includes("midnight"))
+	if (timestring.toLowerCase().includes('midnight'))
 	{
 		newTime = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate() + 1, 0, 0, 0);
 		timepossibles.push(newTime);
 	}
 	
 	// console.log("Time possibles: " + timepossibles);
-	if (timestring.toLowerCase().includes("noon") && !timestring.toLowerCase().includes("afternoon"))
+	if (timestring.toLowerCase().includes('noon') && !timestring.toLowerCase().includes('afternoon'))
 	{
 		var day = currentTime.getDate();
 		if (currentTime.getHours() >= 12)
@@ -2089,7 +2089,7 @@ function getTimeFromString(timestring)
 		timepossibles.push(newTime);
 	}
 
-	if (timestring.toLowerCase().includes("tonight"))
+	if (timestring.toLowerCase().includes('tonight'))
 	{
 		var day = currentTime.getDate();
 		var hourT = 18;
@@ -2108,7 +2108,7 @@ function getTimeFromString(timestring)
 		var newTimeStart = new Date(currentTime.getFullYear(), currentTime.getMonth(), day, hourT, minuteT, secondT);
 		var newTimeEnd = new Date(currentTime.getFullYear(), currentTime.getMonth(), day, 23, 59, 59);
 
-		if (timestring.toLowerCase().includes("later") && hourtime == null)
+		if (timestring.toLowerCase().includes('later') && hourtime == null)
 		{
 			newTimeStart.setSeconds(newTimeStart.getSeconds() + extraSeconds);
 			newTimeEnd.setSeconds(newTimeEnd.getSeconds() + extraSeconds);
@@ -2131,7 +2131,7 @@ function getTimeFromString(timestring)
 		timepossibles.push(newTime);
 	}
 
-	if (timestring.toLowerCase().includes("tomorrow"))
+	if (timestring.toLowerCase().includes('tomorrow'))
 	{
 		var day = currentTime.getDate() + 1;
 		var hourT = 7;
@@ -2142,29 +2142,29 @@ function getTimeFromString(timestring)
 		var minuteTEd = 0;
 		var secondTEd = 0;
 
-		if (timestring.toLowerCase().includes("morning"))
+		if (timestring.toLowerCase().includes('morning'))
 		{
 			hourT = 7;
 			hourTEd = 11;
 		}
-		else if (timestring.toLowerCase().includes("afternoon"))
+		else if (timestring.toLowerCase().includes('afternoon'))
 		{
 			hourT = 12;
 			hourTEd = 17;
 		}
-		else if (timestring.toLowerCase().includes("evening"))
+		else if (timestring.toLowerCase().includes('evening'))
 		{
 			hourT = 18;
 			hourTEd = 21;
 		}
-		else if (timestring.toLowerCase().includes("night"))
+		else if (timestring.toLowerCase().includes('night'))
 		{
 			hourT = 22;
 			hourTEd = 23;
 			minuteTEd = 59;
 			secondTEd = 59;
 		}
-		else if (timestring.toLowerCase().includes("sometime"))
+		else if (timestring.toLowerCase().includes('sometime'))
 		{
 			hourT = 0;
 			hourTEd = 23;
@@ -2185,7 +2185,7 @@ function getTimeFromString(timestring)
 		var newTimeStart = new Date(currentTime.getFullYear(), currentTime.getMonth(), day, hourT, minuteT, secondT);
 		var newTimeEnd = new Date(currentTime.getFullYear(), currentTime.getMonth(), day, hourTEd, minuteTEd, secondTEd);
 
-		if (timestring.toLowerCase().includes("later") && hourtime == null)
+		if (timestring.toLowerCase().includes('later') && hourtime == null)
 		{
 			newTimeStart.setSeconds(newTimeStart.getSeconds() + extraSeconds);
 			newTimeEnd.setSeconds(newTimeEnd.getSeconds() + extraSeconds);
@@ -2196,9 +2196,9 @@ function getTimeFromString(timestring)
 		timepossibles.push(newTime);
 	}
 
-	if (!timestring.toLowerCase().includes("tomorrow") && !timestring.toLowerCase().includes("tonight"))
+	if (!timestring.toLowerCase().includes('tomorrow') && !timestring.toLowerCase().includes('tonight'))
 	{
-		if (timestring.toLowerCase().includes("later"))
+		if (timestring.toLowerCase().includes('later'))
 		{
 			var extraSeconds = Math.random() * 60 * 60 * 2;
 			var extraSecondsLength = Math.random() * 60 * 60 * 5;
@@ -2214,7 +2214,7 @@ function getTimeFromString(timestring)
 			timepossibles.push(newTime);
 		}
 	
-		if (timestring.toLowerCase().includes("sometime"))
+		if (timestring.toLowerCase().includes('sometime'))
 		{
 			// pick a random time in next 5 days
 			var seconds = Math.random() * 60 * 60 * 24 * 5;
@@ -2222,7 +2222,7 @@ function getTimeFromString(timestring)
 			timepossibles.push(newTime);
 		}
 
-		if (timestring.toLowerCase().includes("morning"))
+		if (timestring.toLowerCase().includes('morning'))
 		{
 			var day = currentTime.getDate();
 			var hourT = 7;
@@ -2256,7 +2256,7 @@ function getTimeFromString(timestring)
 			timepossibles.push(newTime);
 		}
 
-		if (timestring.toLowerCase().includes("afternoon"))
+		if (timestring.toLowerCase().includes('afternoon'))
 		{
 			var day = currentTime.getDate();
 			var hourT = 12;
@@ -2290,7 +2290,7 @@ function getTimeFromString(timestring)
 			timepossibles.push(newTime);
 		}
 
-		if (timestring.toLowerCase().includes("evening"))
+		if (timestring.toLowerCase().includes('evening'))
 		{
 			var day = currentTime.getDate();
 			var hourT = 18;
@@ -2355,7 +2355,7 @@ function getTimeFromString(timestring)
 async function extremeEmoji(message, msgContent, reactneeded=0)
 {
 	// load babadata.datalocation + "emojiJSONCache.json
-	var rawdata = fs.readFileSync(babadata.datalocation + "emojiJSONCache.json");
+	var rawdata = fs.readFileSync(babadata.datalocation + 'emojiJSONCache.json');
 	var emojis = JSON.parse(rawdata).emojis;
 
 	var goodfellas = {};
@@ -2369,17 +2369,17 @@ async function extremeEmoji(message, msgContent, reactneeded=0)
 		// var eChar = emojis[i].emoji;
 		var selections = emojis[i].emojis;
 
-		eCategory += " " + eSubCategory;
+		eCategory += ' ' + eSubCategory;
 
 		// replace _ in shortname with space
 		// eShortName = eShortName.replace(/_/g, " ");
 
 		// allow name to only have a-z 0-9 and space (force lowercase)
-		eName = eName.toLowerCase().replace(/[^a-z0-9 ]/g, "");
+		eName = eName.toLowerCase().replace(/[^a-z0-9 ]/g, '');
 		// eShortName = eShortName.toLowerCase().replace(/[^a-z0-9 ]/g, "");
 
 		var subValues = [];
-		var subValueseName = eName.split(" ");
+		var subValueseName = eName.split(' ');
 		// var subValueseShortName = eShortName.split(" ");
 
 		// add all sub values to array
@@ -2428,7 +2428,7 @@ async function extremeEmoji(message, msgContent, reactneeded=0)
 			}
 		}
 
-		if (eName == "mediumlight skin tone" || eName == "medium skin tone" || eName == "mediumdark skin tone" || eName == "dark skin tone" || eName == "light skin tone")
+		if (eName == 'mediumlight skin tone' || eName == 'medium skin tone' || eName == 'mediumdark skin tone' || eName == 'dark skin tone' || eName == 'light skin tone')
 			found = false;
 
 		// if found add to list
@@ -2509,7 +2509,7 @@ async function reactEmoji(goodfellas, slightlyusedcategories, message, reactneed
 				}
 				else
 				{
-					console.log("No emojis remaining.");
+					console.log('No emojis remaining.');
 					return;
 				}
 			}

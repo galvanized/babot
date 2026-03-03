@@ -31,4 +31,4 @@ module.exports = {
         var val = await babaWhomst(user);
         await interaction.editReply(val);
     }
-}
+};

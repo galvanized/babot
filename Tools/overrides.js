@@ -70,7 +70,7 @@ function getOverides()
     return {
         uignoreErrors: uignoreErrors,
         DebugFriday: DebugFriday
-    }
+    };
 }
 
 

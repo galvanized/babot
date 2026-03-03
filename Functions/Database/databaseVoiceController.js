@@ -49,16 +49,16 @@ var timeoutCT = 0;
 function splitStringInto1900CharChunksonSpace(str)
 {
 	var chunks = [];
-	var chunk = "";
-	var lines = str.split(" ");
+	var chunk = '';
+	var lines = str.split(' ');
 	for (var i = 0; i < lines.length; i++)
 	{
 		if (chunk.length + lines[i].length > 1900)
 		{
 			chunks.push(chunk);
-			chunk = "";
+			chunk = '';
 		}
-		chunk += lines[i] + "\n";
+		chunk += lines[i] + '\n';
 	}
 	chunks.push(chunk);
 	return chunks;
@@ -83,21 +83,21 @@ function pingConnection()
             {
                 if (err) 
                 {
-                    console.log("Connection is not alive", false, true);
-                    resolve("ERROR");
+                    console.log('Connection is not alive', false, true);
+                    resolve('ERROR');
                     con = null;
                 }
                 else
                 {
                     // console.log("Connection is alive", false, true);
-                    resolve("true");
+                    resolve('true');
                 }
             });
         }
         else
         {
-            console.log("Connection is null", false, true);
-            resolve("false");
+            console.log('Connection is null', false, true);
+            resolve('false');
         }
     });
 
@@ -126,9 +126,9 @@ async function getConnection()
 {
     var pingged = await pingConnection();
 
-    if (pingged != "true")
+    if (pingged != 'true')
     {
-        console.log("Creating New Connection", false, true);
+        console.log('Creating New Connection', false, true);
         con = mysql.createConnection({
             host: babadata.database.host,
             user: babadata.database.user,
@@ -155,11 +155,11 @@ async function getConnection()
                 {
                     if (err) 
                     {
-                        console.log("Error Ending Connection: " + err, false, true);
-                        DMMePlease("Error Ending Connection: " + err, false, true);
+                        console.log('Error Ending Connection: ' + err, false, true);
+                        DMMePlease('Error Ending Connection: ' + err, false, true);
                     }
 
-                    console.log("Connection Ended", false, true);
+                    console.log('Connection Ended', false, true);
                     con = null;
                 });
     
@@ -168,8 +168,8 @@ async function getConnection()
             }
             catch (err)
             {
-                console.log("Error Ending Connection: " + err, false, true);
-                DMMePlease("Error Ending Connection: " + err, false, true);
+                console.log('Error Ending Connection: ' + err, false, true);
+                DMMePlease('Error Ending Connection: ' + err, false, true);
                 con = null;
             }
         }
@@ -201,7 +201,7 @@ async function getConnection()
 function dbErrored()
 {
     timeoutCT++;
-    console.log("Database Connection Failed -> " + timeoutCT, false, true);
+    console.log('Database Connection Failed -> ' + timeoutCT, false, true);
 
     if (timeoutCT > 1)
     {
@@ -228,14 +228,14 @@ function dbErrored()
         timeoutFix = setTimeout(async function()
         {
             var pingged = await pingConnection();
-            if (pingged == "ERROR")
+            if (pingged == 'ERROR')
             {
                 var timestring = getD1(true).toLocaleTimeString();
                 timeoutCT++;
-                console.log(timestring + ": Database Connection Failed, Retrying in 60 seconds -> " + timeoutCT, false, true);
+                console.log(timestring + ': Database Connection Failed, Retrying in 60 seconds -> ' + timeoutCT, false, true);
                 timeoutFix = setTimeout(arguments.callee, 60000);
             }
-            else if (pingged == "false")
+            else if (pingged == 'false')
             {
                 // Try to reconnect to the DB
                 await getConnection();
@@ -247,12 +247,12 @@ function dbErrored()
                 
                 var timestring = getD1(true).toLocaleTimeString();
                 timeoutCT++;
-                console.log(timestring + ": Database Connection was null, attempted reconnect, Retrying in 60 seconds -> " + timeoutCT, false, true);
+                console.log(timestring + ': Database Connection was null, attempted reconnect, Retrying in 60 seconds -> ' + timeoutCT, false, true);
                 timeoutFix = setTimeout(arguments.callee, 60000);
             }
             else
             {
-                console.log("Database Connection Possibly Restored", false, true);
+                console.log('Database Connection Possibly Restored', false, true);
 
                 // Try 3 more times at 10s intervals to confirm stability
                 let confirmAttempts = 0;
@@ -260,11 +260,11 @@ function dbErrored()
                 const confirmDbRestore = async () => 
                 {
                     let pingged = await pingConnection();
-                    if (pingged !== "true") 
+                    if (pingged !== 'true') 
                     {
                         confirmFailures++;
                     }
-                    console.log("Confirming DB Restore: Attempt " + (confirmAttempts + 1) + " - Ping Result: " + pingged, false, true);
+                    console.log('Confirming DB Restore: Attempt ' + (confirmAttempts + 1) + ' - Ping Result: ' + pingged, false, true);
 
                     confirmAttempts++;
                     if (confirmAttempts < 3) 
@@ -276,7 +276,7 @@ function dbErrored()
                         if (confirmFailures > 0) 
                         {
                             // If any failed, revert to retrying every 60s and restore timeoutCT
-                            console.log("DB unstable after restore, reverting to retry mode", false, true);
+                            console.log('DB unstable after restore, reverting to retry mode', false, true);
                             timeoutFix = setTimeout(arguments.callee, 60000);
                         } 
                         else 
@@ -287,10 +287,10 @@ function dbErrored()
                             timeoutFix = null;
 
                             // All confirmed, proceed to restore user voice data
-                            console.log("Restoring User Voice Data in 10 seconds", false, true);
+                            console.log('Restoring User Voice Data in 10 seconds', false, true);
                             timeoutClear = setTimeout(function() 
                             {
-                                console.log("Restoring User Voice Data", false, true);
+                                console.log('Restoring User Voice Data', false, true);
                                 clearVCCList();
                             }, 10000);
                         }
@@ -332,7 +332,7 @@ async function callSQLQuery(query)
                     if (timeoutCT > 0)
                     {
                         timeoutCT = 0;
-                        console.log("Timeout CT Reset", false, true);
+                        console.log('Timeout CT Reset', false, true);
                     }
                     resolve(result);
                 }
@@ -340,10 +340,10 @@ async function callSQLQuery(query)
         }
         else
         {
-            console.log("Query did not Run:", false, true);
+            console.log('Query did not Run:', false, true);
             console.log(query, false, true);
-            console.log("Database Not Accessible", false, true);
-            reject("Database Not Accessible");
+            console.log('Database Not Accessible', false, true);
+            reject('Database Not Accessible');
         }
     });
 }
@@ -358,17 +358,17 @@ async function callSQLQuery(query)
  */
 function ErrorWithDB(err, query)
 {
-    console.log("Error Occured because of Query: ", false, true);
+    console.log('Error Occured because of Query: ', false, true);
     console.log(query, false, true);
 
-    DMMePlease("Error Occured because of Query: ");
+    DMMePlease('Error Occured because of Query: ');
     var qChunks = splitStringInto1900CharChunksonSpace(query);
     for (var i = 0; i < qChunks.length; i++)
     {
-        DMMePlease("```\n"  + qChunks[i] + "\n```", false);
+        DMMePlease('```\n'  + qChunks[i] + '\n```', false);
     }
 
-    DMMePlease("Error: \n```\n" + err + "\n```", false);
+    DMMePlease('Error: \n```\n' + err + '\n```', false);
 
     dbErrored();
 }
@@ -384,11 +384,11 @@ function ErrorWithDB(err, query)
 function DMMePlease(sourceMessage, consoledlog = true)
 {
     if (consoledlog)
-        console.log("DMMePlease: " + sourceMessage, false, true);
+        console.log('DMMePlease: ' + sourceMessage, false, true);
 
-    var guildID = babadata.testing === undefined ? "454457880825823252" : "522136584649310208";
-    var logThreadChanID = babadata.testing === undefined ? "1337944450084769876" : "1337943563996106915";
-    var channelOfThread = babadata.testing === undefined ? "509401300874690590" : "757071872721682594";
+    var guildID = babadata.testing === undefined ? '454457880825823252' : '522136584649310208';
+    var logThreadChanID = babadata.testing === undefined ? '1337944450084769876' : '1337943563996106915';
+    var channelOfThread = babadata.testing === undefined ? '509401300874690590' : '757071872721682594';
 
     global.Bot.guilds.fetch(guildID).then(async guild =>
     {
@@ -397,7 +397,7 @@ function DMMePlease(sourceMessage, consoledlog = true)
             channel.threads.fetch(logThreadChanID).then(thread =>
             {
                 thread.send(sourceMessage);
-            })
+            });
         })
         .catch(console.error);
     }).catch(console.error);
@@ -415,9 +415,9 @@ function DMMePlease(sourceMessage, consoledlog = true)
  */
 function DMMEAFile(filename, filedata, description)
 {
-    var guildID = babadata.testing === undefined ? "454457880825823252" : "522136584649310208";
-    var logThreadChanID = babadata.testing === undefined ? "1337944450084769876" : "1337943563996106915";
-    var channelOfThread = babadata.testing === undefined ? "509401300874690590" : "757071872721682594";
+    var guildID = babadata.testing === undefined ? '454457880825823252' : '522136584649310208';
+    var logThreadChanID = babadata.testing === undefined ? '1337944450084769876' : '1337943563996106915';
+    var channelOfThread = babadata.testing === undefined ? '509401300874690590' : '757071872721682594';
 
     global.Bot.guilds.fetch(guildID).then(async guild =>
     {
@@ -426,7 +426,7 @@ function DMMEAFile(filename, filedata, description)
             channel.threads.fetch(logThreadChanID).then(thread =>
             {
                 thread.send({ files: [{ attachment: Buffer.from(JSON.stringify(filedata, null, 2)), name: filename }] , content: description});
-            })
+            });
         })
         .catch(console.error);
     }).catch(console.error);
@@ -464,9 +464,9 @@ function NameFromUserIDID(userID)
                 }
                 else
                 {
-                    reject("NameFromUserID");
+                    reject('NameFromUserID');
                 }
-            }).catch((err) => {reject("NameFromUserID")});
+            }).catch((err) => {reject('NameFromUserID');});
         }
     });
 
@@ -504,7 +504,7 @@ function NameFromUserIDID(userID)
 function EventDB(event, change, user)
 {
 	var eid = event.id;
-    if (!change.includes("user"))
+    if (!change.includes('user'))
     {
         var cid = event.creatorId;
         var chanid = event.channelId;
@@ -516,28 +516,28 @@ function EventDB(event, change, user)
         switch (status)
         {
             case 1:
-                status = "SCHEDULED";
+                status = 'SCHEDULED';
                 break;
             case 2:
-                status = "ACTIVE";
+                status = 'ACTIVE';
                 break;
             case 3:
-                status = "COMPLETED";
+                status = 'COMPLETED';
                 break;
             case 4:
-                status = "CANCELED";
+                status = 'CANCELED';
                 break;
         }
 
-        var loc = "Voice Channel";
+        var loc = 'Voice Channel';
 
-        var mpre1 = d1.getMonth() + 1 < 10 ? 0 : "";
-        var dpre1 = d1.getUTCDate() < 10 ? 0 : "";
-        var mpre2 = d2.getMonth() + 1 < 10 ? 0 : "";
-        var dpre2 = d2.getUTCDate() < 10 ? 0 : "";
+        var mpre1 = d1.getMonth() + 1 < 10 ? 0 : '';
+        var dpre1 = d1.getUTCDate() < 10 ? 0 : '';
+        var mpre2 = d2.getMonth() + 1 < 10 ? 0 : '';
+        var dpre2 = d2.getUTCDate() < 10 ? 0 : '';
 
-        var start = `${d1.getFullYear()}-${mpre1}${d1.getMonth() + 1}-${dpre1}${d1.getUTCDate()} ${d1.getHours()}:${d1.getMinutes()}:${d1.getSeconds()}`
-        var end = `${d2.getFullYear()}-${mpre2}${d2.getMonth() + 1}-${dpre2}${d2.getUTCDate()} ${d2.getHours()}:${d2.getMinutes()}:${d2.getSeconds()}`
+        var start = `${d1.getFullYear()}-${mpre1}${d1.getMonth() + 1}-${dpre1}${d1.getUTCDate()} ${d1.getHours()}:${d1.getMinutes()}:${d1.getSeconds()}`;
+        var end = `${d2.getFullYear()}-${mpre2}${d2.getMonth() + 1}-${dpre2}${d2.getUTCDate()} ${d2.getHours()}:${d2.getMinutes()}:${d2.getSeconds()}`;
         
         // add time leaving and joining
         if (event.entityMetadata != null)
@@ -545,36 +545,36 @@ function EventDB(event, change, user)
             loc = event.entityMetadata.location;
         }
 
-        if (change == "create")
+        if (change == 'create')
         {
             var qurey = `INSERT INTO scheduleevent (eventID, creatorID, name, channelID, description, StartTime, EndTime, status, Location) VALUES ("${eid}", "${cid}", "${name}", "${chanid}", "${desc}", "${start}", "${end}", "${status}", "${loc}")`;
             callSQLQuery(qurey)
             .then((result) => {})
-            .catch((err) => {DMMePlease("Error Creating Event: " + err)});
+            .catch((err) => {DMMePlease('Error Creating Event: ' + err);});
         }
-        else if (change == "delete")
+        else if (change == 'delete')
         {
             var qurey = `UPDATE scheduleevent Set status = "CANCELED" WHERE eventID = "${eid}"`;
             callSQLQuery(qurey)
             .then((result) => {})
-            .catch((err) => {DMMePlease("Error Deleting Event: " + err)});
+            .catch((err) => {DMMePlease('Error Deleting Event: ' + err);});
         }
-        else if (change == "update")
+        else if (change == 'update')
         {
             var qurey = `UPDATE scheduleevent Set creatorID = "${cid}", name = "${name}", channelID = "${chanid}", description = "${desc}", StartTime = "${start}", EndTime = "${end}", status = "${status}", Location = "${loc}" WHERE eventID = "${eid}"`;
             callSQLQuery(qurey)
             .then((result) => {})
-            .catch((err) => {DMMePlease("Error Updating Event: " + err)});
+            .catch((err) => {DMMePlease('Error Updating Event: ' + err);});
         }
     }
     else 
     {
         var uid = user.id;
         var time = getD1(true);
-        var mpre = time.getMonth() + 1 < 10 ? 0 : "";
-        var dpre = time.getUTCDate() < 10 ? 0 : "";
-        var jtime = `${time.getFullYear()}-${mpre}${time.getMonth() + 1}-${dpre}${time.getUTCDate()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`
-        if (change == "useradd")
+        var mpre = time.getMonth() + 1 < 10 ? 0 : '';
+        var dpre = time.getUTCDate() < 10 ? 0 : '';
+        var jtime = `${time.getFullYear()}-${mpre}${time.getMonth() + 1}-${dpre}${time.getUTCDate()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}`;
+        if (change == 'useradd')
         {
             var query = `UPDATE eventpurity SET flaked = 0, timesrejoined = timesrejoined + 1, joined = 1, latestjointime = "${jtime}", flaketime = null WHERE eventID = "${eid}" AND userID = "${uid}"`;
             callSQLQuery(query)
@@ -585,17 +585,17 @@ function EventDB(event, change, user)
                     var innrquery = `INSERT INTO eventpurity (eventID, userID, flaked, timesrejoined, joined, latestjointime, initjointime) VALUES ("${eid}", "${uid}", 0, 1, 1, "${jtime}", "${jtime}")`;
                     callSQLQuery(innrquery)
                     .then((result) => {})
-                    .catch((err) => {DMMePlease("Error Adding User to Event: " + err)});
+                    .catch((err) => {DMMePlease('Error Adding User to Event: ' + err);});
                 }
             })
-            .catch((err) => {DMMePlease("Error Updating User in Event: " + err)});
+            .catch((err) => {DMMePlease('Error Updating User in Event: ' + err);});
         }
-        else if (change == "userremove")
+        else if (change == 'userremove')
         {
             var query = `UPDATE eventpurity SET flaked = 1, joined = 0, flaketime = "${jtime}", latestjointime = null WHERE eventID = "${eid}" AND userID = "${uid}"`;
             callSQLQuery(query)
             .then((result) => {})
-            .catch((err) => {DMMePlease("Error Removing User from Event: " + err)});
+            .catch((err) => {DMMePlease('Error Removing User from Event: ' + err);});
         }
     }
 }
@@ -624,15 +624,15 @@ function optIn(user, type)
             {
                 var query = `INSERT INTO opting (DiscordID, ItemToRemove, Val) VALUES ("${user.id}", "${type}", "in")`;
                 callSQLQuery(query)
-                .then((result) => {resolve("OptIn")})
-                .catch((err) => {reject("OptIn")});
+                .then((result) => {resolve('OptIn');})
+                .catch((err) => {reject('OptIn');});
             }
             else
             {
-                resolve("OptIn");
+                resolve('OptIn');
             }
         })
-        .catch((err) => {reject("OptIn")});
+        .catch((err) => {reject('OptIn');});
     });
 
     return PromisedOptIn;
@@ -660,15 +660,15 @@ function optOut(user, type)
             {
                 var query = `INSERT INTO opting (DiscordID, ItemToRemove, Val) VALUES ("${user.id}", "${type}", "out")`;
                 callSQLQuery(query)
-                .then((result) => {resolve("OptOut")})
-                .catch((err) => {reject("OptOut")});
+                .then((result) => {resolve('OptOut');})
+                .catch((err) => {reject('OptOut');});
             }
             else
             {
-                resolve("OptOut");
+                resolve('OptOut');
             }
         })
-        .catch((err) => {reject("OptOut")});
+        .catch((err) => {reject('OptOut');});
     });
 
     return PromisedOptOut;
@@ -696,15 +696,15 @@ function CheckAndCreateUser(userID, userName)
             {
                 var query = `INSERT INTO userval (DiscordID, PersonName) VALUES ("${userID}", "${userName}")`;
                 callSQLQuery(query)
-                .then((result) => {resolve("User Created")})
-                .catch((err) => {reject("CreateUser")});
+                .then((result) => {resolve('User Created');})
+                .catch((err) => {reject('CreateUser');});
             }
             else
             {
-                resolve("User Exists");
+                resolve('User Exists');
             }
         })
-        .catch((err) => {reject("CreateUser")});
+        .catch((err) => {reject('CreateUser');});
     });
 
     return PromisedUser;
@@ -730,15 +730,15 @@ function checkAndCreateChannel(channelID, channelName)
             {
                 var query = `INSERT INTO channelval (ChannelID, ChannelName, Type) VALUES ("${channelID}", "${channelName}", "Voice")`;
                 callSQLQuery(query)
-                .then((result) => {resolve("Channel Created")})
-                .catch((err) => {reject("CreateChannel")});
+                .then((result) => {resolve('Channel Created');})
+                .catch((err) => {reject('CreateChannel');});
             }
             else
             {
-                resolve("Channel Exists");
+                resolve('Channel Exists');
             }
         })
-        .catch((err) => {reject("CreateChannel")});
+        .catch((err) => {reject('CreateChannel');});
     });
 
     return PromisedChannel;
@@ -773,38 +773,38 @@ function userVoiceChange(queryz, userID, channelID, guild, subtext)
         })
         .catch((err) => 
         {
-            if (err != null && err.sqlMessage != null && err.sqlMessage.includes("voiceactivity_ibfk_1"))
+            if (err != null && err.sqlMessage != null && err.sqlMessage.includes('voiceactivity_ibfk_1'))
             {
-                console.log("Error: " + err.sqlMessage, false, true);
+                console.log('Error: ' + err.sqlMessage, false, true);
                 guild.channels.fetch(channelID)
                 .then(channel => 
                 {
                     checkAndCreateChannel(channelID, channel.name).then(() =>
                     {
-                        userVoiceChange(queryz, userID, channelID, guild, subtext).then((result) => {resolve(result)}).catch((err) => {reject(err)});
+                        userVoiceChange(queryz, userID, channelID, guild, subtext).then((result) => {resolve(result);}).catch((err) => {reject(err);});
                     })
-                    .catch((err) => {reject("CreateChannel")});
+                    .catch((err) => {reject('CreateChannel');});
                 })
                 .catch(console.error);
             }
-            else if (err != null && err.sqlMessage != null && err.sqlMessage.includes("voiceactivity_ibfk_2"))
+            else if (err != null && err.sqlMessage != null && err.sqlMessage.includes('voiceactivity_ibfk_2'))
             {
-                console.log("Error: " + err.sqlMessage, false, true);
+                console.log('Error: ' + err.sqlMessage, false, true);
                 guild.members.fetch(userID)
                 .then(user => 
                 {
                     CheckAndCreateUser(userID, user.user.username).then(() =>
                     {
-                        userVoiceChange(queryz, userID, channelID, guild, subtext).then((result) => {resolve(result)}).catch((err) => {reject(err)});
+                        userVoiceChange(queryz, userID, channelID, guild, subtext).then((result) => {resolve(result);}).catch((err) => {reject(err);});
                     })
-                    .catch((err) => {reject("CreateUser")});
+                    .catch((err) => {reject('CreateUser');});
                 })
                 .catch(console.error);
             }
             else
             {
-                console.log("Error: " + err, false, true);
-                reject("UserVoiceChange");
+                console.log('Error: ' + err, false, true);
+                reject('UserVoiceChange');
             }
         });
     });
@@ -831,7 +831,7 @@ function userJoinedVoice(userID, channelID, guild, overideTime = null)
         var dt = overideTime == null ? getD1(true) : overideTime;
         var dtsrart = dt.toISOString().slice(0, 19).replace('T', ' ');
         var q = `INSERT INTO voiceactivity (ChannelID, UserID, StartTime) VALUES ("${channelID}", "${userID}", "${dtsrart}")`;
-        userVoiceChange(q, userID, channelID, guild, "JoinVoice").then((result) => {resolve(result)}).catch((err) => {reject("JoinVoice")});
+        userVoiceChange(q, userID, channelID, guild, 'JoinVoice').then((result) => {resolve(result);}).catch((err) => {reject('JoinVoice');});
     });
 
     return PromisedUserJoined;
@@ -856,7 +856,7 @@ function userLeftVoice(userID, channelID, guild, overideTime = null)
         var dt = overideTime == null ? getD1(true) : overideTime;
         var dtsrart = dt.toISOString().slice(0, 19).replace('T', ' ');
         var q = `UPDATE voiceactivity SET EndTime = "${dtsrart}" WHERE UserID = "${userID}" AND ChannelID = "${channelID}" AND EndTime IS NULL`;
-        userVoiceChange(q, userID, channelID, guild, "JoinVoice").then((result) => {resolve(result)}).catch((err) => {reject("LeaveVoice")});
+        userVoiceChange(q, userID, channelID, guild, 'JoinVoice').then((result) => {resolve(result);}).catch((err) => {reject('LeaveVoice');});
     });
 
     return PromisedUserLeft;
@@ -879,19 +879,19 @@ function userLeftVoice(userID, channelID, guild, overideTime = null)
 function logVCC(newMemberID, newChannelID, oldMemberID, oldChannelID, guildID, timeoveride = null)
 {
     var time = getD1(true);
-	console.log("Logging VCC Data: " + newMemberID + " " + oldMemberID + " " + newChannelID + " " + oldChannelID + " " + time + " " + guildID, false, true);
+	console.log('Logging VCC Data: ' + newMemberID + ' ' + oldMemberID + ' ' + newChannelID + ' ' + oldChannelID + ' ' + time + ' ' + guildID, false, true);
 	// save time as a number
 	time = time.getTime();
 
     if (timeoveride != null)
         time = timeoveride.getTime();
 
-	if (!fs.existsSync(babadata.datalocation + "loggedUsersVCC.csv"))
+	if (!fs.existsSync(babadata.datalocation + 'loggedUsersVCC.csv'))
 	{
-		fs.writeFileSync(babadata.datalocation + "loggedUsersVCC.csv", "");
+		fs.writeFileSync(babadata.datalocation + 'loggedUsersVCC.csv', '');
 	}
 
-	fs.appendFileSync(babadata.datalocation + "loggedUsersVCC.csv", newMemberID + "," + newChannelID + "," + oldMemberID + "," + oldChannelID + "," + time + "," + guildID + "\n");
+	fs.appendFileSync(babadata.datalocation + 'loggedUsersVCC.csv', newMemberID + ',' + newChannelID + ',' + oldMemberID + ',' + oldChannelID + ',' + time + ',' + guildID + '\n');
 }
 
 /**
@@ -903,9 +903,9 @@ function logVCC(newMemberID, newChannelID, oldMemberID, oldChannelID, guildID, t
 function clearVCCList()
 {
 	// load loggedUsersVCC.json
-	var loggedUsersVCC = fs.readFileSync(babadata.datalocation + "loggedUsersVCC.csv");
+	var loggedUsersVCC = fs.readFileSync(babadata.datalocation + 'loggedUsersVCC.csv');
 	// clear the file
-	fs.writeFileSync(babadata.datalocation + "loggedUsersVCC.csv", "");
+	fs.writeFileSync(babadata.datalocation + 'loggedUsersVCC.csv', '');
 
 	loggedUsersVCC = loggedUsersVCC.toString();
 
@@ -913,7 +913,7 @@ function clearVCCList()
 	// for each line, get the newMember.id, newMember.channelId, oldMember.id, oldMember.channelId, time
 	// call voiceChannelChangeLOGGED(newMember.id, oldMember.id, newMember.channelId, oldMember.channelId, time)
     // Process lines sequentially to ensure saveStuff runs one at a time
-    var lines = loggedUsersVCC.split("\n");
+    var lines = loggedUsersVCC.split('\n');
     async function processLinesSequentially(lines) 
     {
         for (let i = 0; i < lines.length; i++)
@@ -940,11 +940,11 @@ function saveStuff(lineWhole, i)
         {
             if (lineWhole.length > 0)
             {
-                var line = lineWhole.split(",");
+                var line = lineWhole.split(',');
                 var newMemberID = line[0];
-                var newChannelID = line[1] == "null" ? null : line[1];
+                var newChannelID = line[1] == 'null' ? null : line[1];
                 var oldMemberID = line[2];
-                var oldChannelID = line[3] == "null" ? null : line[3];
+                var oldChannelID = line[3] == 'null' ? null : line[3];
                 var time = line[4];
                 // convert time to Date object
                 time = new Date(parseInt(time));
@@ -980,16 +980,16 @@ function voiceChannelChangeLOGGED(newMemberID, oldMemberID, newChannelID, oldCha
 	{
         const VCCChangeAsync = async function() 
         {
-            if (newChannelID != null && newChannelID != oldChannelID && userOptValue(guild, newMemberID, "voice"))
+            if (newChannelID != null && newChannelID != oldChannelID && userOptValue(guild, newMemberID, 'voice'))
             {
                 var uJV = await userJoinedVoice(newMemberID, newChannelID, guild, overideTime);
-                console.log("Join Update: " + uJV, false, true);
+                console.log('Join Update: ' + uJV, false, true);
             }
 
             if (oldChannelID != null && newChannelID != oldChannelID)
             {
                 var uLV = await userLeftVoice(oldMemberID, oldChannelID, guild, overideTime);
-                console.log("Leave Update: " + uLV, false, true);
+                console.log('Leave Update: ' + uLV, false, true);
             }
         };
 
@@ -997,10 +997,10 @@ function voiceChannelChangeLOGGED(newMemberID, oldMemberID, newChannelID, oldCha
         {
             VCCChangeAsync().then(() =>
             {
-                console.log("Voice Channel Change Complete from Logged Values", false, true);
+                console.log('Voice Channel Change Complete from Logged Values', false, true);
             }).catch((err) => 
             {
-                DMMePlease("Error in Voice Channel Change from Logged Values: " + err);
+                DMMePlease('Error in Voice Channel Change from Logged Values: ' + err);
                 logVCC(newMemberID, newChannelID, oldMemberID, oldChannelID, guildID, overideTime);
             });
         }
@@ -1023,7 +1023,7 @@ function NameFromUserIDNoFakes(userid)
             resolve(result.PersonName);
         }).catch((err) => 
         {
-            resolve("No One");
+            resolve('No One');
         });
     });
 
@@ -1056,7 +1056,7 @@ function NameFromUserIDNoFakes(userid)
  * @returns {Promise<string>} The best available display name, falling back to the
  *   Discord username if all other sources are empty.
  */
-async function PickThePerfectUsername(member, order = ["N", "C", "G", "U"], regexTrim = true)
+async function PickThePerfectUsername(member, order = ['N', 'C', 'G', 'U'], regexTrim = true)
 {
 	// N - Discord Nickname in Server
 	// C - Cached Name (from database)
@@ -1070,13 +1070,13 @@ async function PickThePerfectUsername(member, order = ["N", "C", "G", "U"], rege
 
     // if any are null set to empty string
     if (nName == null)
-        nName = "";
+        nName = '';
     if (cahcedName == null)
-        cahcedName = "";
-    if (gName == null || gName == "No One")
-        gName = "";
+        cahcedName = '';
+    if (gName == null || gName == 'No One')
+        gName = '';
     if (uName == null)
-        uName = "";
+        uName = '';
 
     // filter to only character a-z, A-Z, 0-9, and space
     if (regexTrim)
@@ -1093,17 +1093,17 @@ async function PickThePerfectUsername(member, order = ["N", "C", "G", "U"], rege
 	{
 		switch (key) 
 		{
-			case "N":
-				if (nName != "") return nName;
+			case 'N':
+				if (nName != '') return nName;
 				break;
-			case "C":
-				if (cahcedName != "") return cahcedName;
+			case 'C':
+				if (cahcedName != '') return cahcedName;
 				break;
-			case "G":
-				if (gName != "") return gName;
+			case 'G':
+				if (gName != '') return gName;
 				break;
-			case "U":
-				if (uName != "") return uName;
+			case 'U':
+				if (uName != '') return uName;
 				break;
 		}
 	}
@@ -1146,7 +1146,7 @@ function voiceChannelChange(newMember, oldMember)
     
         var guild = newMember.guild;
 
-        var shadowRealmChannel = babadata.testing === undefined ? "454464489681715200" : "1240062704966832209";
+        var shadowRealmChannel = babadata.testing === undefined ? '454464489681715200' : '1240062704966832209';
 
         if (newUserChannel == shadowRealmChannel || oldUserChannel == shadowRealmChannel)
         {
@@ -1154,51 +1154,51 @@ function voiceChannelChange(newMember, oldMember)
 
             var usersInShadowRealm = await guild.channels.fetch(shadowRealmChannel).then(channel => channel.members.map(member => member.id));
             if (usersInShadowRealm.length == 0)
-                channelStatusChange(shadowRealmChannel, "");
+                channelStatusChange(shadowRealmChannel, '');
             else
             {
                 var userNamedList = [];
                 for (var i = 0; i < usersInShadowRealm.length; i++)
                 {
                     var userID = usersInShadowRealm[i];
-                    var userName = await PickThePerfectUsername(guild.members.cache.get(userID), ["C", "N", "G", "U"], true);
+                    var userName = await PickThePerfectUsername(guild.members.cache.get(userID), ['C', 'N', 'G', 'U'], true);
                     userNamedList.push(userName);
                 }
 
                 // join the names with commas without the last comma and having an and before the last name
-                var userNamedListString = userNamedList.join(", ");
+                var userNamedListString = userNamedList.join(', ');
                 if (userNamedList.length > 1)
-                	userNamedListString = userNamedListString.substring(0, userNamedListString.lastIndexOf(",")) + (userNamedList.length > 2 ? "," : "") + " and" + userNamedListString.substring(userNamedListString.lastIndexOf(",") + 1);
+                	userNamedListString = userNamedListString.substring(0, userNamedListString.lastIndexOf(',')) + (userNamedList.length > 2 ? ',' : '') + ' and' + userNamedListString.substring(userNamedListString.lastIndexOf(',') + 1);
                 else if (userNamedList.length == 1)
                 	userNamedListString = userNamedList[0];
 
-                userNamedListString += (userNamedList.length > 1 ? " are" : " is") + " Sleeping, please do not wake" + (userNamedList.length > 1 ? " them" : "") + ".";
+                userNamedListString += (userNamedList.length > 1 ? ' are' : ' is') + ' Sleeping, please do not wake' + (userNamedList.length > 1 ? ' them' : '') + '.';
 
                 channelStatusChange(shadowRealmChannel, userNamedListString);
             }
         }
 
-        if (newUserChannel != null && newUserChannel != oldUserChannel && await userOptValue(guild, newUserID, "voice"))
+        if (newUserChannel != null && newUserChannel != oldUserChannel && await userOptValue(guild, newUserID, 'voice'))
         {
             var uJV = await userJoinedVoice(newUserID, newUserChannel, guild);
-            console.log("Join Update: " + uJV, false, true);
+            console.log('Join Update: ' + uJV, false, true);
         }
     
         if (oldUserChannel != null && newUserChannel != oldUserChannel)
         {
             var uLV = await userLeftVoice(oldUserID, oldUserChannel, guild);
-            console.log("Leave Update: " + uLV, false, true);
+            console.log('Leave Update: ' + uLV, false, true);
         }
-    }
+    };
     
     if (newMember.channelId != oldMember.channelId)
     {
         VCCChangeAsync().then(() =>
         {
-            console.log("Voice Channel Change Complete", false, true);
+            console.log('Voice Channel Change Complete', false, true);
         }).catch((err) => 
         {
-            DMMePlease("Error in Voice Channel Change: " + err);
+            DMMePlease('Error in Voice Channel Change: ' + err);
             logVCC(newMember.id, newMember.channelId, oldMember.id, oldMember.channelId, newMember.guild.id);
         });
     }
@@ -1222,7 +1222,7 @@ function voiceChannelChange(newMember, oldMember)
 function userOptValue(guild, userID, val)
 {
     var PromisedOptVal = new Promise((resolve, reject) => {
-        let rawdata = fs.readFileSync(babadata.datalocation + "optscache.json");
+        let rawdata = fs.readFileSync(babadata.datalocation + 'optscache.json');
         let optscache = JSON.parse(rawdata);
     
         for (var i = 0 ; i < optscache.length; i++)
@@ -1230,7 +1230,7 @@ function userOptValue(guild, userID, val)
             var opt = optscache[i];
             if (opt.DiscordID == userID && opt.Item == val)
             {
-                resolve(opt.Opt == "in");
+                resolve(opt.Opt == 'in');
                 return;
             }
         }
@@ -1249,16 +1249,16 @@ function userOptValue(guild, userID, val)
                 OptInOrOut(user, val).then((result) =>
                 {
                     guild.channels.fetch(babadata.botchan).then(channel => {
-                        channel.send("<@" + userID + "> would you like to opt in for baba voice activity data analysis?\n"
-                        + "Type `/optin` to opt in, or `/optout` to opt out (default).\n" + 
-                        "This data will be used to create fun charts and do predictive analysis of voice activity.\n" +
+                        channel.send('<@' + userID + '> would you like to opt in for baba voice activity data analysis?\n'
+                        + 'Type `/optin` to opt in, or `/optout` to opt out (default).\n' + 
+                        'This data will be used to create fun charts and do predictive analysis of voice activity.\n' +
                         "If you don't want to see this message, call one of the commands.\n" +
-                        "Check out <#1069025445162524792> to see some cool charts that were made over the years.");
+                        'Check out <#1069025445162524792> to see some cool charts that were made over the years.');
                     })
                     .catch(console.error);
                 
                     // do the @ of person and add to opt out first
-                    console.log("No In"); 
+                    console.log('No In'); 
 
                     resolve(false);
                 })
@@ -1293,28 +1293,28 @@ function SaveSlashFridayJson(testingOveride = false)
 {
     var PromisedSave = new Promise((resolve, reject) =>
     {
-        var retVal = "Friday Counter has not been updated, as it is Empty";
+        var retVal = 'Friday Counter has not been updated, as it is Empty';
         if ((global.dbAccess[1] && global.dbAccess[0]))
         {
             if (testingOveride && babadata.testing !== undefined)
             {
-                console.log("Saving Friday Counter to Database (Testing Overide)", false, true);
+                console.log('Saving Friday Counter to Database (Testing Overide)', false, true);
                 IncrementCounters().then(() =>
                 {
-                    retVal = "Friday Counter Updated (Testing Overide)";
+                    retVal = 'Friday Counter Updated (Testing Overide)';
                     resolve(retVal);
-                }).catch((err) => {resolve("Friday Counter Failed to Update (Testing Overide): " + err)});
+                }).catch((err) => {resolve('Friday Counter Failed to Update (Testing Overide): ' + err);});
             }
     
             // save to database
             if (babadata.testing === undefined)
             {
-                console.log("Saving Friday Counter to Database", false, true);
+                console.log('Saving Friday Counter to Database', false, true);
                 IncrementCounters().then(() =>
                 {
-                    retVal = "Friday Counter Updated";
+                    retVal = 'Friday Counter Updated';
                     resolve(retVal);
-                }).catch((err) => {resolve("Friday Counter Failed to Update: " + err)});
+                }).catch((err) => {resolve('Friday Counter Failed to Update: ' + err);});
             }
         }
 
@@ -1337,23 +1337,23 @@ function IncrementCounters()
     {
         // Increment Friday Counter
         const FridayResult = await FridayCounterIncrement();
-        console.log("Friday Counter: " + FridayResult, false, true);
+        console.log('Friday Counter: ' + FridayResult, false, true);
 
         // Increment Friday Messages
         const FridayMessagesResult = await FridayMessagesUpdate();
-        console.log("Friday Messages: " + FridayMessagesResult, false, true);
-    }
+        console.log('Friday Messages: ' + FridayMessagesResult, false, true);
+    };
 
     var PromisedIncrement = new Promise((resolve, reject) =>
     {
         CounterAsync().then(() => 
         {
-            console.log("All Counters Incremented", false, true);
-            resolve("SuccCess");
+            console.log('All Counters Incremented', false, true);
+            resolve('SuccCess');
         }).catch((err) => 
         {
-            DMMePlease("Error Incrementing Counters: " + err);
-            reject("IncrementCounters: " + err);
+            DMMePlease('Error Incrementing Counters: ' + err);
+            reject('IncrementCounters: ' + err);
         });
     });
 
@@ -1373,11 +1373,11 @@ function FridayCounterIncrement()
 {
     var PromisedFridayCounter = new Promise((resolve, reject) =>
     {
-        var fridayJson = fs.readFileSync(babadata.datalocation + "fridayCounter.json");
+        var fridayJson = fs.readFileSync(babadata.datalocation + 'fridayCounter.json');
         var friday = JSON.parse(fridayJson);
-        var qureyStart = "INSERT INTO layersdeep (FridayUID,LoopsOrDOW,LayersDeep,Count,HeadingLevel,Sender) VALUES "
-        var qureyEnd = `AS newDeepLayers ON DUPLICATE KEY UPDATE layersdeep.Count = layersdeep.Count + newDeepLayers.Count;`;
-        var queryMiddle = "";
+        var qureyStart = 'INSERT INTO layersdeep (FridayUID,LoopsOrDOW,LayersDeep,Count,HeadingLevel,Sender) VALUES ';
+        var qureyEnd = 'AS newDeepLayers ON DUPLICATE KEY UPDATE layersdeep.Count = layersdeep.Count + newDeepLayers.Count;';
+        var queryMiddle = '';
 
         for (var i = 0; i < Object.keys(friday).length; i++)
         {
@@ -1385,9 +1385,9 @@ function FridayCounterIncrement()
             var layersdeeps = friday[key];
 
             // uid is key before --, group is key after --
-            var uid = key.split("--")[0];
-            var group = key.split("--")[1];
-            var user = key.split("--")[2];
+            var uid = key.split('--')[0];
+            var group = key.split('--')[1];
+            var user = key.split('--')[2];
 
 
             // update the value in the database for each layer in value, on new entry add it
@@ -1409,7 +1409,7 @@ function FridayCounterIncrement()
 
         if (queryMiddle.length == 0)
         {
-            resolve("Friday Counter Empty");
+            resolve('Friday Counter Empty');
             return;
         }
 
@@ -1418,15 +1418,15 @@ function FridayCounterIncrement()
         .then((result) =>
         {
 			var data = {};
-			fs.writeFileSync(babadata.datalocation + "fridayCounter.json", JSON.stringify(data));
+			fs.writeFileSync(babadata.datalocation + 'fridayCounter.json', JSON.stringify(data));
             global.fridayCounter = {};
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
         .catch((err) => 
         {
-            DMMePlease("Error Incrementing Friday Counter: " + err);
-            DMMEAFile("fridayCounter.json", fridayJson, "Friday Counter Increment Error Data");
-            reject("FridayCounter");
+            DMMePlease('Error Incrementing Friday Counter: ' + err);
+            DMMEAFile('fridayCounter.json', fridayJson, 'Friday Counter Increment Error Data');
+            reject('FridayCounter');
         });
     });
 
@@ -1446,17 +1446,17 @@ function FridayMessagesUpdate()
 {
     var PromisedFridayMessages = new Promise((resolve, reject) =>
     {
-        var fridayMessages = fs.readFileSync(babadata.datalocation + "fridaymessages.json");
+        var fridayMessages = fs.readFileSync(babadata.datalocation + 'fridaymessages.json');
         var friday = JSON.parse(fridayMessages);
     
         if (friday.length == 0)
         {
-            resolve("Friday Messages Empty");
+            resolve('Friday Messages Empty');
             return;
         }
 
-        var qureyStart2 = `INSERT INTO myitisfriday (Sender,TimeStamp,Message,Condensed,Seed,FileVersion) VALUES `;
-        var queryMiddle2 = "";
+        var qureyStart2 = 'INSERT INTO myitisfriday (Sender,TimeStamp,Message,Condensed,Seed,FileVersion) VALUES ';
+        var queryMiddle2 = '';
 
         for (var i = 0; i < friday.length; i++)
         {
@@ -1465,10 +1465,10 @@ function FridayMessagesUpdate()
             var sender = fmdItem.UID;
     
             var d1 = new Date(fmdItem.Date);
-            var mpre1 = d1.getMonth() + 1 < 10 ? 0 : "";
-            var dpre1 = d1.getUTCDate() < 10 ? 0 : "";
+            var mpre1 = d1.getMonth() + 1 < 10 ? 0 : '';
+            var dpre1 = d1.getUTCDate() < 10 ? 0 : '';
     
-            var time = `${d1.getFullYear()}-${mpre1}${d1.getMonth() + 1}-${dpre1}${d1.getDate()} ${d1.getHours()}:${d1.getMinutes()}:${d1.getSeconds()}`
+            var time = `${d1.getFullYear()}-${mpre1}${d1.getMonth() + 1}-${dpre1}${d1.getDate()} ${d1.getHours()}:${d1.getMinutes()}:${d1.getSeconds()}`;
             
             var msg = fmdItem.Text;
             // replace all " with ""
@@ -1495,14 +1495,14 @@ function FridayMessagesUpdate()
         .then((result) =>
         {
 			var data = [];
-			fs.writeFileSync(babadata.datalocation + "fridaymessages.json", JSON.stringify(data));
-            resolve("SuccCess");
+			fs.writeFileSync(babadata.datalocation + 'fridaymessages.json', JSON.stringify(data));
+            resolve('SuccCess');
         })
         .catch((err) => 
         {
-            DMMePlease("Error Updating Friday Messages: " + err);
-            DMMEAFile("fridaymessages.json", fridayMessages, "Friday Messages Update Error Data");
-            reject("FridayMessages");
+            DMMePlease('Error Updating Friday Messages: ' + err);
+            DMMEAFile('fridaymessages.json', fridayMessages, 'Friday Messages Update Error Data');
+            reject('FridayMessages');
         });
     });
 
@@ -1526,76 +1526,76 @@ function LoadAllTheCache()
     {
         // Emoji Cache
         const EmojiResult = await LoadEmojiCache();
-        console.log("Emoji Cache: " + EmojiResult, false, true);
+        console.log('Emoji Cache: ' + EmojiResult, false, true);
 
         // React Values - REACTOcache.json - `Select * from reacto`
         const ReactResult = await LoadReactCache();
-        console.log("React Cache: " + ReactResult, false, true);
+        console.log('React Cache: ' + ReactResult, false, true);
 
         // Fish Values - FISHcache.json - `Select * from fishdb`
         const FishResult = await LoadFishCache();
-        console.log("Fish Cache: " + FishResult, false, true);
+        console.log('Fish Cache: ' + FishResult, false, true);
 
         // Frog Values - FROGcache.json - `Select * from frog`
         const FrogResult = await LoadFrogCache();
-        console.log("Frog Cache: " + FrogResult, false, true);
+        console.log('Frog Cache: ' + FrogResult, false, true);
         // Frog Control Options - FROGcontrol.json - `Select * from frogcontrol`
         const FrogControlResult = await LoadFrogControlCache();
-        console.log("Frog Control Cache: " + FrogControlResult, false, true);
+        console.log('Frog Control Cache: ' + FrogControlResult, false, true);
 
         // DOWItems Cache - DOWItems.json - `Select * from dow` -> `Select * from dowitems`
         const DOWItemsResult = await LoadDOWItemsCache();
-        console.log("DOWItems Cache: " + DOWItemsResult, false, true);
+        console.log('DOWItems Cache: ' + DOWItemsResult, false, true);
 
         // Channel Name Cache - channelCache.json - `Select * from channelval`
         const ChannelNamesResult = await LoadChannelNamesCache();
-        console.log("Channel Names Cache: " + ChannelNamesResult, false, true);
+        console.log('Channel Names Cache: ' + ChannelNamesResult, false, true);
 
         // User Name Cache - userCache.json - `Select * from userval`
         const UserValuesResult = await LoadUserValuesCache();
-        console.log("User Values Cache: " + UserValuesResult, false, true);
+        console.log('User Values Cache: ' + UserValuesResult, false, true);
         
         // Please Values - Pleasedcache.json - `SELECT PersonName, UserID, DefaultNormalChance, DefaultH1Chance, DefaultH2Chance, DefaultH3CHance, DefaultRNGFontChance, DefaultFlagChance FROM pleased
                                             // Left Join userval on pleased.UserID = userval.DiscordID;`
         const PleasedResult = await LoadPleasedCache();
-        console.log("Pleased Cache: " + PleasedResult, false, true);
+        console.log('Pleased Cache: ' + PleasedResult, false, true);
         // Please Overide Options - PleasedOVERIDEcache.json - `SELECT PersonName, OverideUserIDs, UserID, DefaultNormalChance, DefaultH1Chance, DefaultH2Chance, DefaultH3CHance, DefaultRNGFontChance, DefaultFlagChance FROM pleasedOverides
                                                             //  Left Join userval on pleasedOverides.UserID = userval.DiscordID;`
         const PleasedOverideResult = await LoadPleasedOverideCache();
-        console.log("Pleased Overide Cache: " + PleasedOverideResult, false, true);    
+        console.log('Pleased Overide Cache: ' + PleasedOverideResult, false, true);    
         
         // Baba Wednesday Database
         const BabaWednesdayResult = await LoadHolidaysCache();
-        console.log("Baba Wednesday Cache: " + BabaWednesdayResult, false, true);
+        console.log('Baba Wednesday Cache: ' + BabaWednesdayResult, false, true);
 
         // Haiku Database
         const HaikuResult = await LoadHaikusCache();
-        console.log("Haiku Cache: " + HaikuResult, false, true);
+        console.log('Haiku Cache: ' + HaikuResult, false, true);
 
         // Opts Cache - optscache.json - `Select * from opting`
         const OptResult = await LoadOptCache();
-        console.log("Opts Cache: " + OptResult, false, true);
+        console.log('Opts Cache: ' + OptResult, false, true);
     
         // Slash Friday Values -- DOWcache.json - `SELECT * FROM dowfunny left join fridaytimegates on dowfunny.UID = fridaytimegates.fUID`
             // Friday Control Options -- DOWcontrol.json - `Select * from dowcontrol`
             // Friday Sub Options -- FridayLoops.json - `Select * from fridaynestedloops`
             // Time Gates -- TimeGates.json - `Select * from timegatess`
         const FridayResult = await LoadAllSlashFridayStuff();
-        console.log("Friday Cache: " + FridayResult, false, true);
+        console.log('Friday Cache: ' + FridayResult, false, true);
 
         // TODO: On the first of the month, update frogholidays folder from downloading bikus.org/frogholidays.zip, and to add a flag to force download images from force cache download
-    }
+    };
 
     var PromisedAllCache = new Promise((resolve, reject) =>
     {
         CachceAsync().then(() => 
         {
-            console.log("All Cache Loaded", false, true);
-            resolve("SuccCess");
+            console.log('All Cache Loaded', false, true);
+            resolve('SuccCess');
         }).catch((err) => 
         {
-            DMMePlease("Error Loading Cache: " + err);
-            reject("AllCache");
+            DMMePlease('Error Loading Cache: ' + err);
+            reject('AllCache');
         });
     });
 
@@ -1614,16 +1614,16 @@ function LoadEmojiCache()
 {
     var PromisedEmoji = new Promise((resolve, reject) =>
     {
-        var emojiurl = "https://raw.githubusercontent.com/chalda-pnuzig/emojis.json/refs/heads/master/src/list.with.modifiers.json";
+        var emojiurl = 'https://raw.githubusercontent.com/chalda-pnuzig/emojis.json/refs/heads/master/src/list.with.modifiers.json';
 
         fetch(emojiurl).then(res => res.json()).then(json => {
             // save to emojiJSONCache
             var newEmojis = groupEmojiByTones(json);
             json.emojis = newEmojis;
 
-            fs.writeFileSync(babadata.datalocation + "emojiJSONCache.json", JSON.stringify(json));
-            resolve("SuccCess");
-        }).catch((err) => {reject("Emoji")});
+            fs.writeFileSync(babadata.datalocation + 'emojiJSONCache.json', JSON.stringify(json));
+            resolve('SuccCess');
+        }).catch((err) => {reject('Emoji');});
     });
 
     return PromisedEmoji;
@@ -1642,8 +1642,8 @@ function LoadReactCache()
 {
     var PromisedReact = new Promise((resolve, reject) =>
     {
-        var query = `Select * from reacto`;
-        var jsonLocation = babadata.datalocation + "REACTOcache.json";
+        var query = 'Select * from reacto';
+        var jsonLocation = babadata.datalocation + 'REACTOcache.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -1654,15 +1654,15 @@ function LoadReactCache()
                 var res = result[i];
                 var resj = 
                 {
-                    "Phrase": res.phrase,
-                    "ReactIDs": res.reactIDs,
-                    "AlternatePhrases": res.altPhrases,
-                    "IgnoredPhrases": res.ignorePhrases,
-                    "IgnorePlease": res.IgnorePlease,
-                    "StartDate": res.StartTime,
-                    "EndDate": res.EndTime,
-                    "Prompt": res.Prompt,
-                }
+                    'Phrase': res.phrase,
+                    'ReactIDs': res.reactIDs,
+                    'AlternatePhrases': res.altPhrases,
+                    'IgnoredPhrases': res.ignorePhrases,
+                    'IgnorePlease': res.IgnorePlease,
+                    'StartDate': res.StartTime,
+                    'EndDate': res.EndTime,
+                    'Prompt': res.Prompt,
+                };
     
                 // if startdate != null set year to this year
                 if (resj.StartDate != null)
@@ -1681,13 +1681,13 @@ function LoadReactCache()
                     resj.EndDate = new Date(8640000000000000);
     
                 // split reactIDs by comma
-                resj.ReactIDs = resj.ReactIDs.split(",");
+                resj.ReactIDs = resj.ReactIDs.split(',');
                 for (var j = 0; j < resj.ReactIDs.length; j++)
                 {
                     // trim spaces
                     resj.ReactIDs[j] = resj.ReactIDs[j].trim();
-                    var reactID = resj.ReactIDs[j].split(":");
-                    resj.ReactIDs[j] = {"ID": reactID[0], "Chance": reactID[1] ? reactID[1] : 100};
+                    var reactID = resj.ReactIDs[j].split(':');
+                    resj.ReactIDs[j] = {'ID': reactID[0], 'Chance': reactID[1] ? reactID[1] : 100};
                 }
     
                 // loop through reactIDs and add id to ReactIDList, chance number of times
@@ -1702,7 +1702,7 @@ function LoadReactCache()
     
                 // split altPhrases by comma, if not null
                 if (resj.AlternatePhrases != null)
-                    resj.AlternatePhrases = resj.AlternatePhrases.split(",");
+                    resj.AlternatePhrases = resj.AlternatePhrases.split(',');
                 else 
                     resj.AlternatePhrases = [];
     
@@ -1711,12 +1711,12 @@ function LoadReactCache()
                 {
                     // trim spaces
                     resj.AlternatePhrases[j] = resj.AlternatePhrases[j].trim();
-                    resj.AlternatePhrases[j] = resj.AlternatePhrases[j].split("+");
+                    resj.AlternatePhrases[j] = resj.AlternatePhrases[j].split('+');
                 }
     
                 // split ignoredPhrases by comma, if not null
                 if (resj.IgnoredPhrases != null)
-                    resj.IgnoredPhrases = resj.IgnoredPhrases.split(",");
+                    resj.IgnoredPhrases = resj.IgnoredPhrases.split(',');
                 else
                     resj.IgnoredPhrases = [];
     
@@ -1726,7 +1726,7 @@ function LoadReactCache()
                 {
                     // trim spaces
                     resj.IgnoredPhrases[j] = resj.IgnoredPhrases[j].trim();
-                    resj.IgnoredPhrases[j] = resj.IgnoredPhrases[j].split("+");
+                    resj.IgnoredPhrases[j] = resj.IgnoredPhrases[j].split('+');
                 }
     
                 opts.push(resj);
@@ -1734,9 +1734,9 @@ function LoadReactCache()
     
             var data = JSON.stringify(opts);
             fs.writeFileSync(jsonLocation, data);
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("React")});
+        .catch((err) => {reject('React');});
     });
 
     return PromisedReact;
@@ -1754,8 +1754,8 @@ function LoadFishCache()
 {
     var PromisedFish = new Promise((resolve, reject) =>
     {
-        var query = `Select * from fishdb`;
-        var jsonLocation = babadata.datalocation + "FISHcache.json";
+        var query = 'Select * from fishdb';
+        var jsonLocation = babadata.datalocation + 'FISHcache.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -1764,25 +1764,25 @@ function LoadFishCache()
             for (var i = 0; i < result.length; i++)
             {
                 var res = result[i];
-                text = "https://bikus.org/Images/Fish/" + res.FishIMGURL;
+                text = 'https://bikus.org/Images/Fish/' + res.FishIMGURL;
                 var resj = 
                 {
-                    "url": text,
-                    "FishWords": res.FishWords,
-                    "FishBuff": res.WithFishMultBuff,
-                    "ProcFishless": res.ProcOnWordsNoFish,
-                    "ProcChance": res.ProcChance,
-                    "DefaultOccCount": res.DefaultOccCount,
-                }
+                    'url': text,
+                    'FishWords': res.FishWords,
+                    'FishBuff': res.WithFishMultBuff,
+                    'ProcFishless': res.ProcOnWordsNoFish,
+                    'ProcChance': res.ProcChance,
+                    'DefaultOccCount': res.DefaultOccCount,
+                };
 
                 opts.push(resj);
             }
 
             var data = JSON.stringify(opts);
             fs.writeFileSync(jsonLocation, data);
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("Fish")});
+        .catch((err) => {reject('Fish');});
     });
 
     return PromisedFish;
@@ -1800,10 +1800,10 @@ function LoadReminderCache()
 {
     var PromisedReminders = new Promise((resolve, reject) =>
     {
-        var testIndex = babadata.testing === undefined ? "0" : "1";
+        var testIndex = babadata.testing === undefined ? '0' : '1';
 
-        var query = `Select * from reminders where Testing = ` + testIndex;
-        var jsonLocation = babadata.datalocation + "reminders.json";
+        var query = 'Select * from reminders where Testing = ' + testIndex;
+        var jsonLocation = babadata.datalocation + 'reminders.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -1815,7 +1815,7 @@ function LoadReminderCache()
 
                 var files = null;
                 if (res.Files != null && res.Files.length > 0)
-                    files = res.Files.split(",");
+                    files = res.Files.split(',');
 
                 
                 var ctimez = new Date(res.Date);
@@ -1824,27 +1824,27 @@ function LoadReminderCache()
 
                 var resj = 
                 {
-                    "Source": res.Source,
-                    "Message": res.Message,
-                    "Files": files,
-                    "Date": ctimez,
-                    "ChannelID": res.ChannelID,
-                    "UserID": res.UserID,
-                    "ThreadParentID": res.ThreadParentID == "null" ? null : res.ThreadParentID,
-                    "EnableAtPerson": res.EnabledAtPerson,
-                    "State": "Pending",
-                    "ID": res.ID,
-                    "UpdateDB": false
-                }
+                    'Source': res.Source,
+                    'Message': res.Message,
+                    'Files': files,
+                    'Date': ctimez,
+                    'ChannelID': res.ChannelID,
+                    'UserID': res.UserID,
+                    'ThreadParentID': res.ThreadParentID == 'null' ? null : res.ThreadParentID,
+                    'EnableAtPerson': res.EnabledAtPerson,
+                    'State': 'Pending',
+                    'ID': res.ID,
+                    'UpdateDB': false
+                };
 
                 opts.push(resj);
             }
 
             var data = JSON.stringify(opts);
             fs.writeFileSync(jsonLocation, data);
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("Reminders")});
+        .catch((err) => {reject('Reminders');});
     });
 
     return PromisedReminders;
@@ -1862,8 +1862,8 @@ function LoadFrogCache()
 {
     var PromisedFrog = new Promise((resolve, reject) =>
     {
-        var query = `Select * from frog`;
-        var jsonLocation = babadata.datalocation + "FROGcache.json";
+        var query = 'Select * from frog';
+        var jsonLocation = babadata.datalocation + 'FROGcache.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -1875,19 +1875,19 @@ function LoadFrogCache()
 				text = res.froglink;
 				var resj = 
 				{
-					"text": text,
-					"enabledDef": res.enabled,
-					"IDS": res.overideIDs
-				}
+					'text': text,
+					'enabledDef': res.enabled,
+					'IDS': res.overideIDs
+				};
 
 				opts.push(resj);
 			}
             
             var data = JSON.stringify(opts);
             fs.writeFileSync(jsonLocation, data);
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("Frog")});
+        .catch((err) => {reject('Frog');});
     });
 
     return PromisedFrog;
@@ -1904,8 +1904,8 @@ function LoadFrogControlCache()
 {
     var PromisedFrogControl = new Promise((resolve, reject) =>
     {
-        var query = `Select * from frogcontrol`;
-        var jsonLocation = babadata.datalocation + "FROGcontrol.json";
+        var query = 'Select * from frogcontrol';
+        var jsonLocation = babadata.datalocation + 'FROGcontrol.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -1916,18 +1916,18 @@ function LoadFrogControlCache()
                 var res = result[i];
 				var resj = 
 				{
-					"ID": res.IDFROGControl,
-					"Control": res.controlLevel
-				}
+					'ID': res.IDFROGControl,
+					'Control': res.controlLevel
+				};
 
                 opts.push(resj);
             }
             
             var data = JSON.stringify(opts);
             fs.writeFileSync(jsonLocation, data);
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("FrogControl")});
+        .catch((err) => {reject('FrogControl');});
     });
 
     return PromisedFrogControl;
@@ -1945,8 +1945,8 @@ function LoadDOWItemsCache()
 {
     var PromisedDOWItems = new Promise((resolve, reject) =>
     {
-        var query = `Select * from dow`;
-        var jsonLocation = babadata.datalocation + "DOWItems.json";
+        var query = 'Select * from dow';
+        var jsonLocation = babadata.datalocation + 'DOWItems.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -1962,7 +1962,7 @@ function LoadDOWItemsCache()
 				adam[res.date].End = res.endtime;
 			}
 
-            var query = `Select * from dowitems`;
+            var query = 'Select * from dowitems';
             callSQLQuery(query)
             .then((result) =>
             {
@@ -1978,11 +1978,11 @@ function LoadDOWItemsCache()
 
                 var data = JSON.stringify(adam);
                 fs.writeFileSync(jsonLocation, data);
-                resolve("SuccCess");
+                resolve('SuccCess');
             })
-            .catch((err) => {reject("DOWItems")});
+            .catch((err) => {reject('DOWItems');});
         })
-        .catch((err) => {reject("DOWItems")});
+        .catch((err) => {reject('DOWItems');});
     });
 
     return PromisedDOWItems;
@@ -2000,7 +2000,7 @@ function LoadChannelNamesCache()
 {
     var PromisedChannelNames = new Promise((resolve, reject) =>
     {
-        var query = `Select * from channelval`;
+        var query = 'Select * from channelval';
         global.channelCache = {};
     
         callSQLQuery(query)
@@ -2011,9 +2011,9 @@ function LoadChannelNamesCache()
                 var res = result[i];
                 global.channelCache[res.ChannelID] = res.ChannelName;
             }
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("ChannelNames")});
+        .catch((err) => {reject('ChannelNames');});
     });
 
     return PromisedChannelNames;
@@ -2032,7 +2032,7 @@ function LoadUserValuesCache()
 {
     var PromisedUserValues = new Promise((resolve, reject) =>
     {
-        var query = `SELECT * FROM userval Left join alteventnames on BirthdayEventID = EventID`;
+        var query = 'SELECT * FROM userval Left join alteventnames on BirthdayEventID = EventID';
         global.userCache = {};
     
         callSQLQuery(query)
@@ -2049,15 +2049,15 @@ function LoadUserValuesCache()
                 {
                     var resj =
                     {
-                        "PersonName": res.PersonName,
-                        "AltNames": [ res.EventName ]
-                    }
+                        'PersonName': res.PersonName,
+                        'AltNames': [ res.EventName ]
+                    };
                     global.userCache[res.DiscordID] = resj;
                 }
             }
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("UserValues")});
+        .catch((err) => {reject('UserValues');});
     });
 
     return PromisedUserValues;
@@ -2078,7 +2078,7 @@ function LoadPleasedCache()
     {
         var query = `SELECT PersonName, UserID, DefaultNormalChance, DefaultH1Chance, DefaultH2Chance, DefaultH3CHance, DefaultRNGFontChance, DefaultFlagChance FROM pleased
 	                 Left Join userval on pleased.UserID = userval.DiscordID;`;
-        var jsonLocation = babadata.datalocation + "Pleasedcache.json";
+        var jsonLocation = babadata.datalocation + 'Pleasedcache.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -2089,24 +2089,24 @@ function LoadPleasedCache()
                 var res = result[i];
                 var resj = 
                 {
-                    "PersonName": res.PersonName,
-                    "UserID": res.UserID,
-                    "DefaultNormalChance": res.DefaultNormalChance,
-                    "DefaultH1Chance": res.DefaultH1Chance,
-                    "DefaultH2Chance": res.DefaultH2Chance,
-                    "DefaultH3CHance": res.DefaultH3CHance,
-                    "DefaultRNGFontChance": res.DefaultRNGFontChance,
-                    "DefaultFlagChance": res.DefaultFlagChance,
-                }
+                    'PersonName': res.PersonName,
+                    'UserID': res.UserID,
+                    'DefaultNormalChance': res.DefaultNormalChance,
+                    'DefaultH1Chance': res.DefaultH1Chance,
+                    'DefaultH2Chance': res.DefaultH2Chance,
+                    'DefaultH3CHance': res.DefaultH3CHance,
+                    'DefaultRNGFontChance': res.DefaultRNGFontChance,
+                    'DefaultFlagChance': res.DefaultFlagChance,
+                };
 
                 opts.push(resj);
             }
 
             var data = JSON.stringify(opts);
             fs.writeFileSync(jsonLocation, data);
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("Pleased")});
+        .catch((err) => {reject('Pleased');});
     });
 
     return PromisedPleased;
@@ -2127,7 +2127,7 @@ function LoadPleasedOverideCache()
     {
         var query = `SELECT PersonName, OverideUserIDs, UserID, DefaultNormalChance, DefaultH1Chance, DefaultH2Chance, DefaultH3CHance, DefaultRNGFontChance, DefaultFlagChance FROM pleasedOverides
                      Left Join userval on pleasedOverides.UserID = userval.DiscordID;`;
-        var jsonLocation = babadata.datalocation + "PleasedOVERIDEcache.json";
+        var jsonLocation = babadata.datalocation + 'PleasedOVERIDEcache.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -2138,24 +2138,24 @@ function LoadPleasedOverideCache()
 				var res = result[i];
 				var resj = 
 				{
-					"UID": res.UserID,
-					"OverideUIDs": res.OverideUserIDs,
-					"DefaultNormalChance": res.DefaultNormalChance,
-					"DefaultH1Chance": res.DefaultH1Chance,
-					"DefaultH2Chance": res.DefaultH2Chance,
-					"DefaultH3Chance": res.DefaultH3CHance,
-					"DefaultRNGFontChance": res.DefaultRNGFontChance,
-					"DefaultFlagChance": res.DefaultFlagChance
-				}
+					'UID': res.UserID,
+					'OverideUIDs': res.OverideUserIDs,
+					'DefaultNormalChance': res.DefaultNormalChance,
+					'DefaultH1Chance': res.DefaultH1Chance,
+					'DefaultH2Chance': res.DefaultH2Chance,
+					'DefaultH3Chance': res.DefaultH3CHance,
+					'DefaultRNGFontChance': res.DefaultRNGFontChance,
+					'DefaultFlagChance': res.DefaultFlagChance
+				};
 
 				opts[res.PersonName] = resj;
 			}
 
             var data = JSON.stringify(opts);
             fs.writeFileSync(jsonLocation, data);
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("PleasedOveride")});
+        .catch((err) => {reject('PleasedOveride');});
     });
 
     return PromisedPleasedOveride;
@@ -2173,8 +2173,8 @@ function LoadOptCache()
 {
     var PromisedOpt = new Promise((resolve, reject) =>
     {
-        var query = `Select * from opting`;
-        var jsonLocation = babadata.datalocation + "optscache.json";
+        var query = 'Select * from opting';
+        var jsonLocation = babadata.datalocation + 'optscache.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -2184,18 +2184,18 @@ function LoadOptCache()
 			{
 				var res = result[i];
 				var resj = {
-					"DiscordID": res.DiscordID,
-					"Item": res.ItemToRemove,
-					"Opt": res.Val
-				}
+					'DiscordID': res.DiscordID,
+					'Item': res.ItemToRemove,
+					'Opt': res.Val
+				};
 				opts.push(resj);
 			}
 
             var data = JSON.stringify(opts);
             fs.writeFileSync(jsonLocation, data);
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("Opts")});
+        .catch((err) => {reject('Opts');});
     });
 
     return PromisedOpt;
@@ -2219,15 +2219,15 @@ function LoadAllSlashFridayStuff()
     var PromisedFriday = new Promise((resolve, reject) =>
     {
         // load in dowcache and fridayloops from json files
-        let rawdata = fs.readFileSync(babadata.datalocation + "DOWcache.json");
+        let rawdata = fs.readFileSync(babadata.datalocation + 'DOWcache.json');
         var tempdowcache = JSON.parse(rawdata);
         var newdowcache = null;
     
-        let rawloops = fs.readFileSync(babadata.datalocation + "FridayLoops.json");
+        let rawloops = fs.readFileSync(babadata.datalocation + 'FridayLoops.json');
         var tempfridayloops = JSON.parse(rawloops);
         var newfridayloops = null;
     
-        let rawcontrol = fs.readFileSync(babadata.datalocation + "DOWcontrol.json");
+        let rawcontrol = fs.readFileSync(babadata.datalocation + 'DOWcontrol.json');
         var tempdowcontrol = JSON.parse(rawcontrol);
         var newdowcontrol = null;
 
@@ -2235,18 +2235,18 @@ function LoadAllSlashFridayStuff()
         {    
             // Time Gates -- TimeGates.json - `Select * from timegatess`
             const TimeGatesResult = await LoadTimeGatesCache();
-            console.log("Time Gates Cache: " + TimeGatesResult, false, true);
+            console.log('Time Gates Cache: ' + TimeGatesResult, false, true);
     
             // Slash Friday Values -- DOWcache.json - `SELECT * FROM dowfunny left join fridaytimegates on dowfunny.UID = fridaytimegates.fUID`
             newdowcache = await LoadFridayCache();
-            console.log("Friday Cache: SuccCess", false, true);
+            console.log('Friday Cache: SuccCess', false, true);
             // Friday Control Options -- DOWcontrol.json - `Select * from dowcontrol`
             newdowcontrol = await LoadFridayControlCache();
-            console.log("Friday Control Cache: SuccCess", false, true);
+            console.log('Friday Control Cache: SuccCess', false, true);
             // Friday Sub Options -- FridayLoops.json - `Select * from fridaynestedloops`
             newfridayloops = await LoadFridayLoopsCache();
-            console.log("Friday Loops Cache: SuccCess", false, true);
-        }
+            console.log('Friday Loops Cache: SuccCess', false, true);
+        };
 
         FridayAsync().then(() => 
         {
@@ -2319,43 +2319,43 @@ function LoadAllSlashFridayStuff()
 
             if (changes)
             {
-                console.log("Changes Detected, Saving Cache", false, true);
+                console.log('Changes Detected, Saving Cache', false, true);
                 // if babadata.datalocation + "FridayCache" doesn't exist, create it
-                if (!fs.existsSync(babadata.datalocation + "FridayCache"))
+                if (!fs.existsSync(babadata.datalocation + 'FridayCache'))
                 {
-                    fs.mkdirSync(babadata.datalocation + "FridayCache");
+                    fs.mkdirSync(babadata.datalocation + 'FridayCache');
                 }
 
                 // save tempfridayloops to babadata.datalocation + "FridayCache/FridayLoops" + fcacheitems + ".json";
                 var fcacheitems = 0;
                 // set to number of files in directory / 3
-                fs.readdir(babadata.datalocation + "FridayCache", (err, files) => {
+                fs.readdir(babadata.datalocation + 'FridayCache', (err, files) => {
                     fcacheitems = files.length / 3;
                     var data = JSON.stringify(tempfridayloops);
-                    fs.writeFileSync(babadata.datalocation + "FridayCache/FridayLoops" + fcacheitems + ".json", data);
+                    fs.writeFileSync(babadata.datalocation + 'FridayCache/FridayLoops' + fcacheitems + '.json', data);
                 });
 
                 // save tempdowcache to babadata.datalocation + "FridayCache/DOWcache" + dcacheitems + ".json";
                 var dcacheitems = 0;
                 // set to number of files in directory / 3
-                fs.readdir(babadata.datalocation + "FridayCache", (err, files) => {
+                fs.readdir(babadata.datalocation + 'FridayCache', (err, files) => {
                     dcacheitems = files.length / 3;
                     var data = JSON.stringify(tempdowcache);
-                    fs.writeFileSync(babadata.datalocation + "FridayCache/DOWcache" + dcacheitems + ".json", data);
+                    fs.writeFileSync(babadata.datalocation + 'FridayCache/DOWcache' + dcacheitems + '.json', data);
                 });
 
                 // save tempdowcontrol to babadata.datalocation + "FridayCache/DOWcontrol" + dcontrolitems + ".json";
                 var dcontrolitems = 0;
                 // set to number of files in directory / 3
-                fs.readdir(babadata.datalocation + "FridayCache", (err, files) => {
+                fs.readdir(babadata.datalocation + 'FridayCache', (err, files) => {
                     dcontrolitems = files.length / 3;
                     var data = JSON.stringify(tempdowcontrol);
-                    fs.writeFileSync(babadata.datalocation + "FridayCache/DOWcontrol" + dcontrolitems + ".json", data);
+                    fs.writeFileSync(babadata.datalocation + 'FridayCache/DOWcontrol' + dcontrolitems + '.json', data);
                 });
 
 
                 // update TimeGates.json by adding another row (items + 1)
-                let rawdata = fs.readFileSync(babadata.datalocation + "TimeGates.json");
+                let rawdata = fs.readFileSync(babadata.datalocation + 'TimeGates.json');
                 var tempTimeGates = JSON.parse(rawdata);
                 // get length of tempTimeGates
                 var items = tempTimeGates.length;
@@ -2366,14 +2366,14 @@ function LoadAllSlashFridayStuff()
 
                 // add new row to tempTimeGates
                 var newboy = {
-                    "VersionNumber": items,
-                    "DateTime": ctimez
-                }
+                    'VersionNumber': items,
+                    'DateTime': ctimez
+                };
                 tempTimeGates.push(newboy);
 
                 // save tempTimeGates to TimeGates.json
                 var data = JSON.stringify(tempTimeGates);
-                fs.writeFileSync(babadata.datalocation + "TimeGates.json", data);
+                fs.writeFileSync(babadata.datalocation + 'TimeGates.json', data);
 
                 if (babadata.testing === undefined)
                 {
@@ -2389,18 +2389,18 @@ function LoadAllSlashFridayStuff()
                                 return;
                             }
                             else
-                                dbErrored(err)
+                                dbErrored(err);
                         }
                     });
                 }
-                resolve("SuccCess, Changes Detected");
+                resolve('SuccCess, Changes Detected');
             }
             else
             {
-                resolve("SuccCess, No Changes Detected");
+                resolve('SuccCess, No Changes Detected');
             }
         })
-        .catch((err) => {reject(err)});
+        .catch((err) => {reject(err);});
     });
 
     return PromisedFriday;
@@ -2417,8 +2417,8 @@ function LoadTimeGatesCache()
 {
     var PromisedTimeGates = new Promise((resolve, reject) =>
     {
-        var query = `Select * from timegates`;
-        var jsonLocation = babadata.datalocation + "TimeGates.json";
+        var query = 'Select * from timegates';
+        var jsonLocation = babadata.datalocation + 'TimeGates.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -2435,18 +2435,18 @@ function LoadTimeGatesCache()
 
 				var resj = 
 				{
-					"VersionNumber": res.VersionNumber,
-					"DateTime": ctimez,
-				}
+					'VersionNumber': res.VersionNumber,
+					'DateTime': ctimez,
+				};
 
 				opts.push(resj);
 			}
             
             var data = JSON.stringify(opts);
             fs.writeFileSync(jsonLocation, data);
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("TimeGates")});
+        .catch((err) => {reject('TimeGates');});
     });
 
     return PromisedTimeGates;
@@ -2465,8 +2465,8 @@ function LoadFridayCache()
 {
     var PromisedFriday = new Promise((resolve, reject) =>
     {
-        var query = `SELECT * FROM dowfunny left join fridaytimegates on dowfunny.UID = fridaytimegates.fUID`;
-        var jsonLocation = babadata.datalocation + "DOWcache.json";
+        var query = 'SELECT * FROM dowfunny left join fridaytimegates on dowfunny.UID = fridaytimegates.fUID';
+        var jsonLocation = babadata.datalocation + 'DOWcache.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -2478,25 +2478,25 @@ function LoadFridayCache()
 				text = res.text;
 				if (res.text2 != null)
 				{
-					text += " " + res.text2;
+					text += ' ' + res.text2;
 				}
 
 				var resj = 
 				{
-					"UID": res.UID,
-					"text": text,
-					"enabledDef": res.enabled,
-					"IDS": res.overideIDs,
-					"h1": res.h1,
-					"h2": res.h2,
-					"h3": res.h3,
-					"Occurance": 100,
+					'UID': res.UID,
+					'text': text,
+					'enabledDef': res.enabled,
+					'IDS': res.overideIDs,
+					'h1': res.h1,
+					'h2': res.h2,
+					'h3': res.h3,
+					'Occurance': 100,
 
-					"StartTime": res.StartTime,
-					"EndTime": res.EndTime,
-					"DayOfWeek": res.DayOfWeek,
-					"OccuranceChance": res.OccuranceChance == null ? 100 : res.OccuranceChance,
-				}
+					'StartTime': res.StartTime,
+					'EndTime': res.EndTime,
+					'DayOfWeek': res.DayOfWeek,
+					'OccuranceChance': res.OccuranceChance == null ? 100 : res.OccuranceChance,
+				};
 
 				opts.push(resj);
 			}
@@ -2505,7 +2505,7 @@ function LoadFridayCache()
             fs.writeFileSync(jsonLocation, data);
             resolve(opts);
         })
-        .catch((err) => {reject("DOWCache")});
+        .catch((err) => {reject('DOWCache');});
     });
 
     return PromisedFriday;
@@ -2522,8 +2522,8 @@ function LoadFridayControlCache()
 {
     var PromisedFridayControl = new Promise((resolve, reject) =>
     {
-        var query = `Select * from dowcontrol`;
-        var jsonLocation = babadata.datalocation + "DOWcontrol.json";
+        var query = 'Select * from dowcontrol';
+        var jsonLocation = babadata.datalocation + 'DOWcontrol.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -2535,9 +2535,9 @@ function LoadFridayControlCache()
 
 				var resj = 
 				{
-					"ID": res.IDDOWControl,
-					"Control": res.controlLevel
-				}
+					'ID': res.IDDOWControl,
+					'Control': res.controlLevel
+				};
 
 				opts.push(resj);
 			}
@@ -2546,7 +2546,7 @@ function LoadFridayControlCache()
             fs.writeFileSync(jsonLocation, data);
             resolve(opts);
         })
-        .catch((err) => {reject("DOWControl")});
+        .catch((err) => {reject('DOWControl');});
     });
 
     return PromisedFridayControl;
@@ -2564,8 +2564,8 @@ function LoadFridayLoopsCache()
 {
     var PromisedFridayLoops = new Promise((resolve, reject) =>
     {
-        var query = `Select * from fridaynestedloops`;
-        var jsonLocation = babadata.datalocation + "FridayLoops.json";
+        var query = 'Select * from fridaynestedloops';
+        var jsonLocation = babadata.datalocation + 'FridayLoops.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -2577,11 +2577,11 @@ function LoadFridayLoopsCache()
 				text = res.text;
 				var resj = 
 				{
-					"UID": res.UID,
-					"text": text,
-					"group": res.group,
-					"weight": res.weight,
-				}
+					'UID': res.UID,
+					'text': text,
+					'group': res.group,
+					'weight': res.weight,
+				};
 
 				opts.push(resj);
 			}
@@ -2591,7 +2591,7 @@ function LoadFridayLoopsCache()
 			// fs.writeFileSync(babadata.datalocation + "FridayLoops.json", data);
 			// let rawloops = fs.readFileSync(babadata.datalocation + "FridayLoops.json");
 
-			var fridLoops = opts
+			var fridLoops = opts;
 		
 			var replacements = {};
 			var replacementsWeights = {};
@@ -2600,7 +2600,7 @@ function LoadFridayLoopsCache()
 				if (replacements[fridLoops[i].group] == null)
 				{
 					replacements[fridLoops[i].group] = [];
-					replacementsWeights[fridLoops[i].group] = {"min": 1}
+					replacementsWeights[fridLoops[i].group] = {'min': 1};
 				}
 		
 				if (fridLoops[i].weight < replacementsWeights[fridLoops[i].group].min)
@@ -2614,7 +2614,7 @@ function LoadFridayLoopsCache()
 				insertCount = gWeight == 1 ? fridLoops[i].weight : Math.floor((1 / gWeight) * fridLoops[i].weight);
 		
 				for (var j = 0; j < insertCount; j++)
-					replacements[fridLoops[i].group].push({"text": fridLoops[i].text, "UID": fridLoops[i].UID});
+					replacements[fridLoops[i].group].push({'text': fridLoops[i].text, 'UID': fridLoops[i].UID});
 			}
 
 			//save to a json file -- testing dont delete shane like you love to delete these things, i saw what you did that one time
@@ -2623,7 +2623,7 @@ function LoadFridayLoopsCache()
             fs.writeFileSync(jsonLocation, data);
             resolve(replacements);
         })
-        .catch((err) => {reject("FridayLoops")});
+        .catch((err) => {reject('FridayLoops');});
     });
 
     return PromisedFridayLoops;
@@ -2642,8 +2642,8 @@ function LoadHolidaysCache()
 {
     var PromisedHolidays = new Promise((resolve, reject) =>
     {
-        var query = `SELECT * FROM event left join alteventnames on event.EventID = alteventnames.EventID`;
-        var jsonLocation = babadata.datalocation + "HolidayFrogs.json";
+        var query = 'SELECT * FROM event left join alteventnames on event.EventID = alteventnames.EventID';
+        var jsonLocation = babadata.datalocation + 'HolidayFrogs.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -2654,26 +2654,26 @@ function LoadHolidaysCache()
                 var res = result[i];
                 var resj = 
                 {
-                    "EventRealName": res.EventRealName,
-                    "EventFrogName": res.EventFrogName,
-                    "Mode": res.Mode,
-                    "Day": res.Day,
-                    "Month": res.Month,
-                    "DOW": res.DOW,
-                    "Week": res.Week,
-                    "EventName": res.EventName,
-                    "ParentEventID": res.ParentEventID,
-                    "EventID": res.EventID,
-                }
+                    'EventRealName': res.EventRealName,
+                    'EventFrogName': res.EventFrogName,
+                    'Mode': res.Mode,
+                    'Day': res.Day,
+                    'Month': res.Month,
+                    'DOW': res.DOW,
+                    'Week': res.Week,
+                    'EventName': res.EventName,
+                    'ParentEventID': res.ParentEventID,
+                    'EventID': res.EventID,
+                };
 
                 opts.push(resj);
             }
 
             var data = JSON.stringify(opts);
             fs.writeFileSync(jsonLocation, data);
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("Holidays")});
+        .catch((err) => {reject('Holidays');});
     });
 
     return PromisedHolidays;
@@ -2695,7 +2695,7 @@ function LoadHaikusCache()
         var query = `SELECT * FROM haiku
                      Left Join userval on haiku.PersonName = userval.PersonName 
                      Left Join channelval on haiku.ChannelID = channelval.ChannelID`;
-        var jsonLocation = babadata.datalocation + "HaikusCache.json";
+        var jsonLocation = babadata.datalocation + 'HaikusCache.json';
 
         callSQLQuery(query)
         .then((result) =>
@@ -2706,31 +2706,31 @@ function LoadHaikusCache()
                 var res = result[i];
                 var resj = 
                 {
-                    "PersonName": res.PersonName,
+                    'PersonName': res.PersonName,
 
-                    "DiscordID": res.DiscordID,
-                    "DiscordName": res.DiscordName,
+                    'DiscordID': res.DiscordID,
+                    'DiscordName': res.DiscordName,
 
-                    "Haiku": res.Haiku,
-                    "HaikuFormatted": res.HaikuFormatted,
+                    'Haiku': res.Haiku,
+                    'HaikuFormatted': res.HaikuFormatted,
 
-                    "Accidental": res.Accidental,
+                    'Accidental': res.Accidental,
 
-                    "Date": res.Date,
-                    "URL": res.URL,
+                    'Date': res.Date,
+                    'URL': res.URL,
 
-                    "ChannelID": res.ChannelID,
-                    "ChannelName": res.ChannelName,
-                }
+                    'ChannelID': res.ChannelID,
+                    'ChannelName': res.ChannelName,
+                };
 
                 opts.push(resj);
             }
 
             var data = JSON.stringify(opts);
             fs.writeFileSync(jsonLocation, data);
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("Haikus")});
+        .catch((err) => {reject('Haikus');});
     });
 
     return PromisedHaikus;
@@ -2765,19 +2765,19 @@ function controlDOW(id, level, prefix)
             callSQLQuery(query)
             .then((result) =>
             {
-                if (prefix == "DOW")
+                if (prefix == 'DOW')
                 {
                     LoadAllSlashFridayStuff();
                 }
-                else if (prefix == "FROG")
+                else if (prefix == 'FROG')
                 {
                     LoadFrogCache();
                 }
-                resolve("SuccCess");
+                resolve('SuccCess');
             }) 
-            .catch((err) => {reject(lcx + "Control")});
+            .catch((err) => {reject(lcx + 'Control');});
         })
-        .catch((err) => {reject(lcx + "Control")});
+        .catch((err) => {reject(lcx + 'Control');});
     });
 
     return PromisedControlDOW;
@@ -2828,19 +2828,19 @@ function groupEmojiByTones(emojiList)
         emoji.emojis = [];
         emoji.emojis.push(emoji.emoji);
 
-		if (eName.includes("skin tone"))
+		if (eName.includes('skin tone'))
         {
-            var enameSplit = "";
+            var enameSplit = '';
             // split the name by "light", "medium", "dark", "mediumdark", "mediumlight"
-            enameSplit = eName.replace("medium-dark skin tone", "")
-            .replace("medium-light skin tone", "")
-            .replace("light skin tone", "")
-            .replace("medium skin tone", "")
-            .replace("dark skin tone", "")
-            .replace(" , ", " ");
+            enameSplit = eName.replace('medium-dark skin tone', '')
+            .replace('medium-light skin tone', '')
+            .replace('light skin tone', '')
+            .replace('medium skin tone', '')
+            .replace('dark skin tone', '')
+            .replace(' , ', ' ');
 
             // remove trailing : or ,
-            enameSplit = enameSplit.replace(/[:,\s]+$/, "");
+            enameSplit = enameSplit.replace(/[:,\s]+$/, '');
 
             // trim
             enameSplit = enameSplit.trim();
@@ -2850,9 +2850,9 @@ function groupEmojiByTones(emojiList)
                 parent.emojis.push(emoji.emoji);
             else
             {
-                if (enameSplit != "")
+                if (enameSplit != '')
                 {
-                    console.log("Parent not found: " + enameSplit);
+                    console.log('Parent not found: ' + enameSplit);
                     emoji.name = enameSplit;
                     grouped.push(emoji);
                 }
@@ -2890,7 +2890,7 @@ async function saveUpdatedHurrInfo()
 			fs.writeFileSync(babadata.datalocation + '/hurricanes.json', JSON.stringify([]));
 		}
 	
-		var data = fs.readFileSync(babadata.datalocation + "hurricanes.json");
+		var data = fs.readFileSync(babadata.datalocation + 'hurricanes.json');
 		var hurrInfo = JSON.parse(data);
 	
 		for (var i = 0; i < hurrInfo.length; i++)
@@ -2920,7 +2920,7 @@ async function saveUpdatedHurrInfo()
 							return;
 						}
 						else
-							dbErrored(err)
+							dbErrored(err);
 					}
 				});
 	
@@ -2947,7 +2947,7 @@ async function getHurricaneInfo()
 		// wait for saveUpdatedHurrInfo to finish
 		saveUpdatedHurrInfo().then(() =>
 		{
-			con.query(`Select * from hurricane`,
+			con.query('Select * from hurricane',
 			function (err, result)
 				{
 					var opts = [];
@@ -2959,7 +2959,7 @@ async function getHurricaneInfo()
 							return;
 						}
 						else
-							dbErrored(err)
+							dbErrored(err);
 					}
 		
 					for (var i = 0; i < result.length; i++)
@@ -2976,18 +2976,18 @@ async function getHurricaneInfo()
 
 						var resj = 
 						{
-							"ID": res.id,
-							"LastUpdated": ctimez,
-							"Name": res.name,
-							"Number": res.number,
-							"Type": res.type,
-							"Category": res.category,
-							"ImageURL": res.imageURL,
-							"XMLURL": res.XMLUrl,
-							"Year": res.Year,
-							"Updated": false,
-							"OverideText": null
-						}
+							'ID': res.id,
+							'LastUpdated': ctimez,
+							'Name': res.name,
+							'Number': res.number,
+							'Type': res.type,
+							'Category': res.category,
+							'ImageURL': res.imageURL,
+							'XMLURL': res.XMLUrl,
+							'Year': res.Year,
+							'Updated': false,
+							'OverideText': null
+						};
 
 		
 						opts.push(resj);
@@ -2995,7 +2995,7 @@ async function getHurricaneInfo()
 		
 					var data = JSON.stringify(opts);
 		
-					fs.writeFileSync(babadata.datalocation + "hurricanes.json", data);
+					fs.writeFileSync(babadata.datalocation + 'hurricanes.json', data);
 				
 					resolve();
 				}
@@ -3025,12 +3025,12 @@ async function getHurricaneInfo()
  */
 function AddReminderToDB(reminderItem)
 {
-    var fileString = "";
+    var fileString = '';
     if (reminderItem.Files != null)
     {
         for (var i = 0; i < reminderItem.Files.length; i++)
         {
-            fileString += reminderItem.Files[i] + ",";
+            fileString += reminderItem.Files[i] + ',';
         }
     }
 
@@ -3039,15 +3039,15 @@ function AddReminderToDB(reminderItem)
     return new Promise((resolve, reject) =>
     {
         var testIndex = babadata.testing === undefined ? false : true;
-        var threadParentID = reminderItem.ThreadParentID == "null" ? null : reminderItem.ThreadParentID;
+        var threadParentID = reminderItem.ThreadParentID == 'null' ? null : reminderItem.ThreadParentID;
 
         var query = `Insert into reminders (Source, Message, UserID, Files, Date, ChannelID, ThreadParentID, EnabledAtPerson, ID, Testing) VALUES ("${reminderItem.Source}", "${reminderItem.Message}", "${reminderItem.UserID}", "${fileString}", "${dtsrart}", "${reminderItem.ChannelID}", "${threadParentID}", ${reminderItem.EnableAtPerson}, "${reminderItem.ID}", ${testIndex})`;
         callSQLQuery(query)
         .then(() => 
         {
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("Reminder Add")});
+        .catch((err) => {reject('Reminder Add');});
     });
 }
 
@@ -3070,12 +3070,12 @@ function AddReminderToDB(reminderItem)
  */
 function EditReminderInDB(reminderItem)
 {
-    var fileString = "";
+    var fileString = '';
     if (reminderItem.Files != null)
     {
         for (var i = 0; i < reminderItem.Files.length; i++)
         {
-            fileString += reminderItem.Files[i] + ",";
+            fileString += reminderItem.Files[i] + ',';
         }
     }
 
@@ -3083,15 +3083,15 @@ function EditReminderInDB(reminderItem)
 
     return new Promise((resolve, reject) =>
     {
-        var threadParentID = reminderItem.ThreadParentID == "null" ? null : reminderItem.ThreadParentID;
+        var threadParentID = reminderItem.ThreadParentID == 'null' ? null : reminderItem.ThreadParentID;
 
         var query = `Update reminders Set Source = "${reminderItem.Source}", Message = "${reminderItem.Message}", Files = "${fileString}", Date = "${dtsrart}", ChannelID = "${reminderItem.ChannelID}", ThreadParentID = "${threadParentID}", EnabledAtPerson = ${reminderItem.EnableAtPerson} WHERE ID = "${reminderItem.ID}"`;
         callSQLQuery(query)
         .then(() => 
         {
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("Reminder Edit")});
+        .catch((err) => {reject('Reminder Edit');});
     });
 }
 
@@ -3111,9 +3111,9 @@ function DeleteReminderInDB(reminderItem)
         callSQLQuery(query)
         .then(() => 
         {
-            resolve("SuccCess");
+            resolve('SuccCess');
         })
-        .catch((err) => {reject("Reminder Delete")});
+        .catch((err) => {reject('Reminder Delete');});
     });
 }
 
@@ -3126,7 +3126,7 @@ var cleanupFn = function cleanup()
         try 
         {
             con.end();
-            console.log("Ending SQL Connection");
+            console.log('Ending SQL Connection');
             con = null;
         }
         catch (err)
@@ -3137,20 +3137,20 @@ var cleanupFn = function cleanup()
 
 	if (timeoutClear != null)
 	{
-		console.log("Clearing Timeout - VCC Updater");
+		console.log('Clearing Timeout - VCC Updater');
 		clearTimeout(timeoutClear);
 	}
 	if (timeoutDisconnect != null)
 	{
-		console.log("Clearing Timeout - DB Auto Disconnect");
+		console.log('Clearing Timeout - DB Auto Disconnect');
 		clearTimeout(timeoutDisconnect);
 	}
 	if (timeoutFix != null)
 	{
-		console.log("Clearing Timeout - DB Down Checker");
+		console.log('Clearing Timeout - DB Down Checker');
 		clearTimeout(timeoutFix);
 	}
-}
+};
 
 process.on('SIGINT', cleanupFn);
 process.on('SIGTERM', cleanupFn);
@@ -3180,4 +3180,4 @@ module.exports = {
     AddReminderToDB,
     EditReminderInDB,
     DeleteReminderInDB
-}
+};

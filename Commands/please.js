@@ -20,7 +20,7 @@ module.exports = {
 	 * @returns {Promise<void>}
 	 */
 	async execute(interaction, bot) {
-		var admin = "BABA IS ADMIN\n";
+		var admin = 'BABA IS ADMIN\n';
 		await interaction.reply(admin + babaPlease().content);
 	},
 };

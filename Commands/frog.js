@@ -5,7 +5,7 @@
  */
 
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { funnyFrogText } = require("../Functions/HelperFunctions/slashFridayHelpers.js");
+const { funnyFrogText } = require('../Functions/HelperFunctions/slashFridayHelpers.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()

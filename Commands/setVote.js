@@ -41,7 +41,7 @@ module.exports = {
                             {
                                 fnd = true;
                                 setVote(message);
-                                interaction.editReply({ content: "Vote Added to Message: `" + message.content + "`", ephemeral: true });
+                                interaction.editReply({ content: 'Vote Added to Message: `' + message.content + '`', ephemeral: true });
                             }).catch(function (err) {});
                         })
                     ).catch(function (err) {});
@@ -50,11 +50,11 @@ module.exports = {
                     {
                         fnd = true;
                         setVote(message);
-                        interaction.editReply({ content: "Vote Added to Message: `" + message.content + "`", ephemeral: true });
+                        interaction.editReply({ content: 'Vote Added to Message: `' + message.content + '`', ephemeral: true });
                     }).catch(function (err) {}); //try to get the message, if it exists call setVote, otherwise catch the error
                 }
             });
         });
-        await interaction.editReply({ content: "Searching for Message", ephemeral: true });
+        await interaction.editReply({ content: 'Searching for Message', ephemeral: true });
 	},
 };

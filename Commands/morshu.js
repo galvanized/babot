@@ -7,7 +7,7 @@
  */
 
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { babaMorshu } = require("../Functions/Voice/VoiceHelpers/morshin.js");
+const { babaMorshu } = require('../Functions/Voice/VoiceHelpers/morshin.js');
 const { splitStringInto900CharChunksonSpace } = require('../Functions/HelperFunctions/slashFridayHelpers');
 
 module.exports = {
@@ -15,21 +15,21 @@ module.exports = {
 		.setName('morshu')
 		.setDescription('Morshu will speak your text you give him!')
         .addStringOption(opt => 
-            opt.setName("text")
-            .setDescription("The text for morshu to transcribe.")
+            opt.setName('text')
+            .setDescription('The text for morshu to transcribe.')
             .setRequired(true))
         .addBooleanOption(opt => 
-            opt.setName("subtitles")
-            .setDescription("Show subtitles for morshus transcription (off by default)."))
+            opt.setName('subtitles')
+            .setDescription('Show subtitles for morshus transcription (off by default).'))
         .addStringOption(opt => 
-            opt.setName("personalizedtext")
-            .setDescription("Add some extra text or @ someone, Isaac Please!"))
+            opt.setName('personalizedtext')
+            .setDescription('Add some extra text or @ someone, Isaac Please!'))
 		.addStringOption(option =>
 			option.setName('mode')
 				.setDescription('The mode of the morshu transcription (defaults to audio)!')
 				.addChoices(
-					{ name: "Audio", value: "audio" },
-					{ name: "Video", value: "video" }            
+					{ name: 'Audio', value: 'audio' },
+					{ name: 'Video', value: 'video' }            
 				)),
 	/**
 	 * Converts the provided text into Morshu speech by splitting it into chunks and
@@ -50,7 +50,7 @@ module.exports = {
         var personaltext = interaction.options.getString('personalizedtext');
 
         if (mode == null)
-            mode = "video";
+            mode = 'video';
 
         var textSplit = splitStringInto900CharChunksonSpace(text);
 
@@ -68,15 +68,15 @@ module.exports = {
         else
         {
             var objectSend = {
-                content: "Morshu has spoken!",
+                content: 'Morshu has spoken!',
                 files: filesOfMorsh
             };
 
-            if (personaltext != null && personaltext != "")
-                objectSend.content += "\n" + personaltext
+            if (personaltext != null && personaltext != '')
+                objectSend.content += '\n' + personaltext;
 
             if (subtitles)
-                objectSend.content += "\n```" + text + "```";
+                objectSend.content += '\n```' + text + '```';
 
             await interaction.editReply(objectSend);
         }

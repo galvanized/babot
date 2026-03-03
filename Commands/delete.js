@@ -42,7 +42,7 @@ module.exports = {
                             {
                                 fnd = true;
                                 movetoChannel(message, thr, babadata.logchan);
-                                interaction.editReply({ content: "Message Moved", ephemeral: true });
+                                interaction.editReply({ content: 'Message Moved', ephemeral: true });
                             }).catch(function (err) {});
                         })
                     ).catch(function (err) {});
@@ -51,11 +51,11 @@ module.exports = {
                     {
                         fnd = true;
                         movetoChannel(message, chan, babadata.logchan);
-                        interaction.editReply({ content: "Message Moved", ephemeral: true });
+                        interaction.editReply({ content: 'Message Moved', ephemeral: true });
                     }).catch(function (err) {}); //try to get the message, if it exists call setVote, otherwise catch the error
                 }
             });
         });
-        await interaction.editReply({ content: "Searching for Message", ephemeral: true });
+        await interaction.editReply({ content: 'Searching for Message', ephemeral: true });
 	},
 };

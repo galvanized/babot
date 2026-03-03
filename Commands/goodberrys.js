@@ -47,16 +47,16 @@ module.exports = {
 				return a.start - b.start;
 			});
 
-			var resp = "";
+			var resp = '';
 			for (var i = 0; i < evnts.length; i++)
 			{
 				var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 				
-				resp += evnts[i].summary + " on " + evnts[i].start.toLocaleDateString("en-US", options) + "\n";
+				resp += evnts[i].summary + ' on ' + evnts[i].start.toLocaleDateString('en-US', options) + '\n';
 			}
 
-			if (resp == "")
-				resp = "No events found";
+			if (resp == '')
+				resp = 'No events found';
 
 			interaction.editReply(resp);
 		});

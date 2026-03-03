@@ -44,7 +44,7 @@ module.exports = {
                             {
                                 fnd = true;
                                 setGrole(message, roleName);
-                                interaction.editReply({ content: "Role created: `" + roleName + "`", ephemeral: true });
+                                interaction.editReply({ content: 'Role created: `' + roleName + '`', ephemeral: true });
                             }).catch(function (err) {});
                         })
                     ).catch(function (err) {});
@@ -53,11 +53,11 @@ module.exports = {
                     {
                         fnd = true;
                         setGrole(message, roleName);
-                        interaction.editReply({ content: "Role created: `" + roleName + "`", ephemeral: true });
+                        interaction.editReply({ content: 'Role created: `' + roleName + '`', ephemeral: true });
                     }).catch(function (err) {}); //try to get the message, if it exists call setVote, otherwise catch the error
                 }
             });
         });
-        await interaction.editReply({ content: "Searching for Message", ephemeral: true });
+        await interaction.editReply({ content: 'Searching for Message', ephemeral: true });
 	},
 };

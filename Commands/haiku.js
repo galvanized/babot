@@ -8,7 +8,7 @@
 
 const { babaHaikuEmbed, babaHaikuLinks } = require('../Functions/commandFunctions.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { handleButtonsEmbed } = require("../Functions/HelperFunctions/basicHelpers.js");
+const { handleButtonsEmbed } = require('../Functions/HelperFunctions/basicHelpers.js');
 const Discord = require('discord.js');
 
 module.exports = {
@@ -131,12 +131,12 @@ module.exports = {
 
         var purity = false;
         var buy = 0;
-        var msgstr = "";
+        var msgstr = '';
 
         if (mohde === 'custom')
         {
             // haiku buttons
-            var contenenent = {content: "Select a Haiku Mode"};
+            var contenenent = {content: 'Select a Haiku Mode'};
             var row = new Discord.ActionRowBuilder()
                 .addComponents(
                     new Discord.ButtonBuilder()
@@ -167,7 +167,7 @@ module.exports = {
         else
         {
             var message = await interaction.fetchReply();
-            var info = {"ipp": 5, "page": 0}
+            var info = {'ipp': 5, 'page': 0};
 
             var cont = babaHaikuEmbed(purity, buy, msgstr, info);
             var deadData = purity || cont[0].components == null ? null : babaHaikuLinks(cont);

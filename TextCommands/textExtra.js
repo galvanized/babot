@@ -13,12 +13,12 @@ const fs = require('fs');
 const https = require('https');
 const fetch = require('node-fetch');
 
-const { SetHolidayChan, dailyRandom, fronge, Seperated, enumConverter, channelStatusChange } = require("../Functions/HelperFunctions/basicHelpers.js");
+const { SetHolidayChan, dailyRandom, fronge, Seperated, enumConverter, channelStatusChange } = require('../Functions/HelperFunctions/basicHelpers.js');
 const { reverseDelay } = require('../Functions/HelperFunctions/remindersByBaba.js');
-const { controlDOW, LoadAllTheCache, SaveSlashFridayJson, clearVCCList, DMMePlease } = require("../Functions/Database/databaseVoiceController.js");
+const { controlDOW, LoadAllTheCache, SaveSlashFridayJson, clearVCCList, DMMePlease } = require('../Functions/Database/databaseVoiceController.js');
 
 // Mapping digits -> letters used by `transpose` command.
-const validLetters = "bikusfrday";
+const validLetters = 'bikusfrday';
 
 /**
  * Return a string of `num` tab characters used for indentation in human-readable output.
@@ -27,9 +27,9 @@ const validLetters = "bikusfrday";
  */
 function generateTabs(num)
 {
-	var strg = "";
+	var strg = '';
 	for (var i = 0; i < num; i++)
-		strg += "	";
+		strg += '	';
 	return strg;
 }
 
@@ -51,12 +51,12 @@ function objectParse(obj, ind)
 		{
 			if (typeof obj[key] === 'object' && obj[key] !== null)
 			{
-				var strg = "";
+				var strg = '';
 				if (isNaN(key)) strg += generateTabs(ind);
 				var nind = ind;
 				if (isNaN(key))
 				{
-					strg += key + ": \n"
+					strg += key + ': \n';
 					nind++;
 				}
 				strg += objectParse(obj[key], nind);
@@ -64,18 +64,18 @@ function objectParse(obj, ind)
 			}
 			else
 			{
-				var strg = "";
+				var strg = '';
 				strg += generateTabs(ind);
 				if (!isNaN(key))
 					strg += obj[key];
 				else
-					strg += key + ": " + obj[key];
+					strg += key + ': ' + obj[key];
 
 				obje.push(strg);
 			}
 		}
 	}
-	return obje.join("\n");
+	return obje.join('\n');
 }
 
 /**
@@ -105,8 +105,8 @@ function twoObjectParseCompare(old, neww, ind, arraymode = false)
 	// Choose which object to iterate. Prefer the object with more keys/elements so
 	// newly-added keys show up in the diff. This is a heuristic to keep diffs
 	// human-readable rather than attempting a full three-way merge.
-	var oCt = (old === undefined || old == "undefined") ? 0 : Object.keys(old).length;
-	var nCt = (neww === undefined || neww == "undefined") ? 0 : Object.keys(neww).length;
+	var oCt = (old === undefined || old == 'undefined') ? 0 : Object.keys(old).length;
+	var nCt = (neww === undefined || neww == 'undefined') ? 0 : Object.keys(neww).length;
 
 	var picked = old;
 	if (oCt < nCt)
@@ -133,16 +133,16 @@ function twoObjectParseCompare(old, neww, ind, arraymode = false)
 					if (old[key].length == neww[key].length && old[key].length == 0)
 						continue;
 				}
-				var strg = "";
+				var strg = '';
 				if (isNaN(key)) strg += generateTabs(ind);
 				var nind = ind;
 				if (isNaN(key))
 				{
-					strg += key + ": \n"
+					strg += key + ': \n';
 					nind++;
 				}
                 
-				var nkey = neww !== undefined ? neww[key] : "undefined";
+				var nkey = neww !== undefined ? neww[key] : 'undefined';
 
 				// Recurse; detect nested arrays to keep arraymode semantics at deeper levels.
 				strg += twoObjectParseCompare(old[key], nkey, nind, Array.isArray(old[key]));
@@ -151,18 +151,18 @@ function twoObjectParseCompare(old, neww, ind, arraymode = false)
 			}
 			else
 			{
-				var strg = "";
+				var strg = '';
 				strg += generateTabs(ind);
 				if (!isNaN(key))
-					strg += old[key] + " -> " + neww[key];
+					strg += old[key] + ' -> ' + neww[key];
 				else
-					strg += key + ": " + old[key] + " -> " + (neww === undefined ? "undefined" : neww[key]);
+					strg += key + ': ' + old[key] + ' -> ' + (neww === undefined ? 'undefined' : neww[key]);
 
 				objs.push(strg);
 			}
 		}
 	}
-	return objs.join("\n");
+	return objs.join('\n');
 }
 
 /**
@@ -189,7 +189,7 @@ function parseItems(old, neww)
 {
 	if (old == undefined)
 	{
-		strg = neww
+		strg = neww;
 		if (typeof neww === 'object' && neww !== null)
 		{
 			strg = objectParse(neww, 1);
@@ -197,7 +197,7 @@ function parseItems(old, neww)
 	}
 	else if (neww == undefined)
 	{
-		strg = old
+		strg = old;
 		if (typeof old === 'object' && old !== null)
 		{
 			strg = objectParse(old, 1);
@@ -207,7 +207,7 @@ function parseItems(old, neww)
 	{
 		// Scalar -> Scalar: simple arrow. If the original value is an object or
 		// array produce a structured diff so multi-line changes are readable.
-		strg = old + " -> " + neww
+		strg = old + ' -> ' + neww;
 		if (typeof old === 'object' && old !== null)
 		{
 			var am = Array.isArray(old);
@@ -392,42 +392,42 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		//     rename flag to the mode name. '5' calls SetHolidayChan(...,0) and
 		//     sends a reset notification.
 		// - Side effects: updates babotdata.json indirectly (read back after 1s).
-		if (msgContent.includes("🐸 debug")) //0 null, 1 spook, 2 thanks, 3 crimbo, 4 defeat
+		if (msgContent.includes('🐸 debug')) //0 null, 1 spook, 2 thanks, 3 crimbo, 4 defeat
 		{
-			if (msgContent.includes("---"))
+			if (msgContent.includes('---'))
 			{
-				var i = msgContent.indexOf("---");
+				var i = msgContent.indexOf('---');
 				var sub = msgContent.substring(i + 3);
 				SetHolidayChan(g, sub, 3);
-				message.author.send("`Re-enabling Old Channel`");
+				message.author.send('`Re-enabling Old Channel`');
 			}
 			else
 			{
-				var rename = "";
-				if (msgContent.includes("-n")) rename = "-n"; else rename = "";
+				var rename = '';
+				if (msgContent.includes('-n')) rename = '-n'; else rename = '';
 
-				if (msgContent.includes("0"))
-					SetHolidayChan(g, "null");
-				else if (msgContent.includes("1"))
-					SetHolidayChan(g, "spook" + rename);
-				else if (msgContent.includes("2"))
-					SetHolidayChan(g, "thanks" + rename);
-				else if (msgContent.includes("3"))
-					SetHolidayChan(g, "crimbo" + rename);
-				else if (msgContent.includes("4"))
-					SetHolidayChan(g, "defeat" + rename);
-				else if (msgContent.includes("5"))
+				if (msgContent.includes('0'))
+					SetHolidayChan(g, 'null');
+				else if (msgContent.includes('1'))
+					SetHolidayChan(g, 'spook' + rename);
+				else if (msgContent.includes('2'))
+					SetHolidayChan(g, 'thanks' + rename);
+				else if (msgContent.includes('3'))
+					SetHolidayChan(g, 'crimbo' + rename);
+				else if (msgContent.includes('4'))
+					SetHolidayChan(g, 'defeat' + rename);
+				else if (msgContent.includes('5'))
 				{
-					SetHolidayChan(g, "null", 0);
-					message.author.send("`Resetting Holiday Values`");
+					SetHolidayChan(g, 'null', 0);
+					message.author.send('`Resetting Holiday Values`');
 				}
 			}
 
 			setTimeout(function()
 			{
-				let rawdata = fs.readFileSync(__dirname.replace("TextCommands", "") + '/babotdata.json');
+				let rawdata = fs.readFileSync(__dirname.replace('TextCommands', '') + '/babotdata.json');
 				babadata = JSON.parse(rawdata);
-				message.author.send("```HC: " + babadata.holidaychan + "\nHV: " + babadata.holidayval + "```");
+				message.author.send('```HC: ' + babadata.holidaychan + '\nHV: ' + babadata.holidayval + '```');
 			}, 1000);
 		}
 		// froggifys the message with all frogs and replys with a frog reaction
@@ -436,7 +436,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		//   and apply the `fronge` transformation + react to indicate success.
 		// - Behavior: best-effort search; fetch errors are swallowed so the command
 		//   never throws for missing messages. This is a manual debug helper.
-		else if (msgContent.includes("fronge"))
+		else if (msgContent.includes('fronge'))
 		{
 			var fnd = false;
 			var message_id = message.content.replace(/\D/g,''); //get message id
@@ -451,7 +451,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 								{
 									fnd = true;
 									fronge(responseMessage);
-									message.author.send("SUCC cess");
+									message.author.send('SUCC cess');
 								}).catch(function (err) {});
 							})
 						).catch(function (err) {});
@@ -460,7 +460,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 						{
 							fnd = true;
 							fronge(responseMessage);
-							message.author.send("SUCC cess");
+							message.author.send('SUCC cess');
 						}).catch(function (err) {}); 
 					}
 				});
@@ -471,7 +471,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		// - Purpose: locate a message by numeric ID and delete it (moves message
 		//   to the "banished lands"). Works across channels and threads.
 		// - Behavior: best-effort; swallow fetch errors. Not permission-checked here.
-		else if (msgContent.includes("funny silence"))
+		else if (msgContent.includes('funny silence'))
 		{
 			var fnd = false;
 			var message_id = message.content.replace(/\D/g,''); //get message id
@@ -486,7 +486,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 								{
 									fnd = true;
 									mehsage.delete();
-									message.author.send("SUCC cess");
+									message.author.send('SUCC cess');
 								}).catch(function (err) {});
 							})
 						).catch(function (err) {});
@@ -495,7 +495,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 						{
 							fnd = true;
 							mehsage.delete();
-							message.author.send("SUCC cess");
+							message.author.send('SUCC cess');
 						}).catch(function (err) {}); 
 					}
 				});
@@ -512,7 +512,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		//   * flags: "s-d" deletes the sent message after 8s; "🐸" reacts with frog.
 		// - Note: permission checks attempt to fetch the guild member's state but
 		//   the code currently allows sending regardless (permissive behavior).
-		else if (msgContent.includes("cmes"))
+		else if (msgContent.includes('cmes'))
 		{
 			var message_id = message.content.split(' ')[1];
 			var mess = message.content.split(' ').slice(2, ).join(' '); //get the name for the role
@@ -523,14 +523,14 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 
 			if(!canSend || true)
 			{
-				if (msgContent.includes("i-u"))
+				if (msgContent.includes('i-u'))
 				{
 					var user_id = message.content.split(' ')[2];
 					var mess = message.content.split(' ').slice(3, ).join(' '); //get the name for the role
 
-					if (user_id == null || user_id.trim() == "") 
+					if (user_id == null || user_id.trim() == '') 
 					{
-						message.author.send("`Invalid User ID`");
+						message.author.send('`Invalid User ID`');
 						return;
 					}
 
@@ -554,13 +554,13 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 						})
 						.then(webhook =>
 						{
-							var messageobj = { content: mess }
+							var messageobj = { content: mess };
 							
 							if (thread) messageobj.threadId = message_id;
 
 							webhook.send(messageobj).then(msg=>
 							{
-								if (msgContent.includes("s-d"))
+								if (msgContent.includes('s-d'))
 								{
 									setTimeout(function(){msg.delete();}, 8000);
 								}
@@ -571,24 +571,24 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 							}, 10000);
 						}).catch((error) => {
 							console.error(error);
-							message.author.send("Error: " + error);
+							message.author.send('Error: ' + error);
 						});
 					}).catch(console.error);
 				}
-				else if (msgContent.includes("d-lay"))
+				else if (msgContent.includes('d-lay'))
 				{
 					var delay = message.content.split(' ')[2];
 					var mess = message.content.split(' ').slice(3, ).join(' '); //get the name for the role
 					
-					if (delay == null || delay.trim() == "") 
+					if (delay == null || delay.trim() == '') 
 					{
-						message.author.send("`Invalid Delay`");
+						message.author.send('`Invalid Delay`');
 						return;
 					}
 
 					reverseDelay(message, message.author.id, hiddenChan, mess, parseInt(delay), false);
 				}
-				else if (msgContent.includes("tnt"))
+				else if (msgContent.includes('tnt'))
 				{
 					hiddenChan.sendTyping();
 				}
@@ -596,11 +596,11 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 				{
 					hiddenChan.send(mess).then(msg=>
 					{
-						if (msgContent.includes("🐸"))
+						if (msgContent.includes('🐸'))
 						{
-							msg.react("🐸");
+							msg.react('🐸');
 						}
-						if (msgContent.includes("s-d"))
+						if (msgContent.includes('s-d'))
 						{
 							setTimeout(function(){msg.delete();}, 8000);
 						}
@@ -613,7 +613,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		// - Schedules a daily/random delayed message using `dailyRandom`.
 		// - Parses a numeric minute value from the message content and converts
 		//   it into milliseconds for the counter parameter.
-		else if (msgContent.includes("rng"))
+		else if (msgContent.includes('rng'))
 		{
 			var u_id = message.content.split(' ').slice(1, 2).join(' ').replace(' ',''); //get the name for the role
 			var mess = message.content.split(' ').slice(2, ).join(' '); //get the name for the role
@@ -622,20 +622,20 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			if (counter != null) counter = counter[0] * 60 * 1000;
 
 			dailyRandom(u_id, bot, counter, g);
-			message.author.send("SUCC cess");
+			message.author.send('SUCC cess');
 		}
 		// Handler: "getthefries"
 		// - Lists files inside the configured `FridayCache` directory and DMs them
 		//   to the command author. Uses `babadata.datalocation` for the path.
-		else if (msgContent.includes("getthefries"))
+		else if (msgContent.includes('getthefries'))
 		{
 			// list all items in the directory of babadata.datalocation + "FridayCache"
-			fs.readdir(babadata.datalocation + "FridayCache", (err, files) => {
+			fs.readdir(babadata.datalocation + 'FridayCache', (err, files) => {
 				if (err) {
-					message.author.send("An error occurred while reading the directory");
+					message.author.send('An error occurred while reading the directory');
 					return;
 				}
-				message.author.send("Files in the directory are:\n```" + files.join("\n") + "```");
+				message.author.send('Files in the directory are:\n```' + files.join('\n') + '```');
 			});
 		}
 		// Handler: "cachethefries"
@@ -643,27 +643,27 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		//   and saves it into `babadata.datalocation + 'FridayCache/'` keeping the
 		//   original filename. Not safe for large files/no validation — intended
 		//   for admin usage only.
-		else if (msgContent.includes("cachethefries"))
+		else if (msgContent.includes('cachethefries'))
 		{
 			var file = message.attachments.first();
 
 			if (file == null)
 			{
-				message.author.send("No file attached");
+				message.author.send('No file attached');
 				return;
 			}
 
 			fetch(file.url).then(res => 
 			{
 				// save file to babadata  babadata.datalocation + "FridayCache"
-				const local = babadata.datalocation + "FridayCache/" + file.name;
+				const local = babadata.datalocation + 'FridayCache/' + file.name;
 				
 				const dest = fs.createWriteStream(local);
  
  				res.body.pipe(dest).on('finish', () => {
-					message.author.send("File saved");
+					message.author.send('File saved');
 				});
-			})
+			});
 		}
 		// react to a message with a custom emoji
 		// Handler: "reee"
@@ -673,7 +673,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		//   extracting the numeric id.
 		// - Searches channels and threads similar to `fronge` and swallows fetch
 		//   errors when messages are not found.
-		else if (msgContent.includes("reee"))
+		else if (msgContent.includes('reee'))
 		{
 			var fnd = false;
 			var message_id = message.content.split(' ')[1]; //get the name for the role
@@ -681,7 +681,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			var mess = message.content.split(' ').slice(2, ).join(' '); //get the name for the role
 			message_id = message_id.replace(/\D/g,''); //get message id
 
-			var items = mess.split(" ");
+			var items = mess.split(' ');
 
 			var chanMap = g.channels.fetch().then(channels => {
 				channels.each(chan => { //iterate through all the channels
@@ -695,14 +695,14 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 									fnd = true;
 									for (var i = 0; i < items.length; i++)
 									{
-										if (items[i].includes("<"))
+										if (items[i].includes('<'))
 										{
 											items[i] = items[i].match(/(\d+)/)[0];
 										}
 										
 										mehstagw.react(items[i]).catch(console.error);
 									}
-									message.author.send("SUCC cess");
+									message.author.send('SUCC cess');
 								}).catch(function (err) {});
 							})
 						).catch(function (err) {});
@@ -712,14 +712,14 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 							fnd = true;
 							for (var i = 0; i < items.length; i++)
 							{
-								if (items[i].includes("<"))
+								if (items[i].includes('<'))
 								{
 									items[i] = items[i].match(/(\d+)/)[0];
 								}
 								
 								mehstagw.react(items[i]).catch(console.error);
 							}
-							message.author.send("SUCC cess");
+							message.author.send('SUCC cess');
 						}).catch(function (err) {}); 
 					}
 				});
@@ -728,48 +728,48 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		// Handler: "refried beans"
 		// - Triggers a load of internal DOW cache via `LoadAllTheCache` when DB
 		//   access is enabled. Sends result or an error message to the author.
-		else if (msgContent.includes("refried beans")) //probably would break adams brain
+		else if (msgContent.includes('refried beans')) //probably would break adams brain
 		{
 			if ((global.dbAccess[1] && global.dbAccess[0]))
 			{
 				LoadAllTheCache().then((result) => 
 				{
-					message.author.send("DOW cache updated (hopefully)");
-					message.author.send("```" + result + "```");
+					message.author.send('DOW cache updated (hopefully)');
+					message.author.send('```' + result + '```');
 				}).catch(() => 
 				{
-					console.log("Error loading cache")
-					message.author.send("Error loading cache");
+					console.log('Error loading cache');
+					message.author.send('Error loading cache');
 				});
 			}
 			else
 			{
-				message.author.send("DOW cache not updated");
+				message.author.send('DOW cache not updated');
 			}
 		}
 		// Handler: "showthefridaydebug"
 		// - Toggles a global debug flag `global.DebugFriday` and notifies the author.
-		else if (msgContent.includes("showthefridaydebug"))
+		else if (msgContent.includes('showthefridaydebug'))
 		{
 			global.DebugFriday = !global.DebugFriday;
 
-			message.author.send("Debug Friday set to " + global.DebugFriday);
+			message.author.send('Debug Friday set to ' + global.DebugFriday);
 		}
 		// Handler: "testthedmming"
 		// - Sends a test DM via the `DMMePlease` helper (used for verifying DM
 		//   delivery functionality).
-		else if (msgContent.includes("testthedmming"))
+		else if (msgContent.includes('testthedmming'))
 		{
-			DMMePlease("Test DM");
+			DMMePlease('Test DM');
 		}
 		// Handler: "babapleaseitistimetosleepforalittlebit"
 		// - Triggers `global.CleanupEverything()` and then re-initializes the
 		//   bot by calling `global.MakeBot()` and `global.BotOn`. Used as a
 		//   manual restart mechanism; not safe to call without care.
-		else if (msgContent.includes("babapleaseitistimetosleepforalittlebit"))
+		else if (msgContent.includes('babapleaseitistimetosleepforalittlebit'))
 		{
-			DMMePlease("Baba is going to sleep for a little bit");
-			message.author.send("Baba is going to sleep for a little bit");
+			DMMePlease('Baba is going to sleep for a little bit');
+			message.author.send('Baba is going to sleep for a little bit');
 			global.CleanupEverything();
 			setTimeout(function()
 			{
@@ -778,14 +778,14 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 				global.BotOn(bot);
 				setTimeout(function()
 				{
-					DMMePlease("Baba is back");
+					DMMePlease('Baba is back');
 				}, 2000);
 			}, 2000);
 		}
 		// Handler: "rbcontdow" / "rbcontfrog"
 		// - Controls DOW/FROG behavior for a user by calling `controlDOW` with
 		//   parsed time value (0-2). Bounds the value and checks DB access.
-		else if (msgContent.includes("rbcontdow") || msgContent.includes("rbcontfrog")) //probably would break adams brain
+		else if (msgContent.includes('rbcontdow') || msgContent.includes('rbcontfrog')) //probably would break adams brain
 		{
 			var u_id = message.content.split(' ').slice(1, 2).join(' ').replace(' ',''); //get the name for the role
 			
@@ -800,45 +800,45 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 
 			if ((global.dbAccess[1] && global.dbAccess[0]))
 			{
-				controlDOW(u_id, time, msgContent.includes("rbcontdow") ? "DOW" : "FROG");
-				message.author.send("DOW control for <@" + u_id + "> set to " + time);
+				controlDOW(u_id, time, msgContent.includes('rbcontdow') ? 'DOW' : 'FROG');
+				message.author.send('DOW control for <@' + u_id + '> set to ' + time);
 			}
 			else
 			{
-				message.author.send("DOW control not updated");
+				message.author.send('DOW control not updated');
 			}
 		}
 		// change babas nickname
 		// Handler: "saintnick"
 		// - Changes the bot's nickname in the guild to the provided name.
-		else if (msgContent.includes("saintnick"))
+		else if (msgContent.includes('saintnick'))
 		{
 			var name = message.content.split(' ').slice(1, ).join(' '); //get the name for the role
 
 			g.members.fetch(bot.user.id).then(member => {
-				member.setNickname(name, "Baba Plase");
+				member.setNickname(name, 'Baba Plase');
 			});
 		}
 		// manuela save the fridaycounts
 		// Handler: "manuela"
 		// - Saves the Friday counts via `SaveSlashFridayJson`. The 'overide'
 		//   flag toggles override behavior. Replies to the author with result.
-		else if (msgContent.includes("manuela"))
+		else if (msgContent.includes('manuela'))
 		{
-			var toveride = msgContent.includes("overide");
+			var toveride = msgContent.includes('overide');
 			SaveSlashFridayJson(toveride).then((result) => 
 			{
 				message.author.send(result);
 			}).catch((error) => {
 				console.error(error);
-				message.author.send("Error: " + error);
+				message.author.send('Error: ' + error);
 			});
 		}
 		// dm a user via baba
 		// Handler: "amhours"
 		// - Directly DMs a user with the provided message using `bot.users.fetch`.
 		// - Expects the first token after the command to be a user id.
-		else if (msgContent.includes("amhours"))
+		else if (msgContent.includes('amhours'))
 		{
 			var u_id = message.content.split(' ').slice(1, 2).join(' ').replace(' ',''); //get the name for the role
 			u_id = u_id.replace(/\D/g,''); //get message id
@@ -848,17 +848,17 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		}
 		// Handler: "cvcc"
 		// - Clears the VCC list by calling `clearVCCList` when DB access is enabled.
-		else if (msgContent.includes("cvcc"))
+		else if (msgContent.includes('cvcc'))
 		{
 			if (global.dbAccess[1] && global.dbAccess[0])
 			{
 				clearVCCList();
 				
-				message.author.send("VCC List Cleared");
+				message.author.send('VCC List Cleared');
 			}
 			else
 			{
-				message.author.send("VCC List Not Cleared, DB Disabled");
+				message.author.send('VCC List Not Cleared, DB Disabled');
 			}
 		}
 		// Handler: "dbdownadam"
@@ -866,55 +866,55 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		//   to the author. The '-force' flag disables filtering identical
 		//   channel joins/leaves. Output is human-friendly text using Discord
 		//   timestamp formatting. Assumes CSV format of specific columns.
-		else if (msgContent.includes("dbdownadam"))
+		else if (msgContent.includes('dbdownadam'))
 		{
-			var forceall = msgContent.includes("-force");
-			var loggedUsersVCC = fs.readFileSync(babadata.datalocation + "loggedUsersVCC.csv");
+			var forceall = msgContent.includes('-force');
+			var loggedUsersVCC = fs.readFileSync(babadata.datalocation + 'loggedUsersVCC.csv');
 
 			loggedUsersVCC = loggedUsersVCC.toString();
-			var lines = loggedUsersVCC.split("\n");
+			var lines = loggedUsersVCC.split('\n');
 
-			message.author.send("Current Lines of Data: " + (lines.length - 1));
+			message.author.send('Current Lines of Data: ' + (lines.length - 1));
 			for (var i = 0; i < lines.length; i++)
 			{
-				if (lines[i].trim() == "") continue;
+				if (lines[i].trim() == '') continue;
 
-				var line = lines[i].split(",");
+				var line = lines[i].split(',');
 				var newMemberID = line[0];
-				var newChannelID = line[1] == "null" ? null : line[1];
+				var newChannelID = line[1] == 'null' ? null : line[1];
 				var oldMemberID = line[2];
-				var oldChannelID = line[3] == "null" ? null : line[3];
+				var oldChannelID = line[3] == 'null' ? null : line[3];
 				var time = line[4];
 				// convert time to Date object
 				var time2 = new Date(parseInt(time));
 
 				if (!forceall && newChannelID == oldChannelID) continue;
 
-				var startstriiin = "<@" + newMemberID + "> joined <#" + newChannelID + ">";
-				var endstriin = "and ";
+				var startstriiin = '<@' + newMemberID + '> joined <#' + newChannelID + '>';
+				var endstriin = 'and ';
 				if (oldMemberID != newMemberID || newChannelID == null)
-					endstriin += "<@" + oldMemberID + "> left <#" + oldChannelID + ">";
+					endstriin += '<@' + oldMemberID + '> left <#' + oldChannelID + '>';
 				else
-					endstriin += "left <#" + oldChannelID + ">";
+					endstriin += 'left <#' + oldChannelID + '>';
 				var timeint = parseInt(time/1000);
-				var timestriin = "at <t:" + timeint + ":D> <t:" + timeint + ":T>";
+				var timestriin = 'at <t:' + timeint + ':D> <t:' + timeint + ':T>';
 
-				var resStrung = (newChannelID != null ? startstriiin + " " : "") + (oldChannelID != null ? endstriin + " " : "") + timestriin;
+				var resStrung = (newChannelID != null ? startstriiin + ' ' : '') + (oldChannelID != null ? endstriin + ' ' : '') + timestriin;
 
 				// if starts with and remove it
-				if (resStrung.startsWith("and "))
+				if (resStrung.startsWith('and '))
 					resStrung = resStrung.substring(4);
 
 				message.author.send(resStrung);
 			}
 
-			if ((lines.length == 1 && lines[0].trim() == "") || lines.length == 0)
-				message.author.send("No VCC List to Display");
+			if ((lines.length == 1 && lines[0].trim() == '') || lines.length == 0)
+				message.author.send('No VCC List to Display');
 		}
 		// Handler: "transpose"
 		// - Converts digits in a token into letters using the `validLetters`
 		//   mapping. Non-digit characters are removed before translation.
-		else if (msgContent.includes("transpose"))
+		else if (msgContent.includes('transpose'))
 		{
 			// get message
 			var message_id = message.content.split(' ')[1];
@@ -923,7 +923,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			message_id = message_id.replace(/\D/g,'');
 
 			// transpose numbers to string of text based on validLetters
-			var strg = "";
+			var strg = '';
 			for (var i = 0; i < message_id.length; i++)
 			{
 				var num = parseInt(message_id[i]);
@@ -934,77 +934,77 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			}
 
 			// send the transposed message
-			if (strg != "")
+			if (strg != '')
 				message.author.send(strg);
 		}
 		// Handler: "dbdownbytheriver"
 		// - Sends the raw `loggedUsersVCC.csv` file back to the author as an attachment.
-		else if (msgContent.includes("dbdownbytheriver"))
+		else if (msgContent.includes('dbdownbytheriver'))
 		{
-			var csv = fs.readFileSync(babadata.datalocation + "loggedUsersVCC.csv");
+			var csv = fs.readFileSync(babadata.datalocation + 'loggedUsersVCC.csv');
 
 			// send attachment
 			message.author.send({ files: [{ attachment: Buffer.from(csv), name: 'loggedUsersVCC.csv' }] });
 		}
 		// Handler: "trees"
 		// - Reads and sends the debug log file (`debug.log`) from `babadata.temp`.
-		else if (msgContent.includes("trees"))
+		else if (msgContent.includes('trees'))
 		{
-			var logFile = fs.readFileSync(babadata.temp + "debug.log");
+			var logFile = fs.readFileSync(babadata.temp + 'debug.log');
 
 			// send attachment
 			message.author.send({ files: [{ attachment: Buffer.from(logFile), name: 'debug.log' }] });
 		}
 		// Handler: "dabees"
 		// - Reads and sends the DB debug log file (`DBdebug.log`) from `babadata.temp`.
-		else if (msgContent.includes("dabees"))
+		else if (msgContent.includes('dabees'))
 		{
-			var logFile = fs.readFileSync(babadata.temp + "DBdebug.log");
+			var logFile = fs.readFileSync(babadata.temp + 'DBdebug.log');
 
 			// send attachment
 			message.author.send({ files: [{ attachment: Buffer.from(logFile), name: 'DBdebug.log' }] });
 		}
 		// Handler: "getthemfries"
 		// - Sends both `fridayCounter.json` and `fridaymessages.json` as attachments.
-		else if (msgContent.includes("getthemfries"))
+		else if (msgContent.includes('getthemfries'))
 		{
-			var fridayFile = fs.readFileSync(babadata.datalocation + "fridayCounter.json");
+			var fridayFile = fs.readFileSync(babadata.datalocation + 'fridayCounter.json');
 			// send attachment
 			message.author.send({ files: [{ attachment: Buffer.from(fridayFile), name: 'fridayCounter.json' }] });
-			var fridayMessagesFile = fs.readFileSync(babadata.datalocation + "fridaymessages.json");
+			var fridayMessagesFile = fs.readFileSync(babadata.datalocation + 'fridaymessages.json');
 			// send attachment
 			message.author.send({ files: [{ attachment: Buffer.from(fridayMessagesFile), name: 'fridaymessages.json' }] });
 		}
 		// Handler: "emptythefriesbasket"
 		// - Resets the Friday tracking files to empty JSON defaults. Destructive
 		//   admin action; no confirmation prompt.
-		else if (msgContent.includes("emptythefriesbasket"))
+		else if (msgContent.includes('emptythefriesbasket'))
 		{
 			// reset the fridaycounter.json and fridaymessages.json to empty
-			fs.writeFileSync(babadata.datalocation + "fridayCounter.json", "{}");
-			fs.writeFileSync(babadata.datalocation + "fridaymessages.json", "[]");
+			fs.writeFileSync(babadata.datalocation + 'fridayCounter.json', '{}');
+			fs.writeFileSync(babadata.datalocation + 'fridaymessages.json', '[]');
 		}
 		// Handler: "treecapitator"
 		// - Clears the main debug log file. Sends a confirmation message.
-		else if (msgContent.includes("treecapitator"))
+		else if (msgContent.includes('treecapitator'))
 		{
 			// reset the debug log to empty
-			fs.writeFileSync(babadata.temp + "debug.log", "");
-			message.author.send("Debug Log Cleared");
+			fs.writeFileSync(babadata.temp + 'debug.log', '');
+			message.author.send('Debug Log Cleared');
 		}
 		// Handler: "dabeecapitator"
 		// - Clears the DB debug log file. Sends a confirmation message.
-		else if (msgContent.includes("dabeecapitator"))
+		else if (msgContent.includes('dabeecapitator'))
 		{
 			// reset the debug log to empty
-			fs.writeFileSync(babadata.temp + "DBdebug.log", "");
-			message.author.send("DB Debug Log Cleared");
+			fs.writeFileSync(babadata.temp + 'DBdebug.log', '');
+			message.author.send('DB Debug Log Cleared');
 		}
 		// Handler: "statefarm"
 		// - Sets a channel's status using `channelStatusChange`. Expects two
 		//   parameters: channel id and a free-form status string. Validates
 		//   that the channel exists before calling the helper.
-		else if (msgContent.includes("statefarm"))
+		else if (msgContent.includes('statefarm'))
 		{
 			// 3 values: statefarm, channelid, status
 			var channelid = message.content.split(' ')[1];
@@ -1015,20 +1015,20 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 
 			if (channel == null)
 			{
-				message.author.send("Invalid Channel ID");
+				message.author.send('Invalid Channel ID');
 				return;
 			}
 
 			channelStatusChange(channelid, status);
 
-			message.author.send("Channel <#" + channelid + "> status set to " + status);
+			message.author.send('Channel <#' + channelid + '> status set to ' + status);
 		}
 		// add new one to download a csv of all the vcc logs and one to upload a csv of all the vcc logs
 		// add a thing to convert a datetime to utc
 		// Handler: "dontbuy"
 		// - Dumps recent database errors stored in `global.lastDBErrors` to the
 		//   author. Optionally accepts a numeric count (bounded to 50).
-		else if (msgContent.includes("dontbuy"))
+		else if (msgContent.includes('dontbuy'))
 		{
 			var name = message.content.split(' ').slice(1, ).join(' '); //get the name for the role
 			var count = name.match(/(\d+)/);
@@ -1040,7 +1040,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 
 			// if blank message
 			if (mesg === undefined)
-				message.author.send("No DB Error Message");
+				message.author.send('No DB Error Message');
 			else
 			{
 				// loop through the first COUNT messages in lastDBError
@@ -1051,7 +1051,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 					var timestamp = mesg[i][1];
 					var messageo = mesg[i][0];
 
-					message.author.send("`" + timestamp + "`\n`" + messageo + "`");
+					message.author.send('`' + timestamp + '`\n`' + messageo + '`');
 				}
 			}
 		}
@@ -1068,9 +1068,9 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		//      structured multi-line diffs and then wraps those in quoted lines.
 		// - Uses `Seperated` to split long output into messages that fit Discord
 		//   and sends them to the author. Errors and stacks are DM'd on failure.
-		else if (msgContent.includes("odd"))
+		else if (msgContent.includes('odd'))
 		{
-			var showmusic = msgContent.includes("--music");
+			var showmusic = msgContent.includes('--music');
 
 			var name = message.content.split(' ').slice(1, ).join(' '); //get the name for the role
 			var count = name.match(/(\d+)/);
@@ -1078,7 +1078,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 			else count = count[0];
 			if (count > 100) count = 100;
 
-			odd = ["`Logs:`"];
+			odd = ['`Logs:`'];
 
 			g.fetchAuditLogs({limit: count})
 			.then(audit => 
@@ -1094,10 +1094,10 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 					var target = k.target;
 					var chaib = k.changes;
 
-					var outpiut = "`" + actTxt + (user != 0 ? "` by <@" + user + ">" : "`");
+					var outpiut = '`' + actTxt + (user != 0 ? '` by <@' + user + '>' : '`');
 
-					if (reason != null) outpiut += " for `" + reason + "`:";
-					else outpiut += ":";
+					if (reason != null) outpiut += ' for `' + reason + '`:';
+					else outpiut += ':';
 
 					// if (k.targetType == "USER") outpiut += " <@" + target + ">";
 					// else if (k.targetType == "GUILD_MEMBER") outpiut += " <@" + target.user.id + ">";
@@ -1114,56 +1114,56 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 					// else if (k.targetType == "STICKER") outpiut += " " + target.name;
 					// else if (k.targetType == "GUILD") outpiut += " " + target.id;
 					switch (k.targetType.toUpperCase()) {
-						case "USER":
-							outpiut += " <@" + target + ">";
+						case 'USER':
+							outpiut += ' <@' + target + '>';
 							break;
-						case "GUILD_MEMBER":
-						case "MEMBER":
-							outpiut += " <@" + target.user.id + ">";
+						case 'GUILD_MEMBER':
+						case 'MEMBER':
+							outpiut += ' <@' + target.user.id + '>';
 							break;
-						case "THREAD":
-						case "CHANNEL":
-							outpiut += " <#" + target.id + ">";
+						case 'THREAD':
+						case 'CHANNEL':
+							outpiut += ' <#' + target.id + '>';
 							break;
-						case "ROLE":
-							outpiut += " <@&" + target.id + ">";
+						case 'ROLE':
+							outpiut += ' <@&' + target.id + '>';
 							break;
-						case "INVITE":
-							outpiut += " " + target.code;
+						case 'INVITE':
+							outpiut += ' ' + target.code;
 							break;
-						case "WEBHOOK":
-						case "INTEGRATION":
-						case "STICKER":
-						case "EMOJI":
-							outpiut += " " + target.name;
+						case 'WEBHOOK':
+						case 'INTEGRATION':
+						case 'STICKER':
+						case 'EMOJI':
+							outpiut += ' ' + target.name;
 							break;
-						case "MESSAGE":
-						case "STAGE_INSTANCE":
-						case "GUILD":
-							outpiut += " " + target.id;
+						case 'MESSAGE':
+						case 'STAGE_INSTANCE':
+						case 'GUILD':
+							outpiut += ' ' + target.id;
 							break;
-						case "UNKNOWN":
-							if (actTxt == "GuildVoiceStatusUpdate")
-								outpiut += " <#" + target.id + ">";
+						case 'UNKNOWN':
+							if (actTxt == 'GuildVoiceStatusUpdate')
+								outpiut += ' <#' + target.id + '>';
 							break;
 					}
 					// future == add more things here + voicestatusupdate
 
-					outpiut += " at `" + k.createdAt + "`";
+					outpiut += ' at `' + k.createdAt + '`';
 					
-					if (!showmusic && actTxt == "ChannelUpdate" && user == "887854244567334973")
+					if (!showmusic && actTxt == 'ChannelUpdate' && user == '887854244567334973')
 					{
 						odd.push(outpiut);
 						continue;
 					}
 					
-					outpiut += "\n";
+					outpiut += '\n';
 
-					var op2 = "> `(No Changes)`";
+					var op2 = '> `(No Changes)`';
 
 					if (chaib != null)
 					{
-						var op3 = "";
+						var op3 = '';
 						var putter = [];
 						for (var j = 0; j < chaib.length; j++)
 						{
@@ -1177,23 +1177,23 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 							var ct = strg.toString().split(/\r\n|\r|\n/);
 							if (ct.length > 1)
 							{
-								putter.push("> `" + key + ":`");
+								putter.push('> `' + key + ':`');
 								for (var k = 0; k < ct.length; k++)
 								{
-									if (ct[k] == "")
+									if (ct[k] == '')
 										continue;
-									putter.push("> `" + ct[k] + "`");
+									putter.push('> `' + ct[k] + '`');
 								}
 							}
 							else
 							{
-								putter.push("> `" + key + ": " + strg + "`");
+								putter.push('> `' + key + ': ' + strg + '`');
 							}
 						}
 
-						op3 += putter.join("\n");
+						op3 += putter.join('\n');
 						
-						if (op3.trim() != "")
+						if (op3.trim() != '')
 							op2 = op3;
 					}
 
@@ -1201,8 +1201,8 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 
 					odd.push(outpiut);
 				}
-				var vle = odd.join("\n");
-				var msgs = Seperated(vle)
+				var vle = odd.join('\n');
+				var msgs = Seperated(vle);
 				
 				for (var i = 0; i < msgs.length; i++)
 				{
@@ -1210,8 +1210,8 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 				}
 			}).catch((error) => {
 				console.error(error);
-				message.author.send("Error: `" + error + "`");
-				message.author.send("Stack:\n```" + error.stack + "```");
+				message.author.send('Error: `' + error + '`');
+				message.author.send('Stack:\n```' + error.stack + '```');
 			});
 		}
 		// Handler: "am" (auto-moderation rules)
@@ -1220,17 +1220,17 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 		//   guild id and returns either a compact list or full objects.
 		// - Requires the bot token and performs a raw HTTPS request instead of
 		//   using a higher-level library — intended for quick admin use.
-		else if (msgContent.includes("am") && !msgContent.includes("hours"))
+		else if (msgContent.includes('am') && !msgContent.includes('hours'))
 		{
-			if (msgContent.includes("list"))
+			if (msgContent.includes('list'))
 			{
 				const options = {
 					hostname: 'discord.com',
 					path: '/api/v10/guilds/454457880825823252/auto-moderation/rules',
 					headers: {
-						"Authorization": "Bot " + bot.token,
+						'Authorization': 'Bot ' + bot.token,
 					}
-				}
+				};
 				
 				var getto = https.get(options, (resp) => {
 					let data = '';
@@ -1239,23 +1239,23 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 					});
 					resp.on('end', () => {
 						var dataparse = JSON.parse(data);
-						if (msgContent.includes("full"))
+						if (msgContent.includes('full'))
 						{
 							for (var i = 0; i < dataparse.length; i++)
 							{
-								var send = "```";
+								var send = '```';
 								send += objectParse(dataparse[i], 0);
-								send += "\n";
-								send += "```";
+								send += '\n';
+								send += '```';
 								message.author.send(send);
 							}
 						}
 						else
 						{
-							var send = "";
+							var send = '';
 							for (var i = 0; i < dataparse.length; i++)
 							{
-								send += dataparse[i].id + " - " + dataparse[i].name + "\n";
+								send += dataparse[i].id + ' - ' + dataparse[i].name + '\n';
 							}
 							message.author.send(send);
 						}
@@ -1268,7 +1268,7 @@ function TextCommandBackup(bot, message, sentvalid, msgContent, g)
 
 module.exports = {
 	TextCommandBackup
-}
+};
 
 // add function: "are you gonna" that will check if the day call command has happened and what channel if it already occured, else post "perchance"
 // call command after successful call -> say channel name and time

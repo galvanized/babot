@@ -26,6 +26,6 @@
     "public-google-calendar": "^0.2.0"
   },
   "devDependencies": {
-    "eslint": "^8.46.0"
+    "eslint": "^10.0.2"
   }
 }

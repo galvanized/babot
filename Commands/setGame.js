@@ -50,14 +50,14 @@ module.exports = {
         var help = { type: parseInt(mode) };
 
         console.log(help);
-        if (mode == "1")
-            help.url = "https://www.twitch.tv/directory/game/Baba%20is%20You";
+        if (mode == '1')
+            help.url = 'https://www.twitch.tv/directory/game/Baba%20is%20You';
 
-        mode = mode.replace("0", "Playing");
-        mode = mode.replace("1", "Streaming");
-        mode = mode.replace("2", "Listening to");
-        mode = mode.replace("3", "Watching");
-        mode = mode.replace("5", "Competing in");
+        mode = mode.replace('0', 'Playing');
+        mode = mode.replace('1', 'Streaming');
+        mode = mode.replace('2', 'Listening to');
+        mode = mode.replace('3', 'Watching');
+        mode = mode.replace('5', 'Competing in');
 
         bot.user.setActivity(game, help);
         await interaction.editReply({ content: `Baba is now ${mode} ${game}`, ephemeral: true });

@@ -40,7 +40,7 @@ module.exports = {
                             {
                                 fnd = true;
                                 message.pin();
-                                interaction.editReply({ content: "Message Pinned", ephemeral: true });
+                                interaction.editReply({ content: 'Message Pinned', ephemeral: true });
                             }).catch(function (err) {});
                         })
                     ).catch(function (err) {});
@@ -49,11 +49,11 @@ module.exports = {
                     {
                         fnd = true;
                         message.pin();
-                        interaction.editReply({ content: "Message Pinned", ephemeral: true });
+                        interaction.editReply({ content: 'Message Pinned', ephemeral: true });
                     }).catch(function (err) {}); //try to get the message, if it exists call setVote, otherwise catch the error
                 }
             });
         });
-        await interaction.editReply({ content: "Searching for Message", ephemeral: true });
+        await interaction.editReply({ content: 'Searching for Message', ephemeral: true });
 	},
 };

@@ -20,7 +20,7 @@ const Discord = require('discord.js'); //discord module for interation with disc
 const { getD1 } = require('../../../Tools/overrides');
 const { PickThePerfectUsername } = require('../../Database/databaseVoiceController.js');
     
-var rawdata = fs.readFileSync(babadata.datalocation + "emojiJSONCache.json");
+var rawdata = fs.readFileSync(babadata.datalocation + 'emojiJSONCache.json');
 var emojis = JSON.parse(rawdata).emojis;
 
 /**
@@ -46,10 +46,10 @@ var emojis = JSON.parse(rawdata).emojis;
 async function babaMorshu(mode, text, index)
 {
     // for pauses
-    text = text.replaceAll("...", "\n.\n");
+    text = text.replaceAll('...', '\n.\n');
 
-    text = text.replaceAll("ඞ", " among us ");
-    text = text.replaceAll("𓀒", " man falling ");
+    text = text.replaceAll('ඞ', ' among us ');
+    text = text.replaceAll('𓀒', ' man falling ');
 
     // replace all the time tags with human readable dates
 	var chunks = smartSplitTimeTags(text);
@@ -57,13 +57,13 @@ async function babaMorshu(mode, text, index)
 	for (var i = 0; i < chunks.length; i++)
 	{
 		// if chunks[i] is a timestamp, convert to human readable date
-		if (chunks[i].includes("<t:"))
+		if (chunks[i].includes('<t:'))
 		{
 			chunks[i] = readableTimeStamp(chunks[i]);
 		}
 	}
 
-	text = chunks.join("");
+	text = chunks.join('');
 
     // replace all the discord special tags with their actual names
 	text = await parseDiscordStuff(text);
@@ -76,22 +76,22 @@ async function babaMorshu(mode, text, index)
 		// if chunks is a number, and length is greater than 6 characters, split into numbers with spaces ex: 12345678 -> 1 2 3 4 5 6 7 8
 		if (!isNaN(chunks[i]) && chunks[i].length > 6)
 		{
-			var newStrng = "";
+			var newStrng = '';
 			for (var j = 0; j < chunks[i].length; j++)
 			{
-				newStrng += chunks[i][j] + " ";
+				newStrng += chunks[i][j] + ' ';
 			}
 			chunks[i] = newStrng.trim();
 		}
 	}
 
-	text = chunks.join("");
+	text = chunks.join('');
 
     // replace all the unicode emojis with their names
     emojis.forEach(e => 
     {
         const emojiRegex = new RegExp(e.emoji.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
-        text = text.replaceAll(emojiRegex,  " " + e.name + " ");
+        text = text.replaceAll(emojiRegex,  ' ' + e.name + ' ');
     });
 
     var morshuPromise = new Promise((resolve, reject) => {
@@ -111,13 +111,13 @@ async function babaMorshu(mode, text, index)
             // save the file if success to babadata.temp + "morshu.mp3" or babadata.temp + "morshu.mp4"
             // data will be a buffer of the file in either mp3 or mp4 format
 
-            if (mode == "audio")
+            if (mode == 'audio')
             {
                 var newFile = new Discord.AttachmentBuilder(nodeBuffer, { name: 'Morshu.mp3', description : text });
 
                 resolve({file: newFile});
             }
-            else if (mode == "video")
+            else if (mode == 'video')
             {
                 var newFile = new Discord.AttachmentBuilder(nodeBuffer, { name: 'Morshu.mp4', description : text });
 
@@ -149,16 +149,16 @@ function smartSplitTimeTags(text)
   
 	// Now merge consecutive text characters into bigger text chunks:
 	const chunks = [];
-	let buffer = "";
+	let buffer = '';
 	for (const part of rawMatches) 
 	{
-	  	if (part.startsWith("<t:") && part.endsWith(">")) 
+	  	if (part.startsWith('<t:') && part.endsWith('>')) 
 		{
 			// Flush buffer if there's text
 			if (buffer) 
 			{
 				chunks.push(buffer);
-				buffer = "";
+				buffer = '';
 			}
 			chunks.push(part);
 	  	} 
@@ -227,34 +227,34 @@ function readableTimeStamp(stampString)
 				mins = Math.abs(mins);
 				if (mins < 60)
 				{
-					return mins + " minutes ago";
+					return mins + ' minutes ago';
 				}
 				else if (mins < 1440)
 				{
-					return Math.floor(mins / 60) + " hours ago";
+					return Math.floor(mins / 60) + ' hours ago';
 				}
 				else
 				{
-					return Math.floor(mins / 1440) + " days ago";
+					return Math.floor(mins / 1440) + ' days ago';
 				}
 			}
 			else if (mins == 0)
 			{
-				return "Just now";
+				return 'Just now';
 			}
 			else
 			{
 				if (mins < 60)
 				{
-					return "In " + mins + " minutes";
+					return 'In ' + mins + ' minutes';
 				}
 				else if (mins < 1440)
 				{
-					return "In " + Math.floor(mins / 60) + " hours";
+					return 'In ' + Math.floor(mins / 60) + ' hours';
 				}
 				else
 				{
-					return "In " + Math.floor(mins / 1440) + " days";
+					return 'In ' + Math.floor(mins / 1440) + ' days';
 				}
 			}
 		default:
@@ -277,17 +277,17 @@ function readableTimeStamp(stampString)
 async function getAUserName(userID)
 {
 	var userGetPromise = new Promise((resolve, reject) => {
-		var guildID = babadata.testing === undefined ? "454457880825823252" : "522136584649310208";
+		var guildID = babadata.testing === undefined ? '454457880825823252' : '522136584649310208';
 		global.Bot.guilds.fetch(guildID).then(guild => {
 			guild.members.fetch(userID).then(member => {
 				resolve(PickThePerfectUsername(member));
 			}).catch((error) => {
 				console.error(error);
-				resolve("User not found");
+				resolve('User not found');
 			});
 		}).catch((error) => {
 			console.error(error);
-			resolve("Guild not found");
+			resolve('Guild not found');
 		});
 	});
 
@@ -308,16 +308,16 @@ async function getAUserName(userID)
 async function getAChannelName(channelID)
 {
     var channelGetPromise = new Promise((resolve, reject) => {
-        var guildID = babadata.testing === undefined ? "454457880825823252" : "522136584649310208";
+        var guildID = babadata.testing === undefined ? '454457880825823252' : '522136584649310208';
         global.Bot.guilds.fetch(guildID).then(guild => {
             var channel = guild.channels.cache.get(channelID);
             if (channel != null)
                 resolve(channel.name);
             else
-                resolve("Channel not found");
+                resolve('Channel not found');
         }).catch((error) => {
             console.error(error);
-            resolve("Guild not found");
+            resolve('Guild not found');
         });
     });
 
@@ -338,16 +338,16 @@ async function getAChannelName(channelID)
 async function getARoleName(roleID)
 {
     var roleGetPromise = new Promise((resolve, reject) => {
-        var guildID = babadata.testing === undefined ? "454457880825823252" : "522136584649310208";
+        var guildID = babadata.testing === undefined ? '454457880825823252' : '522136584649310208';
         global.Bot.guilds.fetch(guildID).then(guild => {
             var role = guild.roles.cache.get(roleID);
             if (role != null)
                 resolve(role.name);
             else
-                resolve("Role not found");
+                resolve('Role not found');
         }).catch((error) => {
             console.error(error);
-            resolve("Guild not found");
+            resolve('Guild not found');
         });
     });
 
@@ -373,29 +373,29 @@ async function parseDiscordStuff(text)
 {
 	var listOfItems = parseDiscordSpecial(text);
 
-	var newText = "";
+	var newText = '';
 	for (var i = 0; i < listOfItems.length; i++)
 	{
 		var item = listOfItems[i];
 		switch (item.type)
 		{
-			case "channel":
+			case 'channel':
                 var channel = await getAChannelName(item.id);
                 newText += channel;
 				break;
-			case "role":
+			case 'role':
                 var role = await getARoleName(item.id);
                 newText += role;
 				break;
-			case "user":
+			case 'user':
 				var user = await getAUserName(item.id);
 				newText += user;
 				break;
-			case "emoji":
-			case "animated_emoji":
+			case 'emoji':
+			case 'animated_emoji':
 				newText += item.name;
 				break;
-			case "text":
+			case 'text':
 				newText += item.text;
 				break;
 			default:
@@ -436,20 +436,20 @@ function parseDiscordSpecial(text)
   
 		if (channelId) 
 		{
-		  	return { type: "channel", text: fullMatch, id: channelId };
+		  	return { type: 'channel', text: fullMatch, id: channelId };
 		}
 		if (roleId) 
 		{
-		  	return { type: "role", text: fullMatch, id: roleId };
+		  	return { type: 'role', text: fullMatch, id: roleId };
 		}
 		if (userId) 
 		{
-		  	return { type: "user", text: fullMatch, id: userId };
+		  	return { type: 'user', text: fullMatch, id: userId };
 		}
 		if (emojiId) 
 		{
 			return {
-				type: animatedFlag ? "animated_emoji" : "emoji",
+				type: animatedFlag ? 'animated_emoji' : 'emoji',
 				text: fullMatch,
 				name: emojiName,
 				id: emojiId
@@ -457,7 +457,7 @@ function parseDiscordSpecial(text)
 		}
 		if (plainText)
 		{
-		  	return { type: "text", text: plainText };
+		  	return { type: 'text', text: plainText };
 		}
   
 		return null;

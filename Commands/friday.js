@@ -8,8 +8,8 @@
 
 const { babaFriday } = require('../Functions/commandFunctions.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { removeCountRuin, functionPostFunnyDOW } = require("../Functions/HelperFunctions/slashFridayHelpers.js");
-const { getD1 } = require("../Tools/overrides.js");
+const { removeCountRuin, functionPostFunnyDOW } = require('../Functions/HelperFunctions/slashFridayHelpers.js');
+const { getD1 } = require('../Tools/overrides.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -37,7 +37,7 @@ module.exports = {
 
 				setTimeout(function()
 				{
-					msgs = ["Haha, it's not Friday! Gottem!", "You thought it was Friday? Silly Buddy", "You got Kerpranked, it aint Friday"]
+					msgs = ["Haha, it's not Friday! Gottem!", 'You thought it was Friday? Silly Buddy', 'You got Kerpranked, it aint Friday'];
 					message.channel.send({ content: msgs[Math.floor(Math.random() * msgs.length)] }).then(msg =>
 					{
 						interaction.deleteReply();
@@ -50,7 +50,7 @@ module.exports = {
 			}
 			else
 			{
-				await functionPostFunnyDOW("interaction", interaction, 5);
+				await functionPostFunnyDOW('interaction', interaction, 5);
 			}
 		}
 		else

@@ -24,21 +24,21 @@ module.exports = {
 	 */
 	async execute(interaction, bot) {
 		await interaction.deferReply();
-        var templocal = babadata.datalocation + "Extra/";
+        var templocal = babadata.datalocation + 'Extra/';
         var coinimg = Math.floor(Math.random() * 4);
 
         var coint = Math.floor(Math.random() * 2);
         
         var newAttch = new Discord.AttachmentBuilder(templocal + `/cf${coinimg}.gif`, 
-            { name: 'coin.gif', description : "Its gonna be " + (coint ? "Heads" : "Tails") + "!"}); //makes a new discord attachment
+            { name: 'coin.gif', description : 'Its gonna be ' + (coint ? 'Heads' : 'Tails') + '!'}); //makes a new discord attachment
 
-		await interaction.editReply({ content: "Flipping Coin!", files: [newAttch] });
+		await interaction.editReply({ content: 'Flipping Coin!', files: [newAttch] });
 
         var message = await interaction.fetchReply();
 
         setTimeout(function()
         {
-            message.channel.send({ content: "The coin flip result is: `" + (coint ? "Heads" : "Tails") + "`"}).then(interaction.deleteReply());
+            message.channel.send({ content: 'The coin flip result is: `' + (coint ? 'Heads' : 'Tails') + '`'}).then(interaction.deleteReply());
         }, 2000);
 	},
 };

@@ -8,16 +8,16 @@
 
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { babaUntilHolidays } = require('../Functions/commandFunctions.js');
-const { FrogButtons } = require("../Functions/HelperFunctions/basicHelpers.js");
-const { functionPostFunnyDOW } = require("../Functions/HelperFunctions/slashFridayHelpers.js");
+const { FrogButtons } = require('../Functions/HelperFunctions/basicHelpers.js');
+const { functionPostFunnyDOW } = require('../Functions/HelperFunctions/slashFridayHelpers.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('eve')
 		.setDescription('Gives the date in eves until or since!')
 		.addStringOption(opt => 
-			opt.setName("event")
-			.setDescription("The event that will get used.")
+			opt.setName('event')
+			.setDescription('The event that will get used.')
 			.setRequired(true)),
 	/**
 	 * Fetches holiday/event data for the given event string as "eves" (days before the
@@ -31,10 +31,10 @@ module.exports = {
 	 */
 	async execute(interaction, bot) {
 		await interaction.deferReply();
-        var event = interaction.options.getString("event");
+        var event = interaction.options.getString('event');
         var message = await interaction.fetchReply();
         
-        var texts = await babaUntilHolidays(`${event} eves`, interaction.user, "04");
+        var texts = await babaUntilHolidays(`${event} eves`, interaction.user, '04');
 
         if (texts.length > 1)
         {
@@ -47,8 +47,8 @@ module.exports = {
             {
                 var text = texts[0].content;
 
-                if (text == "FUNNYDOW")
-                    await functionPostFunnyDOW("interaction", interaction, 3);
+                if (text == 'FUNNYDOW')
+                    await functionPostFunnyDOW('interaction', interaction, 3);
                 else
                     await interaction.editReply(text);
             }

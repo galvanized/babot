@@ -136,7 +136,7 @@ function FilterChannel(messageTerm, haikuList)
  */
 function FilterDate(haikuList, BFE, Year, Month, Day)
 {
-    if (BFE == "Exact")
+    if (BFE == 'Exact')
     {
         var filteredList = haikuList.filter(function(haiku) 
         {
@@ -148,7 +148,7 @@ function FilterDate(haikuList, BFE, Year, Month, Day)
 
         return filteredList;
     }
-    else if (BFE == "Before")
+    else if (BFE == 'Before')
     {
         var filteredList = haikuList.filter(function(haiku) 
         {
@@ -160,7 +160,7 @@ function FilterDate(haikuList, BFE, Year, Month, Day)
 
         return filteredList;
     }
-    else if (BFE == "After")
+    else if (BFE == 'After')
     {
         var filteredList = haikuList.filter(function(haiku) 
         {
@@ -188,7 +188,7 @@ function FilterDate(haikuList, BFE, Year, Month, Day)
  */
 function FilterKeyword(messageTerm, haikuList)
 {
-    var splitbySpace = messageTerm.split(" ");
+    var splitbySpace = messageTerm.split(' ');
     // check if all words are in the haiku
     var filteredList = haikuList.filter(function(haiku) 
     {
@@ -221,18 +221,18 @@ function FilterKeyword(messageTerm, haikuList)
 function GenerateRandomHaiku(haikuList)
 {
     var object = {};
-    object.PersonName = "No One";
-    object.HaikuFormatted = "";
-    object.DiscordName = "No One";
+    object.PersonName = 'No One';
+    object.HaikuFormatted = '';
+    object.DiscordName = 'No One';
     object.Date = getD1();
-    object.ChannelName = "No Channel";
+    object.ChannelName = 'No Channel';
     object.Accidental = 1;
 
     var fives = [];
     var sevens = [];
     for (var x in haikuList)
     {
-        var hform = haikuList[x].HaikuFormatted.replace("\r \r ", "\r\n\r\n").split("\r\n\r\n");
+        var hform = haikuList[x].HaikuFormatted.replace('\r \r ', '\r\n\r\n').split('\r\n\r\n');
 
         fives.push(hform[0]);
         sevens.push(hform[1]);
@@ -243,7 +243,7 @@ function GenerateRandomHaiku(haikuList)
     var theseven = sevens[Math.floor(Math.random() * sevens.length)];
     var thefive2 = fives[Math.floor(Math.random() * fives.length)];
 
-    object.HaikuFormatted = thefive + "\r\n\r\n" + theseven + "\r\n\r\n" + thefive2;
+    object.HaikuFormatted = thefive + '\r\n\r\n' + theseven + '\r\n\r\n' + thefive2;
 
     return object;
 }
@@ -299,7 +299,7 @@ function GetPurityList(haikuList, pMode)
     {
         var obj = {};
         var haiku = haikuList[x];
-        if (pMode == "chans")
+        if (pMode == 'chans')
         {
             // see if haiku.ChannelName is in purityList
             var found = false;
@@ -324,7 +324,7 @@ function GetPurityList(haikuList, pMode)
                 purityList.push(obj);
             }
         }
-        else if (pMode == "users")
+        else if (pMode == 'users')
         {
             // see if haiku.PersonName is in purityList
             var found = false;
@@ -349,7 +349,7 @@ function GetPurityList(haikuList, pMode)
                 purityList.push(obj);
             }
         }
-        else if (pMode == "date")
+        else if (pMode == 'date')
         {
             // see if haiku.Date is in purityList
             var found = false;
@@ -405,7 +405,7 @@ function GetPurityList(haikuList, pMode)
  */
 function HaikuSelection(messageTerm, mode)
 {
-    var haikuJson = fs.readFileSync(babadata.datalocation + "HaikusCache.json");
+    var haikuJson = fs.readFileSync(babadata.datalocation + 'HaikusCache.json');
     var haikuList = JSON.parse(haikuJson);
     var entierHaikuList = haikuList;
 
@@ -427,7 +427,7 @@ function HaikuSelection(messageTerm, mode)
         var Month = IsDate.month;
         var Day = IsDate.day;
 
-        haikuList = FilterDate(haikuList, "Exact", Year == 0 ? null : Year, Month == 0 ? null : Month - 1, Day == 0 ? null : Day);
+        haikuList = FilterDate(haikuList, 'Exact', Year == 0 ? null : Year, Month == 0 ? null : Month - 1, Day == 0 ? null : Day);
     }
     else if (mode == 5)
     {
@@ -466,12 +466,12 @@ function HaikuSelection(messageTerm, mode)
                     endDate = temp;
                 }
 
-                haikuList = FilterDate(haikuList, "After", startDate.year == 0 ? null : startDate.year, startDate.month == 0 ? null : startDate.month - 1, startDate.day == 0 ? null : startDate.day);
-                haikuList = FilterDate(haikuList, "Before", endDate.year == 0 ? null : endDate.year, endDate.month == 0 ? null : endDate.month - 1, endDate.day == 0 ? null : endDate.day);
+                haikuList = FilterDate(haikuList, 'After', startDate.year == 0 ? null : startDate.year, startDate.month == 0 ? null : startDate.month - 1, startDate.day == 0 ? null : startDate.day);
+                haikuList = FilterDate(haikuList, 'Before', endDate.year == 0 ? null : endDate.year, endDate.month == 0 ? null : endDate.month - 1, endDate.day == 0 ? null : endDate.day);
             }
             else
             {
-                haikuList = FilterDate(haikuList, "Exact", startDate.year == 0 ? null : startDate.year, startDate.month == 0 ? null : startDate.month - 1, startDate.day == 0 ? null : startDate.day);
+                haikuList = FilterDate(haikuList, 'Exact', startDate.year == 0 ? null : startDate.year, startDate.month == 0 ? null : startDate.month - 1, startDate.day == 0 ? null : startDate.day);
             }
         }
 
@@ -490,7 +490,7 @@ function HaikuSelection(messageTerm, mode)
             haikuList = FilterKeyword(kword, haikuList);
         }
 
-        if (messageTerm[5] == "purity")
+        if (messageTerm[5] == 'purity')
         {
             var pMode = messageTerm[6];
             
@@ -509,7 +509,7 @@ function HaikuSelection(messageTerm, mode)
     if (mode == 6) return [[GenerateRandomHaiku(haikuList)], null];
 
     // if mode == 4 and messageTerm[5] == "all" then we return the entire list
-    if (mode == 4 && messageTerm[5] == "all") return [haikuList, null];
+    if (mode == 4 && messageTerm[5] == 'all') return [haikuList, null];
 
     haiku = haikuList[Math.floor(Math.random() * haikuList.length)];
 
@@ -566,7 +566,7 @@ function NameFromUserID(userid)
             resolve(result.PersonName);
         }).catch((err) => 
         {
-            var fakeVales = ["Buddy", "Pal", "Buddy Man", "Buddy Pal", "Fella", "Friend", "Friendo", "Friend Buddy", "Friend Pal", "Friend Buddy Pal"];
+            var fakeVales = ['Buddy', 'Pal', 'Buddy Man', 'Buddy Pal', 'Fella', 'Friend', 'Friendo', 'Friend Buddy', 'Friend Pal', 'Friend Buddy Pal'];
             fakeVales[Math.floor(Math.random() * fakeVales.length)];
             resolve(fakeVales[Math.floor(Math.random() * fakeVales.length)]);
         });
@@ -591,9 +591,9 @@ function NameFromUserID(userid)
 function GenInfo(line, type)
 {
 	// if (type == 2) line.Name = line.Name.toLocaleDateString('en-US', options);
-	if (type == 2) line.Name = "<t:" + line.Name.getTime() / 1000 + ":D>";
+	if (type == 2) line.Name = '<t:' + line.Name.getTime() / 1000 + ':D>';
 	line.Purity = +Number(line.Purity).toFixed(3);
-	return line.Name + (type == 2 ? "" : " [<" + (type == 1 ? "#" : "@") + line.ID + ">]") + "\n\t`" + line.Count + " Haikus` - `" + line.Accidental + " Accidental` - `" + line.Purity + "% Purity`";
+	return line.Name + (type == 2 ? '' : ' [<' + (type == 1 ? '#' : '@') + line.ID + '>]') + '\n\t`' + line.Count + ' Haikus` - `' + line.Accidental + ' Accidental` - `' + line.Purity + '% Purity`';
 }
 
 /**
@@ -664,20 +664,20 @@ function FormatPurityList(resultList, type, pagestuff)
 			}
 		}
 		
-		var retme = ""
+		var retme = '';
 		for (var x in lists)
 		{
 			var lin = lists[x];
 			retme += GenInfo(lin, type);
 
 			if (x < lists.length - 1)
-				retme += "\n\n";
+				retme += '\n\n';
 		}
 
 		returns.push(retme);
 	}
 
-	return {"retstring": returns, "total": listsFull.length};
+	return {'retstring': returns, 'total': listsFull.length};
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -721,7 +721,7 @@ function GetParent(retme, id)
  */
 function ObtainDBHolidays()
 {
-    let holidayJson = fs.readFileSync(babadata.datalocation + "HolidayFrogs.json");
+    let holidayJson = fs.readFileSync(babadata.datalocation + 'HolidayFrogs.json');
     var result = JSON.parse(holidayJson);
 
     var retme = {};
@@ -761,4 +761,4 @@ module.exports = {
 	FormatPurityList,
     ObtainDBHolidays,
     HaikuSelection,
-}
+};

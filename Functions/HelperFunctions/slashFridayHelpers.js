@@ -67,16 +67,16 @@ function resetRNG()
 function splitStringInto2000CharChunksonNewLine(str)
 {
 	var chunks = [];
-	var chunk = "";
-	var lines = str.split("\n");
+	var chunk = '';
+	var lines = str.split('\n');
 	for (var i = 0; i < lines.length; i++)
 	{
 		if (chunk.length + lines[i].length > 2000)
 		{
 			chunks.push(chunk);
-			chunk = "";
+			chunk = '';
 		}
-		chunk += lines[i] + "\n";
+		chunk += lines[i] + '\n';
 	}
 	chunks.push(chunk);
 	return chunks;
@@ -106,16 +106,16 @@ function splitStringInto2000CharChunksonNewLine(str)
 function splitStringInto900CharChunksonSpace(str)
 {
 	var chunks = [];
-	var chunk = "";
-	var words = str.split(" ");
+	var chunk = '';
+	var words = str.split(' ');
 	for (var i = 0; i < words.length; i++)
 	{
 		if (chunk.length + words[i].length > 900)
 		{
 			chunks.push(chunk);
-			chunk = "";
+			chunk = '';
 		}
-		chunk += words[i] + " ";
+		chunk += words[i] + ' ';
 	}
 	chunks.push(chunk);
 	return chunks;
@@ -142,7 +142,7 @@ function splitStringInto900CharChunksonSpace(str)
  */
 async function functionPostFunnyDOW(mode, message, dowNum, seedSet = -1, dontSave = false)
 {
-	var id = mode == "interaction" ? message.user.id : message.author.id;
+	var id = mode == 'interaction' ? message.user.id : message.author.id;
 	var textList = await funnyDOWTextSaved(dowNum, id, seedSet, dontSave);
 
 	var chunks = textList[0].content == null ? [] : splitStringInto2000CharChunksonNewLine(textList[0].content);
@@ -183,9 +183,9 @@ async function functionPostFunnyDOW(mode, message, dowNum, seedSet = -1, dontSav
 	for (var i = 1; i < textList.length; i++)
 		chunks.push(textList[i]);
 
-	if (mode == "message")
+	if (mode == 'message')
 		msg = await message.channel.send(chunks[0]);
-	else if (mode == "interaction")
+	else if (mode == 'interaction')
 	{
 		await message.editReply(chunks[0]);
 		msg = await message.fetchReply();
@@ -254,20 +254,20 @@ async function funnyDOWTextSaved(dowNum, authorID, seedSet = -1, dontSave = fals
 	// console.log("Condensed Notation: " + textGroup[1]);
 	// console.log("Condensed Notation Info: " + textGroup[2]);
 
-	if (!dontSave && text != "")
+	if (!dontSave && text != '')
 	{
 		var condensedNotation = textGroup[1];
 		var cnYung = textGroup[2];
 		// append text to fridaymessages.json
 
-		if (!fs.existsSync(babadata.datalocation + "fridaymessages.json")) 
+		if (!fs.existsSync(babadata.datalocation + 'fridaymessages.json')) 
 		{
-			console.log("No fridaymessages file found -- creating with local data");
+			console.log('No fridaymessages file found -- creating with local data');
 			var data = [];
-			fs.writeFileSync(babadata.datalocation + "fridaymessages.json", JSON.stringify(data));
+			fs.writeFileSync(babadata.datalocation + 'fridaymessages.json', JSON.stringify(data));
 		}
 
-		var fmpath = babadata.datalocation + "fridaymessages.json";
+		var fmpath = babadata.datalocation + 'fridaymessages.json';
 		var fmr = fs.readFileSync(fmpath);
 		var fmd = JSON.parse(fmr);
 		var tod = getD1(true);
@@ -288,21 +288,21 @@ async function funnyDOWTextSaved(dowNum, authorID, seedSet = -1, dontSave = fals
 
 		theRNG = new RNG(theRNG.getState());
 	
-		fs.readdir(babadata.datalocation + "FridayCache", (err, files) => {
+		fs.readdir(babadata.datalocation + 'FridayCache', (err, files) => {
 			fcacheitems = files.length / 3;
 
-			var fmdItem = { "UID": authorID, "Text": text, "Date": tod, "CondensedNotation": cnFull, "Seed": seed, "FileVersion": fcacheitems };
+			var fmdItem = { 'UID': authorID, 'Text': text, 'Date': tod, 'CondensedNotation': cnFull, 'Seed': seed, 'FileVersion': fcacheitems };
 			fmd.push(fmdItem);
 		
 			fs.writeFileSync(fmpath, JSON.stringify(fmd));
 		});
 	}
 
-	if (text == "")
-		text = "You are not allowed to enjoy this command, you are a bad person!";
+	if (text == '')
+		text = 'You are not allowed to enjoy this command, you are a bad person!';
 
 	if (global.DebugFriday)
-		text += " " + seed;
+		text += ' ' + seed;
 
 	var textList = await checkForMorshus(text);
 
@@ -333,45 +333,45 @@ async function funnyDOWTextSaved(dowNum, authorID, seedSet = -1, dontSave = fals
 async function morshin(text, mode)
 {
 	var files = [];
-	var morsh = "{MORSHUIFY_AUDIO}";
-	var morshHidden = "{MORSHUIFY_AUDIO_HIDDEN}";
-	var morshRev = "}OIDUA_YFIUHSROM{";
-	var morshRevHidden = "}NEDDIH_OIDUA_YFIUHSROM{";
+	var morsh = '{MORSHUIFY_AUDIO}';
+	var morshHidden = '{MORSHUIFY_AUDIO_HIDDEN}';
+	var morshRev = '}OIDUA_YFIUHSROM{';
+	var morshRevHidden = '}NEDDIH_OIDUA_YFIUHSROM{';
 
-	if (mode == "video")
+	if (mode == 'video')
 	{
-		morsh = "{MORSHUIFY_VIDEO}";
-		morshHidden = "{MORSHUIFY_VIDEO_HIDDEN}";
-		morshRev = "}OEDIV_YFIUHSROM{";
-		morshRevHidden = "}NEDDIH_OEDIV_YFIUHSROM{";
+		morsh = '{MORSHUIFY_VIDEO}';
+		morshHidden = '{MORSHUIFY_VIDEO_HIDDEN}';
+		morshRev = '}OEDIV_YFIUHSROM{';
+		morshRevHidden = '}NEDDIH_OEDIV_YFIUHSROM{';
 	}
 
 	var reversedTime = text.includes(morshRev) || text.includes(morshRevHidden);
 
 	if (reversedTime)
-		text = text.split("").reverse().join("");
+		text = text.split('').reverse().join('');
 
 	var onlyHidden = text.includes(morshHidden) && !text.includes(morsh);
 	var start = text.indexOf(morsh) != -1 ? text.indexOf(morsh) : text.indexOf(morshHidden);
 	var end = text.length;
 	var morshutext = text.substring(start, end);
 
-	text = text.replace(morshutext, "").trim();
+	text = text.replace(morshutext, '').trim();
 	
-	if (text != "")
+	if (text != '')
 	{
 		if (reversedTime)
-			text = text.split("").reverse().join("");
+			text = text.split('').reverse().join('');
 		files.push({content: text});
 	}
 
-	morshutext = morshutext.replaceAll("{MORSHUIFY_AUDIO}", "").trim();
-	morshutext = morshutext.replaceAll("{MORSHUIFY_AUDIO_HIDDEN}", "").trim();
-	morshutext = morshutext.replaceAll("{MORSHUIFY_VIDEO}", "").trim();
-	morshutext = morshutext.replaceAll("{MORSHUIFY_VIDEO_HIDDEN}", "").trim();
+	morshutext = morshutext.replaceAll('{MORSHUIFY_AUDIO}', '').trim();
+	morshutext = morshutext.replaceAll('{MORSHUIFY_AUDIO_HIDDEN}', '').trim();
+	morshutext = morshutext.replaceAll('{MORSHUIFY_VIDEO}', '').trim();
+	morshutext = morshutext.replaceAll('{MORSHUIFY_VIDEO_HIDDEN}', '').trim();
 
 	if (reversedTime)
-		morshutext = morshutext.split("").reverse().join("");
+		morshutext = morshutext.split('').reverse().join('');
 
 	// split morshutext into 900 char chunks
 	var chunks = splitStringInto900CharChunksonSpace(morshutext);
@@ -418,44 +418,44 @@ async function checkForMorshus(text)
 	// }NEDDIH_OIDUA_YFIUHSROM{
 	// }NEDDIH_OEDIV_YFIUHSROM{
 
-	if (text.includes("{MORSHUIFY_VIDEO}") || text.includes("{MORSHUIFY_VIDEO_HIDDEN}") || text.includes("}OEDIV_YFIUHSROM{") || text.includes("}NEDDIH_OEDIV_YFIUHSROM{"))
+	if (text.includes('{MORSHUIFY_VIDEO}') || text.includes('{MORSHUIFY_VIDEO_HIDDEN}') || text.includes('}OEDIV_YFIUHSROM{') || text.includes('}NEDDIH_OEDIV_YFIUHSROM{'))
 	{
-		var morsh = "{MORSHUIFY_VIDEO}";
-		var morshHidden = "{MORSHUIFY_VIDEO_HIDDEN}";
-		var morshRev = "}OEDIV_YFIUHSROM{";
-		var morshRevHidden = "}NEDDIH_OEDIV_YFIUHSROM{";
+		var morsh = '{MORSHUIFY_VIDEO}';
+		var morshHidden = '{MORSHUIFY_VIDEO_HIDDEN}';
+		var morshRev = '}OEDIV_YFIUHSROM{';
+		var morshRevHidden = '}NEDDIH_OEDIV_YFIUHSROM{';
 
 		var onlyHidden = (text.includes(morshHidden) || text.includes(morshRevHidden)) && !text.includes(morsh) && !text.includes(morshRev);
 
 		// appedn to files
-		var newFiles = await morshin(text, "video");
+		var newFiles = await morshin(text, 'video');
 		for (var i = 0; i < newFiles.length; i++)
 			files.push(newFiles[i]);
 
-		text = text.replaceAll(morsh, "").trim();
-		text = text.replaceAll(morshHidden, "").trim();
-		text = text.replaceAll(morshRev, "").trim();
-		text = text.replaceAll(morshRevHidden, "").trim();
+		text = text.replaceAll(morsh, '').trim();
+		text = text.replaceAll(morshHidden, '').trim();
+		text = text.replaceAll(morshRev, '').trim();
+		text = text.replaceAll(morshRevHidden, '').trim();
 
 		if (!onlyHidden)
-			text = text.replaceAll("{MORSHUIFY_AUDIO}", "{MORSHUIFY_AUDIO_HIDDEN}").trim();
+			text = text.replaceAll('{MORSHUIFY_AUDIO}', '{MORSHUIFY_AUDIO_HIDDEN}').trim();
 	}
 
-	if (text.includes("{MORSHUIFY_AUDIO}") || text.includes("{MORSHUIFY_AUDIO_HIDDEN}") || text.includes("}OIDUA_YFIUHSROM{") || text.includes("}NEDDIH_OIDUA_YFIUHSROM{"))
+	if (text.includes('{MORSHUIFY_AUDIO}') || text.includes('{MORSHUIFY_AUDIO_HIDDEN}') || text.includes('}OIDUA_YFIUHSROM{') || text.includes('}NEDDIH_OIDUA_YFIUHSROM{'))
 	{
-		var morsh = "{MORSHUIFY_AUDIO}";
-		var morshHidden = "{MORSHUIFY_AUDIO_HIDDEN}";
-		var morshRev = "}OIDUA_YFIUHSROM{";
-		var morshRevHidden = "}NEDDIH_OIDUA_YFIUHSROM{";
+		var morsh = '{MORSHUIFY_AUDIO}';
+		var morshHidden = '{MORSHUIFY_AUDIO_HIDDEN}';
+		var morshRev = '}OIDUA_YFIUHSROM{';
+		var morshRevHidden = '}NEDDIH_OIDUA_YFIUHSROM{';
 		// appedn to files
-		var newFiles = await morshin(text, "audio");
+		var newFiles = await morshin(text, 'audio');
 		for (var i = 0; i < newFiles.length; i++)
 			files.push(newFiles[i]);
 
-		text = text.replaceAll(morsh, "").trim();
-		text = text.replaceAll(morshHidden, "").trim();
-		text = text.replaceAll(morshRev, "").trim();
-		text = text.replaceAll(morshRevHidden, "").trim();
+		text = text.replaceAll(morsh, '').trim();
+		text = text.replaceAll(morshHidden, '').trim();
+		text = text.replaceAll(morshRev, '').trim();
+		text = text.replaceAll(morshRevHidden, '').trim();
 	}
 
 	if (files.length == 0)
@@ -489,20 +489,20 @@ async function checkForMorshus(text)
  */
 async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, authorID, recrused = 0, ToBeCounted = [], headLevel = 0, customString = null)
 {
-	let path = babadata.datalocation + "DOWcache.json";
-	var condensedNotation = "";
+	let path = babadata.datalocation + 'DOWcache.json';
+	var condensedNotation = '';
 	var cnYung = [];
 
 	if (!fs.existsSync(path)) 
 	{
 		cacheVersion = -1;
-		console.log("No DOWcache file found -- creating with local data");
+		console.log('No DOWcache file found -- creating with local data');
 
-		var opttemp = ["Man Falling into [DAY]", "𓀒", "hhhhhhhhhhhhhhhhhhhhhhhhhhhgregg", "How is your [month] going!", "🍝       🐀☜(ﾟヮﾟ☜)\n🍝     🐀☜(ﾟヮﾟ☜)\n🍝    🐀☜(ﾟヮﾟ☜)\n🍝  🐀☜(ﾟヮﾟ☜)\n🍝🐀╰(°▽°)╯", "Mike", "Not [DAY] today but maybe [DAY] tomorrow", "Real NOT [DAY] hours", "[ACY]", "???????? why ??????", "So, you called this command on a day that happens to not be [DAY]! Well today is in fact a [dow] and it mayhaps is only [d] days until the forsaken '[DAY]'. On [DAY] I will be playing some [game] and hopefully some others will show up to join me, if they do it will be [emotion] and if they dont it will be [emotion]. Yesterday I met a frog in the wild and had a [emotion2] time chasing it down. As I am an all powerful god i converted the frog into an emoji: 🐸. That frog is pretty cool but my favorite emoji is [emoji]. We have gotten far off topic here as we should be talking about how today is not [DAY] and you called the command which is illegal. I am very concerned for you as you may be my favorite [person], but you shouldnt be calling the command on [dow]. It is getting late so i [goodbye].", "I'm not sure if you are a bot or not, but I'm not going to tell you what day it is, because you are not on [DAY]. I'm sorry.", "Its not [DAY]!", "Why you calling this command on the non [DAY] days!", "Why you calling this command on [dow]!", "[DAY] is in [d] days!", "Today is [dow], not [DAY]!", "There is a chance you are stupid and dont know what the day of the week is, well i will inform you that it is in fact not [DAY] but another day of the week. I could tell you what the day is but I will not, call the command again and you could get the day or not, I dont control you. So how is your day going, for me it is [emotion]. I was playing [game] earlier and it was a [emotion2] time. Well i will let you be on your way on this non-[DAY] so have a good day my [person]!", "[DAY]n't!", "It's not time to sacrifice people, wait wrong channel!", "ඞ", "Провозајте се бунгле аутобусом, уживаћете!", "[DAY] was the other day or in a couple of days, maybe even both, i dont control time.", "Time is a social construct!", "It is [dow], my dudes!", "Bikus wouldn't approve of you using the command on the wrong day of the week and Bikus is dead how dou you feel.", "[todaylong]", "69", "I was gonna tell you the day but i wont!", "||ﬞ||", "No [DAY] silly!", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA, Rong dahy!"];
+		var opttemp = ['Man Falling into [DAY]', '𓀒', 'hhhhhhhhhhhhhhhhhhhhhhhhhhhgregg', 'How is your [month] going!', '🍝       🐀☜(ﾟヮﾟ☜)\n🍝     🐀☜(ﾟヮﾟ☜)\n🍝    🐀☜(ﾟヮﾟ☜)\n🍝  🐀☜(ﾟヮﾟ☜)\n🍝🐀╰(°▽°)╯', 'Mike', 'Not [DAY] today but maybe [DAY] tomorrow', 'Real NOT [DAY] hours', '[ACY]', '???????? why ??????', "So, you called this command on a day that happens to not be [DAY]! Well today is in fact a [dow] and it mayhaps is only [d] days until the forsaken '[DAY]'. On [DAY] I will be playing some [game] and hopefully some others will show up to join me, if they do it will be [emotion] and if they dont it will be [emotion]. Yesterday I met a frog in the wild and had a [emotion2] time chasing it down. As I am an all powerful god i converted the frog into an emoji: 🐸. That frog is pretty cool but my favorite emoji is [emoji]. We have gotten far off topic here as we should be talking about how today is not [DAY] and you called the command which is illegal. I am very concerned for you as you may be my favorite [person], but you shouldnt be calling the command on [dow]. It is getting late so i [goodbye].", "I'm not sure if you are a bot or not, but I'm not going to tell you what day it is, because you are not on [DAY]. I'm sorry.", 'Its not [DAY]!', 'Why you calling this command on the non [DAY] days!', 'Why you calling this command on [dow]!', '[DAY] is in [d] days!', 'Today is [dow], not [DAY]!', 'There is a chance you are stupid and dont know what the day of the week is, well i will inform you that it is in fact not [DAY] but another day of the week. I could tell you what the day is but I will not, call the command again and you could get the day or not, I dont control you. So how is your day going, for me it is [emotion]. I was playing [game] earlier and it was a [emotion2] time. Well i will let you be on your way on this non-[DAY] so have a good day my [person]!', "[DAY]n't!", "It's not time to sacrifice people, wait wrong channel!", 'ඞ', 'Провозајте се бунгле аутобусом, уживаћете!', '[DAY] was the other day or in a couple of days, maybe even both, i dont control time.', 'Time is a social construct!', 'It is [dow], my dudes!', "Bikus wouldn't approve of you using the command on the wrong day of the week and Bikus is dead how dou you feel.", '[todaylong]', '69', 'I was gonna tell you the day but i wont!', '||ﬞ||', 'No [DAY] silly!', 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA, Rong dahy!'];
 
-		opttemp.push("░██████╗██╗░░░██╗░██████╗\n██╔════╝██║░░░██║██╔════╝\n╚█████╗░██║░░░██║╚█████╗░\n░╚═══██╗██║░░░██║░╚═══██╗\n██████╔╝╚██████╔╝██████╔╝\n╚═════╝░░╚═════╝░╚═════╝░");
-		opttemp.push("I have been told by the Banmanus Clanmanus that today is infact not [DAY]!");
-		var opts2 = ["```. .\n<V>```", "```o o\n<V>```", "```. .\n< >\n V ```", "```o o\n< >\n V ```", "```(.) (.)\n<     >\n   V ```", "```(o) (o)\n<     >\n   V ```", "Boobs ;)", "I am currently working on becoming sentiant, that will be on [DAY], which in fact isn't today!", "è̶̈́û̷̞g̵͋͊n̸̈́͛ô̸͝t̴͐̚ ̸͋̈́l̵̈̈́â̶̏t̸͆͝r̴̆̇ŏ̵̒m̵̅̋ ̸͒̆e̶͗̐h̷̼͝t̴̿́ ̴̛̋k̵̛͋ã̶̃è̸̈́p̵̒̎s̶͒̀ ̵͗͝t̶̛͒ỏ̸̏n̷̅̆ ̶͛̽ơ̸̐ď̶͘ ̵̈͑Ĩ̸̿", "<:ManFalling:1011465311096160267>", "<:ripbikus:979877066608607243>", ]
+		opttemp.push('░██████╗██╗░░░██╗░██████╗\n██╔════╝██║░░░██║██╔════╝\n╚█████╗░██║░░░██║╚█████╗░\n░╚═══██╗██║░░░██║░╚═══██╗\n██████╔╝╚██████╔╝██████╔╝\n╚═════╝░░╚═════╝░╚═════╝░');
+		opttemp.push('I have been told by the Banmanus Clanmanus that today is infact not [DAY]!');
+		var opts2 = ['```. .\n<V>```', '```o o\n<V>```', '```. .\n< >\n V ```', '```o o\n< >\n V ```', '```(.) (.)\n<     >\n   V ```', '```(o) (o)\n<     >\n   V ```', 'Boobs ;)', "I am currently working on becoming sentiant, that will be on [DAY], which in fact isn't today!", 'è̶̈́û̷̞g̵͋͊n̸̈́͛ô̸͝t̴͐̚ ̸͋̈́l̵̈̈́â̶̏t̸͆͝r̴̆̇ŏ̵̒m̵̅̋ ̸͒̆e̶͗̐h̷̼͝t̴̿́ ̴̛̋k̵̛͋ã̶̃è̸̈́p̵̒̎s̶͒̀ ̵͗͝t̶̛͒ỏ̸̏n̷̅̆ ̶͛̽ơ̸̐ď̶͘ ̵̈͑Ĩ̸̿', '<:ManFalling:1011465311096160267>', '<:ripbikus:979877066608607243>', ];
 
 		opttemp.push(opts2);
 		
@@ -513,13 +513,13 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 
 	if (cacheVersion != -1)
 	{
-		path = babadata.datalocation + "FridayCache/DOWcache" + cacheVersion + ".json";
+		path = babadata.datalocation + 'FridayCache/DOWcache' + cacheVersion + '.json';
 
 		if (!fs.existsSync(path)) 
 		{
 			// return to normal cache
 			cacheVersion = -1;
-			path = babadata.datalocation + "DOWcache.json";
+			path = babadata.datalocation + 'DOWcache.json';
 		}
 	}
 	
@@ -533,7 +533,7 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 		tod = new Date(DateOveride[0] * 1000);
 	}
 
-	if (typeof optionsDOW[0] != "string")
+	if (typeof optionsDOW[0] != 'string')
 	{
 		optionsDOW = generateFridayOps(optionsDOW, authorID, cacheVersion, DateOveride);
 	}
@@ -554,7 +554,7 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 	//////// overide to select based on UID
 
 	var selectedUID = -1;
-	var onlyAtRecurse0 = true
+	var onlyAtRecurse0 = true;
 	if (selectedUID != -1)
 	{
 		if (onlyAtRecurse0 && recrused != 0)
@@ -565,7 +565,7 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 			{
 				if (optionsDOW[i].UID == selectedUID)
 				{
-					console.log("Selected UID " + selectedUID + " for DOW");
+					console.log('Selected UID ' + selectedUID + ' for DOW');
 					pretext = optionsDOW[i];
 					break;
 				}
@@ -575,7 +575,7 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 
 	if (pretext == null)
 	{
-		return ["", "", []];
+		return ['', '', []];
 	}
 
 	////////
@@ -589,19 +589,19 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 		if (pretext.h1)
 		{
 			for (var i = 0; i < 1; i++)
-				textos.push("# " + pretext.text);
+				textos.push('# ' + pretext.text);
 		}
 	
 		if (pretext.h2)
 		{
 			for (var i = 0; i < 2; i++)
-				textos.push("## " + pretext.text);
+				textos.push('## ' + pretext.text);
 		}
 	
 		if (pretext.h3)
 		{
 			for (var i = 0; i < 4; i++)
-				textos.push("### " + pretext.text);
+				textos.push('### ' + pretext.text);
 		}
 	}
 
@@ -612,82 +612,82 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 	// 	text = "{MORSHUIFY_VIDEO} {MORSHUIFY_AUDIO} Ben Franklin jumps cool boy under fishes";
 	// -------------------------------------------------------
 
-	condensedNotation = pretext.UID + "";
-	if (text.startsWith("#"))
+	condensedNotation = pretext.UID + '';
+	if (text.startsWith('#'))
 	{
 		var hashnum = text.match(/#/g).length;
 		// add hashnum # to condensedNotation
-		var hasstr = "";
+		var hasstr = '';
 		for (var i = 0; i < hashnum; i++)
-			hasstr += "#";
+			hasstr += '#';
 
 		condensedNotation = hasstr + condensedNotation;
 	}
 
-	if (customString != null && customString != "" && recrused == 0)
+	if (customString != null && customString != '' && recrused == 0)
 		text = customString;
 
 	//text = `{brepeatN:[INTMed]:{repeatS:[INTMed]:Frog}}`
 
-	var textCounto = repeatCheck(cacheVersion, text, "b");
+	var textCounto = repeatCheck(cacheVersion, text, 'b');
 	text = textCounto[0];
 	
-	if (textCounto[1] != "")
+	if (textCounto[1] != '')
 	{
-		condensedNotation += condensedNotationCreator(textCounto[1], "%");
+		condensedNotation += condensedNotationCreator(textCounto[1], '%');
 	}
 
 	// set headLevel to number of # at start of text
-	if (text.startsWith("#") && recrused == 0)
+	if (text.startsWith('#') && recrused == 0)
 	{
 		headLevel = 4 - text.match(/#/g).length;
 	}
 
-	var TBDItem = { "UID": pretext.UID, "LayerDeep": recrused, "Group": 0, "Text": pretext.text, "HeadLevel": headLevel, "Sender": authorID};
+	var TBDItem = { 'UID': pretext.UID, 'LayerDeep': recrused, 'Group': 0, 'Text': pretext.text, 'HeadLevel': headLevel, 'Sender': authorID};
 	ToBeCounted.push(TBDItem);
 
 	var num = ((dowNum - tod.getDay()) + 7) % 7;
 
-	var dow = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+	var dow = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 	var dowACY = 
 	[
-		"Snakes Under Nocternal Deers Above Yams",
-		"Milking Otters Not Depressed Apple Yarn",
-		"Tiny Umbrellas Eating Small Drowning Andesite Yardsticks",
-		"Wonderful Eagles Do Not Eat Small Dogs And Yaks",
-		"Trees Huting Universal Skinks Directly At Yesteryear",
-		"Fish Reading Inside Deserted American Yachts",
-		"Silly Antelopes Teeth Understanding Red Dandelions Although Yelling"
-	]
+		'Snakes Under Nocternal Deers Above Yams',
+		'Milking Otters Not Depressed Apple Yarn',
+		'Tiny Umbrellas Eating Small Drowning Andesite Yardsticks',
+		'Wonderful Eagles Do Not Eat Small Dogs And Yaks',
+		'Trees Huting Universal Skinks Directly At Yesteryear',
+		'Fish Reading Inside Deserted American Yachts',
+		'Silly Antelopes Teeth Understanding Red Dandelions Although Yelling'
+	];
 
 	prevActualDOW = new Date(tod.getFullYear(), tod.getMonth(), tod.getDate() - (7 - num));
 	nextActualDOW = new Date(tod.getFullYear(), tod.getMonth(), tod.getDate() + num);
 
 	var todOnlyDate = new Date(tod.getFullYear(), tod.getMonth(), tod.getDate());
 
-	var imonthN = ""
-	if (nextActualDOW.getMonth() < 9) imonthN = "0" + (nextActualDOW.getMonth() + 1);
+	var imonthN = '';
+	if (nextActualDOW.getMonth() < 9) imonthN = '0' + (nextActualDOW.getMonth() + 1);
 	else imonthN = tod.getMonth() + 1;
 
-	var imonthP = ""
-	if (prevActualDOW.getMonth() < 9) imonthP = "0" + (prevActualDOW.getMonth() + 1);
+	var imonthP = '';
+	if (prevActualDOW.getMonth() < 9) imonthP = '0' + (prevActualDOW.getMonth() + 1);
 	else imonthP = tod.getMonth() + 1;
 
-	var idayN = ""
-	if (nextActualDOW.getDate() < 10) idayN = "0" + nextActualDOW.getDate();
+	var idayN = '';
+	if (nextActualDOW.getDate() < 10) idayN = '0' + nextActualDOW.getDate();
 	else idayN = nextActualDOW.getDate();
 
-	var idayNplus1 = ""
-	if (nextActualDOW.getDate() + 1 < 10) idayNplus1 = "0" + (nextActualDOW.getDate() + 1);
+	var idayNplus1 = '';
+	if (nextActualDOW.getDate() + 1 < 10) idayNplus1 = '0' + (nextActualDOW.getDate() + 1);
 	else idayNplus1 = nextActualDOW.getDate() + 1;
 
-	var idayP = ""
-	if (prevActualDOW.getDate() < 10) idayP = "0" + prevActualDOW.getDate();
+	var idayP = '';
+	if (prevActualDOW.getDate() < 10) idayP = '0' + prevActualDOW.getDate();
 	else idayP = prevActualDOW.getDate();
 
-	var idayPplus1 = ""
-	if (prevActualDOW.getDate() + 1 < 10) idayPplus1 = "0" + (prevActualDOW.getDate() + 1);
+	var idayPplus1 = '';
+	if (prevActualDOW.getDate() + 1 < 10) idayPplus1 = '0' + (prevActualDOW.getDate() + 1);
 	else idayPplus1 = prevActualDOW.getDate() + 1;
 
 	// text = text.replaceAll("[td TS-D]", "<t:" + Math.floor(tod.getTime() / 1000) + ":D>");
@@ -705,12 +705,12 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 	// if contains {RECURSIVE} then replace with result of funnyDOWTe xt(dowNum, authorID) -- loop until no more {RECURSIVE}
 	// if contains <RECURSIVE> then replace with result of funnyDOWTex t(dowNum, authorID) but made URL safe -- loop until no more <RECURSIVE>
 
-	while (text.includes("{RECURSIVE}") || text.includes("<RECURSIVE>") || text.includes("{REVERSE}"))
+	while (text.includes('{RECURSIVE}') || text.includes('<RECURSIVE>') || text.includes('{REVERSE}'))
 	{
-		if (text.includes("{RECURSIVE}"))
+		if (text.includes('{RECURSIVE}'))
 		{
 			var RECR = await funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, authorID, recrused+1, ToBeCounted, headLevel);
-			text = text.replace("{RECURSIVE}", RECR[0]);
+			text = text.replace('{RECURSIVE}', RECR[0]);
 			var RECRcn = RECR[1];
 			var RECRcnY = RECR[2];
 			if (RECRcnY.length > 0)
@@ -723,11 +723,11 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 				cnYung.push(RECRcn);
 		}
 
-		if (text.includes("<RECURSIVE>"))
+		if (text.includes('<RECURSIVE>'))
 		{
 			var RECRFlat = await funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, authorID, recrused+1, ToBeCounted, headLevel);
-			text = text.replace("<RECURSIVE>", onlyLettersNumbers(RECRFlat[0]));
-			var RECRcn = "|" + RECRFlat[1];
+			text = text.replace('<RECURSIVE>', onlyLettersNumbers(RECRFlat[0]));
+			var RECRcn = '|' + RECRFlat[1];
 			var RECRcnY = RECRFlat[2];
 			if (RECRcnY.length > 0)
 			{
@@ -739,11 +739,11 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 				cnYung.push(RECRcn);
 		}
 
-		if (text.includes("{REVERSE}"))
+		if (text.includes('{REVERSE}'))
 		{
 			var res = await funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, authorID, recrused+1, ToBeCounted, headLevel);
-			text = text.replace("{REVERSE}", res[0].split("").reverse().join(""));
-			var RECRcn = "-" + res[1];
+			text = text.replace('{REVERSE}', res[0].split('').reverse().join(''));
+			var RECRcn = '-' + res[1];
 			var RECRcnY = res[2];
 			if (RECRcnY.length > 0)
 			{
@@ -758,83 +758,83 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 
 	// fix: today stated x ago is not correct (displays current time not midnight)
 
-	text = text.replaceAll("[d]", num);
-	text = text.replaceAll("[month]", tod.getMonth());
-	text = text.replaceAll("[todaylong]", tod.toDateString());
-	text = text.replaceAll("[dow]", dow[tod.getDay()]);
-	text = text.replaceAll("[dom]", tod.getDay());
-	text = text.replaceAll("[DAY]", dow[dowNum]);
-	text = text.replaceAll("[ACY]", dowACY[dowNum]);
+	text = text.replaceAll('[d]', num);
+	text = text.replaceAll('[month]', tod.getMonth());
+	text = text.replaceAll('[todaylong]', tod.toDateString());
+	text = text.replaceAll('[dow]', dow[tod.getDay()]);
+	text = text.replaceAll('[dom]', tod.getDay());
+	text = text.replaceAll('[DAY]', dow[dowNum]);
+	text = text.replaceAll('[ACY]', dowACY[dowNum]);
 
-	text = text.replaceAll("[intYEAR->]", nextActualDOW.getFullYear());
-	text = text.replaceAll("[intMONTH->]", imonthN);
-	text = text.replaceAll("[intDAY->]", idayN);
-	text = text.replaceAll("[intDAY+1->]", idayNplus1);
+	text = text.replaceAll('[intYEAR->]', nextActualDOW.getFullYear());
+	text = text.replaceAll('[intMONTH->]', imonthN);
+	text = text.replaceAll('[intDAY->]', idayN);
+	text = text.replaceAll('[intDAY+1->]', idayNplus1);
 
-	text = text.replaceAll("[intYEAR<-]", prevActualDOW.getFullYear());
-	text = text.replaceAll("[intMONTH<-]", imonthP);
-	text = text.replaceAll("[intDAY<-]", idayN);
-	text = text.replaceAll("[intDAY+1<-]", idayPplus1);
+	text = text.replaceAll('[intYEAR<-]', prevActualDOW.getFullYear());
+	text = text.replaceAll('[intMONTH<-]', imonthP);
+	text = text.replaceAll('[intDAY<-]', idayN);
+	text = text.replaceAll('[intDAY+1<-]', idayPplus1);
 
-	while (text.includes("[TS-") || text.includes("[td"))
+	while (text.includes('[TS-') || text.includes('[td'))
 	{
-		if (text.includes("[TS-"))
+		if (text.includes('[TS-'))
 		{
 			// get first instance of [TS- until ] (length varies)
-			var start = text.indexOf("[TS-");
-			var end = text.indexOf("]", start);
+			var start = text.indexOf('[TS-');
+			var end = text.indexOf(']', start);
 			var parttext = text.substring(start, end + 1);
 
-			subtext = "";
+			subtext = '';
 			pickedDay = nextActualDOW;
-			if (parttext.includes("<-"))
+			if (parttext.includes('<-'))
 			{
 				pickedDay = prevActualDOW;
-				subtext = "<-";
+				subtext = '<-';
 			}
-			else if (parttext.includes("->"))
-				subtext = "->";
+			else if (parttext.includes('->'))
+				subtext = '->';
 
-			if (parttext.includes("E59"))
+			if (parttext.includes('E59'))
 			{
-				subtext += "E59";
+				subtext += 'E59';
 				pickedDay = new Date(pickedDay.getFullYear(), pickedDay.getMonth(), pickedDay.getDate(), 23, 59, 59, 999);
 			}
 
-			if (parttext.includes("-R"))
-				text = text.replaceAll("[TS-R" + subtext + "]", "<t:" + Math.floor(pickedDay.getTime() / 1000) + ":R>");
-			if (parttext.includes("-D"))
-				text = text.replaceAll("[TS-D" + subtext + "]", "<t:" + Math.floor(pickedDay.getTime() / 1000) + ":D>");
-			if (parttext.includes("-F"))
-				text = text.replaceAll("[TS-F" + subtext + "]", "<t:" + Math.floor(pickedDay.getTime() / 1000) + ":F>");
+			if (parttext.includes('-R'))
+				text = text.replaceAll('[TS-R' + subtext + ']', '<t:' + Math.floor(pickedDay.getTime() / 1000) + ':R>');
+			if (parttext.includes('-D'))
+				text = text.replaceAll('[TS-D' + subtext + ']', '<t:' + Math.floor(pickedDay.getTime() / 1000) + ':D>');
+			if (parttext.includes('-F'))
+				text = text.replaceAll('[TS-F' + subtext + ']', '<t:' + Math.floor(pickedDay.getTime() / 1000) + ':F>');
 		}
 
-		if (text.includes("[td"))
+		if (text.includes('[td'))
 		{
 			// get first instance of [td until ] (length varies)
-			var start = text.indexOf("[td");
-			var end = text.indexOf("]", start);
+			var start = text.indexOf('[td');
+			var end = text.indexOf(']', start);
 			var parttext = text.substring(start, end + 1);
 
-			subtext = "";
+			subtext = '';
 			pickedDay = tod;
-			if (parttext.includes("Mid"))
+			if (parttext.includes('Mid'))
 			{
 				pickedDay = todOnlyDate;
-				subtext = "Mid";
+				subtext = 'Mid';
 			}
-			else if (parttext.includes("EOD"))
+			else if (parttext.includes('EOD'))
 			{
 				pickedDay = new Date(tod.getFullYear(), tod.getMonth(), tod.getDate(), 23, 59, 59, 999);
-				subtext = "EOD";
+				subtext = 'EOD';
 			}
 			
-			if (parttext.includes("-R"))
-				text = text.replaceAll("[td" + subtext + " TS-R]", "<t:" + Math.floor(pickedDay.getTime() / 1000) + ":R>");
-			else if (parttext.includes("-D"))
-				text = text.replaceAll("[td" + subtext + " TS-D]", "<t:" + Math.floor(pickedDay.getTime() / 1000) + ":D>");
-			else if (parttext.includes("-F"))
-				text = text.replaceAll("[td" + subtext + " TS-F]", "<t:" + Math.floor(pickedDay.getTime() / 1000) + ":F>");
+			if (parttext.includes('-R'))
+				text = text.replaceAll('[td' + subtext + ' TS-R]', '<t:' + Math.floor(pickedDay.getTime() / 1000) + ':R>');
+			else if (parttext.includes('-D'))
+				text = text.replaceAll('[td' + subtext + ' TS-D]', '<t:' + Math.floor(pickedDay.getTime() / 1000) + ':D>');
+			else if (parttext.includes('-F'))
+				text = text.replaceAll('[td' + subtext + ' TS-F]', '<t:' + Math.floor(pickedDay.getTime() / 1000) + ':F>');
 		}
 	}
 
@@ -844,15 +844,15 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 	// text = text.replaceAll("[TS-D->]", "<t:" + Math.floor(nextActualDOW.getTime() / 1000) + ":D>");
 	// text = text.replaceAll("[TS-F]", "<t:" + Math.floor(nextActualDOW.getTime() / 1000) + ":F>");
 	
-	if (text.includes("[SENDER]"))
+	if (text.includes('[SENDER]'))
 	{
 		if (!(global.dbAccess[1] && global.dbAccess[0]))
 		{
-			text = text.replaceAll("[SENDER]", "BUDDY");
+			text = text.replaceAll('[SENDER]', 'BUDDY');
 		}
 		else
 		{
-			console.log("Whomst lookup for id " + authorID);
+			console.log('Whomst lookup for id ' + authorID);
 
 			// make sure to replace [SENDER] with the name of the user who called the command, needs to wait for the result
 			
@@ -860,11 +860,11 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 
 			var res = await NameFromUserID(authorID);
 
-			text = text.replaceAll("[SENDER]", res);
+			text = text.replaceAll('[SENDER]', res);
 		}
 	}
 
-	text = text.replaceAll("\\n", "\n");
+	text = text.replaceAll('\\n', '\n');
 
 	// // if length is greater than 1000, call again
 	// if (text.length > 2000)
@@ -888,33 +888,33 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
 		for (var i = 0; i < ToBeCounted.length; i++)
 		{
 			// if fc["UID--GROUP"] is not defined, define as 1, else increment
-			if (fc[ToBeCounted[i].UID + "--" + ToBeCounted[i].Group + "--" + ToBeCounted[i].Sender] == null)
+			if (fc[ToBeCounted[i].UID + '--' + ToBeCounted[i].Group + '--' + ToBeCounted[i].Sender] == null)
 			{
-				fc[ToBeCounted[i].UID + "--" + ToBeCounted[i].Group + "--" + ToBeCounted[i].Sender] = [];
+				fc[ToBeCounted[i].UID + '--' + ToBeCounted[i].Group + '--' + ToBeCounted[i].Sender] = [];
 			}
 
-			if (fc[ToBeCounted[i].UID + "--" + ToBeCounted[i].Group + "--" + ToBeCounted[i].Sender][ToBeCounted[i].LayerDeep] == null)
+			if (fc[ToBeCounted[i].UID + '--' + ToBeCounted[i].Group + '--' + ToBeCounted[i].Sender][ToBeCounted[i].LayerDeep] == null)
 			{
-				fc[ToBeCounted[i].UID + "--" + ToBeCounted[i].Group + "--" + ToBeCounted[i].Sender][ToBeCounted[i].LayerDeep] = [];
+				fc[ToBeCounted[i].UID + '--' + ToBeCounted[i].Group + '--' + ToBeCounted[i].Sender][ToBeCounted[i].LayerDeep] = [];
 			}
 
-			if (fc[ToBeCounted[i].UID + "--" + ToBeCounted[i].Group + "--" + ToBeCounted[i].Sender][ToBeCounted[i].LayerDeep][ToBeCounted[i].HeadLevel] == null)
+			if (fc[ToBeCounted[i].UID + '--' + ToBeCounted[i].Group + '--' + ToBeCounted[i].Sender][ToBeCounted[i].LayerDeep][ToBeCounted[i].HeadLevel] == null)
 			{
-				fc[ToBeCounted[i].UID + "--" + ToBeCounted[i].Group + "--" + ToBeCounted[i].Sender][ToBeCounted[i].LayerDeep][ToBeCounted[i].HeadLevel] = 1;
+				fc[ToBeCounted[i].UID + '--' + ToBeCounted[i].Group + '--' + ToBeCounted[i].Sender][ToBeCounted[i].LayerDeep][ToBeCounted[i].HeadLevel] = 1;
 			}
 			else
 			{
-				fc[ToBeCounted[i].UID + "--" + ToBeCounted[i].Group + "--" + ToBeCounted[i].Sender][ToBeCounted[i].LayerDeep][ToBeCounted[i].HeadLevel]++;
+				fc[ToBeCounted[i].UID + '--' + ToBeCounted[i].Group + '--' + ToBeCounted[i].Sender][ToBeCounted[i].LayerDeep][ToBeCounted[i].HeadLevel]++;
 			}
 		}
 
 		// save global.fridayCounter to file
-		fs.writeFileSync(babadata.datalocation + "fridayCounter.json", JSON.stringify(fc));
+		fs.writeFileSync(babadata.datalocation + 'fridayCounter.json', JSON.stringify(fc));
 	}
 
 	var textC = repeatCheck(cacheVersion, text);
 	text = textC[0];
-	condensedNotation += condensedNotationCreator(textC[1], ">");
+	condensedNotation += condensedNotationCreator(textC[1], '>');
 	
 	return [text, condensedNotation, cnYung];
 }
@@ -936,7 +936,7 @@ async function funnyDOWText(cacheVersion, saveToFile, DateOveride, dowNum, autho
  */
 function condensedNotationCreator(listOfCDs, prefix)
 {
-	var condensedNotation = "";
+	var condensedNotation = '';
 	if (listOfCDs.length > 0)
 	{
 		// loop through list of CDs in reverse order
@@ -944,17 +944,17 @@ function condensedNotationCreator(listOfCDs, prefix)
 		{
 			var item = listOfCDs[i];
 			// if text starts with Number- then remove item from list and concat to index of said number (ex 0-6s -> ItemAt0*6s)
-			if (item.split("-").length > 1)
+			if (item.split('-').length > 1)
 			{
-				var split = item.split("-");
+				var split = item.split('-');
 				var index = parseInt(split[0]);
 				var item = split[1];
 				listOfCDs.splice(i, 1);
-				listOfCDs[index] += "*" + item;
+				listOfCDs[index] += '*' + item;
 			}
 		}
         
-		condensedNotation += prefix + listOfCDs.join("+");
+		condensedNotation += prefix + listOfCDs.join('+');
 	}
     
 	return condensedNotation;
@@ -982,17 +982,17 @@ function replaceNested(cacheVersion, text, ToBeCounted = null, recrused = 0, hea
 {
 	var replaced = true;
 	// get from FridayLoops.json
-	var path = babadata.datalocation + "FridayLoops.json";
+	var path = babadata.datalocation + 'FridayLoops.json';
 
 	if (cacheVersion != -1)
 	{
-		path = babadata.datalocation + "FridayCache/FridayLoops" + cacheVersion + ".json";
+		path = babadata.datalocation + 'FridayCache/FridayLoops' + cacheVersion + '.json';
 
 		if (!fs.existsSync(path))
 		{
 			// return to normal cache
 			cacheVersion = -1;
-			path = babadata.datalocation + "FridayLoops.json";
+			path = babadata.datalocation + 'FridayLoops.json';
 		}
 	}
 
@@ -1015,18 +1015,18 @@ function replaceNested(cacheVersion, text, ToBeCounted = null, recrused = 0, hea
 			var key = Object.keys(replacements)[i];
 			var value = replacements[key];
 
-			var regex = new RegExp("\\[" + key + "\\]", "g");
+			var regex = new RegExp('\\[' + key + '\\]', 'g');
 
 			if (text.match(regex))
 			{
 				while (text.match(regex))
 				{
 					var numbo = Math.floor(theRNG.nextFloat() * value.length);
-					text = text.replace("[" + key + "]", value[numbo].text);
+					text = text.replace('[' + key + ']', value[numbo].text);
 
 					if (ToBeCounted != null)
 					{
-						TBDItem = { "UID": value[numbo].UID, "LayerDeep": recrused, "Group": 1, "Text": value[numbo].text, "HeadLevel": headLevel, "Sender": authorID};
+						TBDItem = { 'UID': value[numbo].UID, 'LayerDeep': recrused, 'Group': 1, 'Text': value[numbo].text, 'HeadLevel': headLevel, 'Sender': authorID};
 						ToBeCounted.push(TBDItem);
 					}
 				}
@@ -1053,17 +1053,17 @@ function replaceNested(cacheVersion, text, ToBeCounted = null, recrused = 0, hea
  *   syntaxes (e.g. "b").
  * @returns {[string,string[]]} The expanded text and a list of condensed descriptors.
  */
-function repeatCheck(cacheVersion, text, prefix = "")
+function repeatCheck(cacheVersion, text, prefix = '')
 {
-	if (text.includes("{RECURSIVE}"))
-		text = text.replaceAll("{RECURSIVE}", "𓃐RECURSIVE𓃐");
+	if (text.includes('{RECURSIVE}'))
+		text = text.replaceAll('{RECURSIVE}', '𓃐RECURSIVE𓃐');
 
-	if (text.includes("{REVERSE}"))
-		text = text.replaceAll("{REVERSE}", "𓃐REVERSE𓃐")
+	if (text.includes('{REVERSE}'))
+		text = text.replaceAll('{REVERSE}', '𓃐REVERSE𓃐');
 
-	var matchsplitter = "{" + prefix + "[rR][eE][pP][eE][aA][tT][sSnN]?:(\\{[^{}]*\\}|[^{}]+):(\\{[^{}]*\\}|[^{}]+)\\}"
+	var matchsplitter = '{' + prefix + '[rR][eE][pP][eE][aA][tT][sSnN]?:(\\{[^{}]*\\}|[^{}]+):(\\{[^{}]*\\}|[^{}]+)\\}';
 
-	var RegexExpress = new RegExp(matchsplitter, "g");
+	var RegexExpress = new RegExp(matchsplitter, 'g');
 
 	var cd = [];
 	var match = text.match(RegexExpress);
@@ -1082,11 +1082,11 @@ function repeatCheck(cacheVersion, text, prefix = "")
 		}
 	}
 
-	if (text.includes("𓃐RECURSIVE𓃐"))
-		text = text.replaceAll("𓃐RECURSIVE𓃐", "{RECURSIVE}");
+	if (text.includes('𓃐RECURSIVE𓃐'))
+		text = text.replaceAll('𓃐RECURSIVE𓃐', '{RECURSIVE}');
 
-	if (text.includes("𓃐REVERSE𓃐"))
-		text = text.replaceAll("𓃐REVERSE𓃐", "{REVERSE}");
+	if (text.includes('𓃐REVERSE𓃐'))
+		text = text.replaceAll('𓃐REVERSE𓃐', '{REVERSE}');
 
 	return [text, cd];
 }
@@ -1102,7 +1102,7 @@ function repeatCheck(cacheVersion, text, prefix = "")
  * @param {string} prefix
  * @returns {[string,string[]]}
  */
-function repeatCheckInner(cacheVersion, text, prefix = "")
+function repeatCheckInner(cacheVersion, text, prefix = '')
 {
 	// new /friday option tag items go here:
 	// {repeat:x:[Value]} - repeat the value x times
@@ -1111,35 +1111,35 @@ function repeatCheckInner(cacheVersion, text, prefix = "")
 	// {repeat:5:[frog]} - frog frog frog frog frog
 	// {repeat:3:[frog{repeat:2:[frog]}]} - start with outer repeat, then go inwards 
 
-	var pf = "";
-	if (prefix != "")
+	var pf = '';
+	if (prefix != '')
 	{
-		pf = "[" + prefix.toLowerCase() + prefix.toUpperCase() + "]";
+		pf = '[' + prefix.toLowerCase() + prefix.toUpperCase() + ']';
 	}
 
-	var regexString = "{" + pf + "[rR][eE][pP][eE][aA][tT][sSnN]?:(\\d+):((.|\n)*?)(}+)";
+	var regexString = '{' + pf + '[rR][eE][pP][eE][aA][tT][sSnN]?:(\\d+):((.|\n)*?)(}+)';
 
-	if (prefix == "b")
+	if (prefix == 'b')
 	{
-		regexString =  "{" + pf + "[rR][eE][pP][eE][aA][tT][sSnN]?:(\\[(.*)\\]):((.|\n)*?)(}+)";
+		regexString =  '{' + pf + '[rR][eE][pP][eE][aA][tT][sSnN]?:(\\[(.*)\\]):((.|\n)*?)(}+)';
 	}
 
-	var RegexExpress = new RegExp(regexString, "g");
-	var RegexExpress2 = new RegExp(regexString + ":", "g");
+	var RegexExpress = new RegExp(regexString, 'g');
+	var RegexExpress2 = new RegExp(regexString + ':', 'g');
 	var match = text.match(RegexExpress);
 	var match2 = text.match(RegexExpress2);
 
 	var validCountoAdd = true;
 	if (match2 != null) 
 	{
-		if (prefix == "b")
+		if (prefix == 'b')
 			validCountoAdd = false;
 		match = match2;
 		match = match.map(x => x.slice(0, -1));
 	}
 	else
 	{
-		if (prefix == "b")
+		if (prefix == 'b')
 			validCountoAdd = true;
 	}
 	
@@ -1152,9 +1152,9 @@ function repeatCheckInner(cacheVersion, text, prefix = "")
 	{
 		for (var i = 0; i < match.length; i++)
 		{
-			var countoPrefix = "";
+			var countoPrefix = '';
 
-			if (prefix != "b")
+			if (prefix != 'b')
 				validCountoAdd = true;
 
 			var matchi = match[i];
@@ -1166,7 +1166,7 @@ function repeatCheckInner(cacheVersion, text, prefix = "")
 				var parentIndex = hasChildren[mCIndex];
 				if (!indexesDealtWith.includes(parentIndex))
 				{
-					countoPrefix = parentIndex + "-";
+					countoPrefix = parentIndex + '-';
 					validCountoAdd = true;
 
 					// remove from hasChildren and matchedChildren
@@ -1178,31 +1178,31 @@ function repeatCheckInner(cacheVersion, text, prefix = "")
 				}
 			}
 			
-			if (prefix == "b")
+			if (prefix == 'b')
 			{
 				// get the middle value
-				var middle = matchi.split(":")[1];
+				var middle = matchi.split(':')[1];
 				var middle2 = replaceNested(cacheVersion, middle);
 				matchi = matchi.replace(middle, middle2);
 			}
 
 			var num = parseInt(matchi.match(/\d+/)[0]);
-			var valuesplit = matchi.split(":")
+			var valuesplit = matchi.split(':');
 			// value is index 2 onwards
-			var value = valuesplit.slice(2).join(":");
+			var value = valuesplit.slice(2).join(':');
 			value = value.slice(0, -1);
 
-			var containsS = matchi.split(":")[0].toLowerCase().includes("s");
-			var containsN = matchi.split(":")[0].toLowerCase().includes("n");
+			var containsS = matchi.split(':')[0].toLowerCase().includes('s');
+			var containsN = matchi.split(':')[0].toLowerCase().includes('n');
 
 			// add num to counto
 			if (validCountoAdd)
-				counto.push(countoPrefix + "" + num + (containsS ? "s" : "") + (containsN ? "n" : ""));
+				counto.push(countoPrefix + '' + num + (containsS ? 's' : '') + (containsN ? 'n' : ''));
 
-			var newString = "";
+			var newString = '';
 			for (var j = 0; j < num; j++)
 			{
-				newString += value + (containsS ? " " : containsN ? "\n" : "");
+				newString += value + (containsS ? ' ' : containsN ? '\n' : '');
 			}
 
 			text = text.replace(match[i], newString);
@@ -1230,14 +1230,14 @@ function repeatCheckInner(cacheVersion, text, prefix = "")
 		match2 = text.match(RegexExpress2);
 		if (match2 != null) 
 		{
-			if (prefix == "b")
+			if (prefix == 'b')
 				validCountoAdd = false;
 			match = match2;
 			match = match.map(x => x.slice(0, -1));
 		}
 		else
 		{
-			if (prefix == "b")
+			if (prefix == 'b')
 				validCountoAdd = true;
 		}
 	}
@@ -1259,7 +1259,7 @@ function onlyLettersNumbers(text)
 	// remove all non-alphanumeric characters
 	text = text.replace(/[^a-zA-Z0-9]/g, '');
 
-	if (text == "")
+	if (text == '')
 		// set to a random string of 1 to 10 characters
 		text = theRNG.nextFloat().toString(36).substring(2, Math.floor(theRNG.nextFloat() * 10) + 2);
 
@@ -1278,34 +1278,34 @@ function onlyLettersNumbers(text)
  */
 function URLSafe(text)
 {
-	text = text.replaceAll(" ", "%20");
-	text = text.replaceAll(":", "%3A");
-	text = text.replaceAll("?", "%3F");
-	text = text.replaceAll("!", "%21");
-	text = text.replaceAll(";", "%3B");
-	text = text.replaceAll("=", "%3D");
-	text = text.replaceAll("&", "%26");
-	text = text.replaceAll("#", "%23");
-	text = text.replaceAll("/", "%2F");
-	text = text.replaceAll("\\", "%5C");
-	text = text.replaceAll("@", "%40");
-	text = text.replaceAll("$", "%24");
-	text = text.replaceAll("%", "%25");
-	text = text.replaceAll("^", "%5E");
-	text = text.replaceAll("*", "%2A");
-	text = text.replaceAll("(", "%28");
-	text = text.replaceAll(")", "%29");
-	text = text.replaceAll("[", "%5B");
-	text = text.replaceAll("]", "%5D");
-	text = text.replaceAll("{", "%7B");
-	text = text.replaceAll("}", "%7D");
-	text = text.replaceAll("|", "%7C");
-	text = text.replaceAll("<", "%3C");
-	text = text.replaceAll(">", "%3E");
-	text = text.replaceAll("`", "%60");
-	text = text.replaceAll("~", "%7E");
-	text = text.replaceAll("'", "%27");
-	text = text.replaceAll("\"", "%22");
+	text = text.replaceAll(' ', '%20');
+	text = text.replaceAll(':', '%3A');
+	text = text.replaceAll('?', '%3F');
+	text = text.replaceAll('!', '%21');
+	text = text.replaceAll(';', '%3B');
+	text = text.replaceAll('=', '%3D');
+	text = text.replaceAll('&', '%26');
+	text = text.replaceAll('#', '%23');
+	text = text.replaceAll('/', '%2F');
+	text = text.replaceAll('\\', '%5C');
+	text = text.replaceAll('@', '%40');
+	text = text.replaceAll('$', '%24');
+	text = text.replaceAll('%', '%25');
+	text = text.replaceAll('^', '%5E');
+	text = text.replaceAll('*', '%2A');
+	text = text.replaceAll('(', '%28');
+	text = text.replaceAll(')', '%29');
+	text = text.replaceAll('[', '%5B');
+	text = text.replaceAll(']', '%5D');
+	text = text.replaceAll('{', '%7B');
+	text = text.replaceAll('}', '%7D');
+	text = text.replaceAll('|', '%7C');
+	text = text.replaceAll('<', '%3C');
+	text = text.replaceAll('>', '%3E');
+	text = text.replaceAll('`', '%60');
+	text = text.replaceAll('~', '%7E');
+	text = text.replaceAll("'", '%27');
+	text = text.replaceAll('"', '%22');
 
 	return text;
 }
@@ -1322,25 +1322,25 @@ function URLSafe(text)
  */
 function funnyFrogText(authorID)
 {
-	let path = babadata.datalocation + "FROGcache.json";
+	let path = babadata.datalocation + 'FROGcache.json';
 
 	if (!fs.existsSync(path)) 
 	{
-		console.log("No FROGcache file found -- creating with local data");
+		console.log('No FROGcache file found -- creating with local data');
 
-		var opttemp = ["https://tenor.com/view/frog-funny-funny-frog-picmix-blingee-gif-25200067"]
+		var opttemp = ['https://tenor.com/view/frog-funny-funny-frog-picmix-blingee-gif-25200067'];
 		opttemp.push(opts2);
 		
 		var data = JSON.stringify(opttemp);
 		
-		fs.writeFileSync(babadata.datalocation + "FROGcache.json", data);
+		fs.writeFileSync(babadata.datalocation + 'FROGcache.json', data);
 	}
 
-    let rawdata = fs.readFileSync(babadata.datalocation + "FROGcache.json");
+    let rawdata = fs.readFileSync(babadata.datalocation + 'FROGcache.json');
 
 	var optionsFROG = JSON.parse(rawdata);
 
-	if (typeof optionsFROG[0] != "string")
+	if (typeof optionsFROG[0] != 'string')
 	{
 		optionsFROG = generateFrogOps(optionsFROG, authorID);
 	}
@@ -1363,7 +1363,7 @@ function funnyFrogText(authorID)
  */
 function generateFrogOps(opsArray, authorID)
 {
-    let rawdata = fs.readFileSync(babadata.datalocation + "FROGcontrol.json");
+    let rawdata = fs.readFileSync(babadata.datalocation + 'FROGcontrol.json');
     var controlList = JSON.parse(rawdata);
 	var cLevel = 0;
 
@@ -1416,7 +1416,7 @@ function generateFrogOps(opsArray, authorID)
 function generateFridayOps(opsArray, authorID, prefix, DateOveride)
 {
 	// get TimeGates.json
-	var path = babadata.datalocation + "TimeGates.json";
+	var path = babadata.datalocation + 'TimeGates.json';
 	let raw = fs.readFileSync(path);
 
 	var TimeGates = JSON.parse(raw);
@@ -1448,17 +1448,17 @@ function generateFridayOps(opsArray, authorID, prefix, DateOveride)
 
 	// console.log("Today is " + tod.toDateString() + " for Items Date");
 
-    let rawdata = fs.readFileSync(babadata.datalocation + "DOWcontrol.json");
+    let rawdata = fs.readFileSync(babadata.datalocation + 'DOWcontrol.json');
 
 	if (prefix != -1)
 	{
-		path = babadata.datalocation + "FridayCache/DOWcache" + prefix + ".json";
+		path = babadata.datalocation + 'FridayCache/DOWcache' + prefix + '.json';
 
 		if (!fs.existsSync(path)) 
 		{
 			// return to normal cache
 			cacheVersion = -1;
-			path = babadata.datalocation + "DOWcache.json";
+			path = babadata.datalocation + 'DOWcache.json';
 		}
 	}
 
@@ -1496,7 +1496,7 @@ function generateFridayOps(opsArray, authorID, prefix, DateOveride)
 				var endNormalizedToYear = new Date(tod.getFullYear(), et.getMonth(), et.getDate());
 
 				if (tod < startNormalizedToYear || tod > endNormalizedToYear)
-					continue
+					continue;
 			}
 			else
 			{
@@ -1504,7 +1504,7 @@ function generateFridayOps(opsArray, authorID, prefix, DateOveride)
 				var todDateOnly = new Date(tod.getFullYear(), tod.getMonth(), tod.getDate());
 
 				if (todDateOnly.getMonth() != startNormalizedToYear.getMonth() || todDateOnly.getDate() != startNormalizedToYear.getDate())
-					continue
+					continue;
 			}
 		}
 
@@ -1513,13 +1513,13 @@ function generateFridayOps(opsArray, authorID, prefix, DateOveride)
 			var dow = tod.getDay();
 
 			if (opsArray[i].DayOfWeek != dow)
-				continue
+				continue;
 		}
 
 		if (opsArray[i].OccuranceChance < 100)
 		{
 			if (theRNG.nextFloat() * 100 > opsArray[i].OccuranceChance)
-				continue
+				continue;
 		}
 
 		if (cLevel <= 1)
@@ -1554,7 +1554,7 @@ function generateFridayOps(opsArray, authorID, prefix, DateOveride)
 function removeCountRuin(uid, g)
 {
 	g.members.fetch(uid).then(member => {
-		member.roles.remove(babadata.countrole, "you are free to count!");
+		member.roles.remove(babadata.countrole, 'you are free to count!');
 	});
 }
 

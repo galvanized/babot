@@ -42,6 +42,6 @@ module.exports = {
         // round to nearest second
         milisec = Math.round(milisec);
 
-        await interaction.editReply({ content: "Reminder Set: <t:" + milisec + ":R> which is <t:" + milisec + ":F>, if baba crashes, tough luck no reminder!", ephemeral: true });
+        await interaction.editReply({ content: 'Reminder Set: <t:' + milisec + ':R> which is <t:' + milisec + ':F>, if baba crashes, tough luck no reminder!', ephemeral: true });
 	},
 };

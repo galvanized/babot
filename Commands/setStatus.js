@@ -10,12 +10,12 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('setstatus')
-		.setDescription('Sets baba\'s status')
+		.setDescription("Sets baba's status")
         .setDefaultPermission(false)
         .addStringOption(option => 
             option.setName('status')
             .setRequired(true)
-            .setDescription('baba\'s status')
+            .setDescription("baba's status")
             .addChoices(
                 { name: 'Online', value: 'online' },
                 { name: 'Idle', value: 'idle' },

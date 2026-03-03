@@ -33,11 +33,11 @@ module.exports = {
         {
             if(err)
             {
-                interaction.editReply({ content: "Error: " + err, ephemeral: true });
+                interaction.editReply({ content: 'Error: ' + err, ephemeral: true });
             }
             else
             {
-                interaction.editReply({ content: "Opted in to " + opts, ephemeral: true });
+                interaction.editReply({ content: 'Opted in to ' + opts, ephemeral: true });
             }
         });
 	},

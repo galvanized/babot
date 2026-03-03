@@ -44,8 +44,8 @@ module.exports = {
                             thr.messages.fetch(msgID).then(message => 
                             {
                                 fnd = true;
-                                movetoChannel(message, thr, thr.id, true + display_user)
-                                interaction.editReply({ content: "Message Archived", ephemeral: true });
+                                movetoChannel(message, thr, thr.id, true + display_user);
+                                interaction.editReply({ content: 'Message Archived', ephemeral: true });
                             }).catch(function (err) {});
                         })
                     ).catch(function (err) {});
@@ -53,12 +53,12 @@ module.exports = {
                     chan.messages.fetch(msgID).then(message => 
                     {
                         fnd = true;
-                        movetoChannel(message, chan, chan.id, true + display_user)
-                        interaction.editReply({ content: "Message Archived", ephemeral: true });
+                        movetoChannel(message, chan, chan.id, true + display_user);
+                        interaction.editReply({ content: 'Message Archived', ephemeral: true });
                     }).catch(function (err) {}); //try to get the message, if it exists call setVote, otherwise catch the error
                 }
             });
         });
-        await interaction.editReply({ content: "Searching for Message", ephemeral: true });
+        await interaction.editReply({ content: 'Searching for Message', ephemeral: true });
 	},
 };

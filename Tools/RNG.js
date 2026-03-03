@@ -43,7 +43,7 @@ RNG.prototype.nextInt = function()
 {
     this.state = (this.a * this.state + this.c) % this.m;
     return this.state;
-}
+};
 
 /**
  * Return the next pseudo-random float in the range [0, 1].
@@ -54,7 +54,7 @@ RNG.prototype.nextFloat = function()
 {
     // returns in range [0,1]
     return this.nextInt() / (this.m - 1);
-}
+};
 
 /**
  * Return the next pseudo-random integer in the half-open range [start, end).
@@ -72,7 +72,7 @@ RNG.prototype.nextRange = function(start, end)
     var rangeSize = end - start;
     var randomUnder1 = this.nextInt() / this.m;
     return start + Math.floor(randomUnder1 * rangeSize);
-}
+};
 
 /**
  * Return a uniformly random element from `array`.
@@ -84,7 +84,7 @@ RNG.prototype.nextRange = function(start, end)
 RNG.prototype.choice = function(array) 
 {
     return array[this.nextRange(0, array.length)];
-}
+};
 
 /**
  * Return the original seed this instance was created with.
@@ -94,7 +94,7 @@ RNG.prototype.choice = function(array)
 RNG.prototype.getSeed = function() 
 {
     return this.seed;
-}
+};
 
 /**
  * Return the current internal state of the LCG (the most-recently generated
@@ -105,7 +105,7 @@ RNG.prototype.getSeed = function()
 RNG.prototype.getState = function() 
 {
     return this.state;
-}
+};
 
 /**
  * Re-seed the generator. Both `seed` and `state` are set to `seed`, effectively
@@ -117,7 +117,7 @@ RNG.prototype.setSeed = function(seed)
 {
     this.seed = seed;
     this.state = seed;
-}
+};
 
 module.exports = {
     RNG
