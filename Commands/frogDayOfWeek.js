@@ -1,3 +1,10 @@
+/**
+ * @file frogDayOfWeek.js
+ * @description Slash command (`/day_of_week`) that returns the day of the week on which
+ * a specified holiday or event falls. Supports paginated results via FrogButtons and
+ * falls back to a funny day-of-week message when the result is "FUNNYDOW".
+ */
+
 const { babaUntilHolidays } = require('../Functions/commandFunctions.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { FrogButtons } = require("../Functions/HelperFunctions/basicHelpers.js");
@@ -11,6 +18,16 @@ module.exports = {
         opt.setName("event")
         .setDescription("The event that will get used.")
         .setRequired(true)),
+	/**
+	 * Fetches the day-of-week information for the given event string and replies with
+	 * the result, using FrogButtons pagination for multiple results or a funny
+	 * day-of-week message when signalled.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) {
 		await interaction.deferReply();
         var event = interaction.options.getString("event");

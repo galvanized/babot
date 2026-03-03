@@ -1,3 +1,10 @@
+/**
+ * @file pin.js
+ * @description Slash command that pins a specified message in its channel. Requires the
+ * `messageid` option. Default permissions are disabled; intended for admin use only.
+ * Searches all text channels and threads in the guild for the target message.
+ */
+
 const { SlashCommandBuilder } = require('@discordjs/builders');
 var babadata = require('../babotdata.json'); //baba configuration file
 
@@ -7,6 +14,15 @@ module.exports = {
 		.setDescription('Pins a message.')
         .setDefaultPermission(false)
         .addStringOption(option => option.setName('messageid').setDescription('the message id to pin').setRequired(true)),
+	/**
+	 * Searches all text channels and threads in the guild for the given message ID and
+	 * pins it in its channel. Replies ephemerally with the operation status.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) 
     {
 		await interaction.deferReply({ ephemeral: true });

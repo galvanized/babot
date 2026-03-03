@@ -1,3 +1,11 @@
+/**
+ * @file haiku.js
+ * @description Slash command that provides haiku generation and purity score statistics.
+ * In default mode it displays paginated haiku embeds with navigation buttons. When the
+ * `custom` mode is selected it presents an ephemeral menu with buttons for Single Haiku,
+ * Multiple Haikus, Purity Score, and Cursed Haiku modes.
+ */
+
 const { babaHaikuEmbed, babaHaikuLinks } = require('../Functions/commandFunctions.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { handleButtonsEmbed } = require("../Functions/HelperFunctions/basicHelpers.js");
@@ -102,6 +110,16 @@ module.exports = {
     //     subcommand
     //         .setName('cursed')
     //         .setDescription('Create a new haiku from all the haikus!')),
+	/**
+	 * In default mode, fetches and displays paginated haiku embeds with navigation
+	 * buttons. In `custom` mode, replies ephemerally with an interactive menu of buttons
+	 * to choose Single Haiku, Multiple Haikus, Purity Score, or Cursed Haiku.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) {
         var mohde = interaction.options.getString('mode');
         if (mohde === 'custom')

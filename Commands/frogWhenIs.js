@@ -1,3 +1,11 @@
+/**
+ * @file frogWhenIs.js
+ * @description Slash command (`/when`) with `is` and `isnt` subcommands that returns the
+ * date when a specified holiday or event occurs (or does not occur). Supports paginated
+ * results via FrogButtons and falls back to a funny day-of-week message when the result
+ * is "FUNNYDOW".
+ */
+
 const { babaUntilHolidays } = require('../Functions/commandFunctions.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { FrogButtons } = require("../Functions/HelperFunctions/basicHelpers.js");
@@ -23,6 +31,16 @@ module.exports = {
                     opt.setName("event")
                     .setDescription("The event that will get used.")
                     .setRequired(true))),
+	/**
+	 * Fetches the date when the given event occurs (or does not occur) using the chosen
+	 * subcommand (`is`/`isnt`). Replies with FrogButtons pagination for multiple results
+	 * or a funny day-of-week message when signalled.
+	 *
+	 * @async
+	 * @param {Discord.Interaction} interaction - The slash command interaction object.
+	 * @param {Discord.Client} bot - The Discord client instance.
+	 * @returns {Promise<void>}
+	 */
 	async execute(interaction, bot) {
 		await interaction.deferReply();
         var event = interaction.options.getString("event");
